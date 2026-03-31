@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CARS Training Simulator</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000}
+#root{width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+input:focus,select:focus,button:focus{outline:2px solid #3a8fa0;outline-offset:1px}
+::-webkit-scrollbar{width:7px}
+::-webkit-scrollbar-thumb{background:#aaa;border-radius:4px}
+::-webkit-scrollbar-track{background:#eee}
+button{font-family:'Segoe UI',Tahoma,sans-serif}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useCallback,useRef}=React;
+
+// ── APPLICANT POOL (20 fictional clients) ──────────────────────────────────
+const POOL=[
+{fn:“Tameka”,mn:“R”,ln:“Holloway”,ssn:“428-76-3391”,dob:“06/14/1989”,age:36,gender:“Female”,addr:“1247 MAGNOLIA CREEK DR”,city:“HATTIESBURG”,zip:“39401”,cty:“Forrest”,p1:”(601) 482-7193”,p1t:“Home”,p2:”(601) 555-0214”,p2t:“Cell”,em:“tameka.holloway89@gmail.com”,ei:”$620.00”,rent:”$675.00”,elec:”$95.00”,gas:”$40.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Jaylen”,hln:“Holloway”,hrel:“Child”,hssn:“428-91-5567”,hdob:“03/22/2019”,hage:“7 years”,hgen:“Male”,cn:“307224189”,pid:“261003847”,hid:“261003902”,wk:“PATRICIA WILLIAMS”,fso:“FORREST COUNTY DHS”},
+{fn:“Darnell”,mn:“T”,ln:“Washington”,ssn:“512-44-8821”,dob:“03/02/1985”,age:41,gender:“Male”,addr:“834 OAK GROVE RD”,city:“JACKSON”,zip:“39201”,cty:“Hinds”,p1:”(601) 334-7720”,p1t:“Cell”,p2:””,p2t:””,em:“dwashington85@yahoo.com”,ei:”$0.00”,rent:”$550.00”,elec:”$80.00”,gas:”$0.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Mia”,hln:“Washington”,hrel:“Child”,hssn:“512-91-3304”,hdob:“07/11/2015”,hage:“10 years”,hgen:“Female”,cn:“307224200”,pid:“261003900”,hid:“261003960”,wk:“JAMES REED”,fso:“HINDS COUNTY DHS”},
+{fn:“Latoya”,mn:“M”,ln:“Jenkins”,ssn:“601-33-9912”,dob:“11/19/1992”,age:33,gender:“Female”,addr:“2201 PINE VALLEY LN”,city:“MERIDIAN”,zip:“39301”,cty:“Lauderdale”,p1:”(601) 693-4411”,p1t:“Home”,p2:”(601) 555-8823”,p2t:“Cell”,em:“latoya.jenkins@gmail.com”,ei:”$480.00”,rent:”$600.00”,elec:”$110.00”,gas:”$50.00”,wat:”$35.00”,ph:”$60.00”,hfn:“Destiny”,hln:“Jenkins”,hrel:“Child”,hssn:“601-82-7741”,hdob:“04/05/2018”,hage:“8 years”,hgen:“Female”,cn:“307224301”,pid:“261004010”,hid:“261004071”,wk:“SHARON MOORE”,fso:“LAUDERDALE COUNTY DHS”},
+{fn:“Marcus”,mn:“A”,ln:“Brown”,ssn:“389-55-1123”,dob:“08/27/1979”,age:46,gender:“Male”,addr:“519 CEDAR BLUFF DR”,city:“BILOXI”,zip:“39530”,cty:“Harrison”,p1:”(228) 374-6602”,p1t:“Cell”,p2:””,p2t:””,em:“marcusbrown79@hotmail.com”,ei:”$740.00”,rent:”$800.00”,elec:”$125.00”,gas:”$55.00”,wat:”$40.00”,ph:”$50.00”,hfn:“Tyrone”,hln:“Brown”,hrel:“Child”,hssn:“389-88-4450”,hdob:“09/14/2012”,hage:“13 years”,hgen:“Male”,cn:“307224412”,pid:“261004200”,hid:“261004261”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
+{fn:“Shenika”,mn:“L”,ln:“Davis”,ssn:“447-22-6634”,dob:“01/30/1996”,age:30,gender:“Female”,addr:“78 WILLOW BEND RD”,city:“TUPELO”,zip:“38801”,cty:“Lee”,p1:”(662) 841-5530”,p1t:“Home”,p2:”(662) 555-2290”,p2t:“Cell”,em:“shenikadavis96@gmail.com”,ei:”$310.00”,rent:”$525.00”,elec:”$70.00”,gas:”$30.00”,wat:”$20.00”,ph:”$40.00”,hfn:“Aaliyah”,hln:“Davis”,hrel:“Child”,hssn:“447-90-1122”,hdob:“02/28/2021”,hage:“5 years”,hgen:“Female”,cn:“307224523”,pid:“261004300”,hid:“261004361”,wk:“ANGELA PRICE”,fso:“LEE COUNTY DHS”},
+{fn:“Reginald”,mn:“J”,ln:“Thomas”,ssn:“523-67-4490”,dob:“05/15/1983”,age:43,gender:“Male”,addr:“3302 DOGWOOD CIRCLE”,city:“GULFPORT”,zip:“39501”,cty:“Harrison”,p1:”(228) 863-7741”,p1t:“Cell”,p2:””,p2t:””,em:“rthomas83@gmail.com”,ei:”$0.00”,rent:”$700.00”,elec:”$105.00”,gas:”$45.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Keisha”,hln:“Thomas”,hrel:“Spouse”,hssn:“523-81-3345”,hdob:“08/03/1985”,hage:“41 years”,hgen:“Female”,cn:“307224634”,pid:“261004400”,hid:“261004461”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
+{fn:“Yolanda”,mn:“B”,ln:“Scott”,ssn:“334-88-2256”,dob:“07/04/1990”,age:35,gender:“Female”,addr:“990 RIVERDALE AVE”,city:“VICKSBURG”,zip:“39180”,cty:“Warren”,p1:”(601) 638-2200”,p1t:“Home”,p2:”(601) 555-4411”,p2t:“Cell”,em:“yolanda.scott90@yahoo.com”,ei:”$550.00”,rent:”$625.00”,elec:”$90.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Caleb”,hln:“Scott”,hrel:“Child”,hssn:“334-92-6678”,hdob:“11/20/2017”,hage:“8 years”,hgen:“Male”,cn:“307224745”,pid:“261004500”,hid:“261004561”,wk:“DOROTHY BANKS”,fso:“WARREN COUNTY DHS”},
+{fn:“Terrence”,mn:“K”,ln:“Williams”,ssn:“460-11-8834”,dob:“12/09/1988”,age:37,gender:“Male”,addr:“145 PECAN GROVE DR”,city:“NATCHEZ”,zip:“39120”,cty:“Adams”,p1:”(601) 445-3390”,p1t:“Cell”,p2:””,p2t:””,em:“twilli88@gmail.com”,ei:”$680.00”,rent:”$575.00”,elec:”$85.00”,gas:”$40.00”,wat:”$30.00”,ph:”$50.00”,hfn:“Jasmine”,hln:“Williams”,hrel:“Child”,hssn:“460-83-9910”,hdob:“06/17/2016”,hage:“9 years”,hgen:“Female”,cn:“307224856”,pid:“261004600”,hid:“261004661”,wk:“MARCUS BELL”,fso:“ADAMS COUNTY DHS”},
+{fn:“Keandra”,mn:“N”,ln:“Robinson”,ssn:“578-44-1122”,dob:“09/22/1994”,age:31,gender:“Female”,addr:“2889 SUNFLOWER ST”,city:“GREENVILLE”,zip:“38701”,cty:“Washington”,p1:”(662) 335-8820”,p1t:“Home”,p2:”(662) 555-7711”,p2t:“Cell”,em:“keandra.robinson94@gmail.com”,ei:”$0.00”,rent:”$490.00”,elec:”$75.00”,gas:”$25.00”,wat:”$20.00”,ph:”$40.00”,hfn:“Noah”,hln:“Robinson”,hrel:“Child”,hssn:“578-90-4456”,hdob:“03/14/2020”,hage:“6 years”,hgen:“Male”,cn:“307224967”,pid:“261004700”,hid:“261004761”,wk:“TAMARA WEST”,fso:“WASHINGTON COUNTY DHS”},
+{fn:“Derrick”,mn:“O”,ln:“Jackson”,ssn:“415-77-3345”,dob:“04/18/1981”,age:45,gender:“Male”,addr:“707 MAGNOLIA BLVD”,city:“COLUMBUS”,zip:“39701”,cty:“Lowndes”,p1:”(662) 328-4411”,p1t:“Cell”,p2:””,p2t:””,em:“djackson81@yahoo.com”,ei:”$820.00”,rent:”$750.00”,elec:”$115.00”,gas:”$60.00”,wat:”$35.00”,ph:”$60.00”,hfn:“Brianna”,hln:“Jackson”,hrel:“Child”,hssn:“415-82-6670”,hdob:“08/29/2014”,hage:“11 years”,hgen:“Female”,cn:“307225078”,pid:“261004800”,hid:“261004861”,wk:“LARRY SIMMONS”,fso:“LOWNDES COUNTY DHS”},
+{fn:“Monique”,mn:“C”,ln:“Harris”,ssn:“330-55-7789”,dob:“02/14/1991”,age:35,gender:“Female”,addr:“1560 HOLLY SPRINGS RD”,city:“OXFORD”,zip:“38655”,cty:“Lafayette”,p1:”(662) 234-5520”,p1t:“Home”,p2:”(662) 555-9933”,p2t:“Cell”,em:“monique.harris91@gmail.com”,ei:”$390.00”,rent:”$700.00”,elec:”$100.00”,gas:”$45.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Isaiah”,hln:“Harris”,hrel:“Child”,hssn:“330-84-2211”,hdob:“10/05/2019”,hage:“6 years”,hgen:“Male”,cn:“307225189”,pid:“261004900”,hid:“261004961”,wk:“DIANE TUCKER”,fso:“LAFAYETTE COUNTY DHS”},
+{fn:“Calvin”,mn:“R”,ln:“Moore”,ssn:“498-22-6601”,dob:“06/30/1977”,age:48,gender:“Male”,addr:“444 CYPRESS CREEK DR”,city:“HATTIESBURG”,zip:“39402”,cty:“Forrest”,p1:”(601) 268-7730”,p1t:“Cell”,p2:””,p2t:””,em:“cmoore77@hotmail.com”,ei:”$0.00”,rent:”$625.00”,elec:”$90.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Tyra”,hln:“Moore”,hrel:“Child”,hssn:“498-91-4423”,hdob:“05/22/2016”,hage:“9 years”,hgen:“Female”,cn:“307225290”,pid:“261005000”,hid:“261005061”,wk:“PATRICIA WILLIAMS”,fso:“FORREST COUNTY DHS”},
+{fn:“Aaliyah”,mn:“S”,ln:“Turner”,ssn:“561-33-8812”,dob:“10/08/1999”,age:26,gender:“Female”,addr:“223 BIRCH LANE”,city:“LAUREL”,zip:“39440”,cty:“Jones”,p1:”(601) 425-6640”,p1t:“Cell”,p2:”(601) 555-3312”,p2t:“Home”,em:“aaliyah.turner99@gmail.com”,ei:”$270.00”,rent:”$450.00”,elec:”$65.00”,gas:”$20.00”,wat:”$20.00”,ph:”$35.00”,hfn:“Ava”,hln:“Turner”,hrel:“Child”,hssn:“561-88-7745”,hdob:“12/01/2022”,hage:“3 years”,hgen:“Female”,cn:“307225401”,pid:“261005100”,hid:“261005161”,wk:“JAMES REED”,fso:“JONES COUNTY DHS”},
+{fn:“Broderick”,mn:“D”,ln:“Lewis”,ssn:“479-66-2230”,dob:“08/11/1986”,age:39,gender:“Male”,addr:“3811 SYCAMORE PARK DR”,city:“STARKVILLE”,zip:“39759”,cty:“Oktibbeha”,p1:”(662) 323-8801”,p1t:“Home”,p2:””,p2t:””,em:“brodlewis86@yahoo.com”,ei:”$910.00”,rent:”$875.00”,elec:”$130.00”,gas:”$65.00”,wat:”$40.00”,ph:”$60.00”,hfn:“Jordan”,hln:“Lewis”,hrel:“Child”,hssn:“479-80-5567”,hdob:“07/16/2013”,hage:“12 years”,hgen:“Male”,cn:“307225512”,pid:“261005200”,hid:“261005261”,wk:“LARRY SIMMONS”,fso:“OKTIBBEHA COUNTY DHS”},
+{fn:“Shaniqua”,mn:“V”,ln:“White”,ssn:“344-99-5512”,dob:“03/25,1993”,age:33,gender:“Female”,addr:“102 AZALEA DR”,city:“BRANDON”,zip:“39042”,cty:“Rankin”,p1:”(601) 824-3301”,p1t:“Cell”,p2:”(601) 555-6678”,p2t:“Home”,em:“shaniqua.white93@gmail.com”,ei:”$430.00”,rent:”$725.00”,elec:”$95.00”,gas:”$40.00”,wat:”$30.00”,ph:”$50.00”,hfn:“Elijah”,hln:“White”,hrel:“Child”,hssn:“344-87-9923”,hdob:“01/08/2018”,hage:“8 years”,hgen:“Male”,cn:“307225623”,pid:“261005300”,hid:“261005361”,wk:“SHARON MOORE”,fso:“RANKIN COUNTY DHS”},
+{fn:“Jerome”,mn:“L”,ln:“Anderson”,ssn:“532-11-4478”,dob:“11/03,1980”,age:45,gender:“Male”,addr:“789 GULF WIND BLVD”,city:“PASS CHRISTIAN”,zip:“39571”,cty:“Harrison”,p1:”(228) 452-9900”,p1t:“Home”,p2:””,p2t:””,em:“jerome.anderson80@gmail.com”,ei:”$0.00”,rent:”$580.00”,elec:”$88.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Savannah”,hln:“Anderson”,hrel:“Child”,hssn:“532-84-1123”,hdob:“09/30,2017”,hage:“8 years”,hgen:“Female”,cn:“307225734”,pid:“261005400”,hid:“261005461”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
+{fn:“Tiffany”,mn:“A”,ln:“Green”,ssn:“418-77-3301”,dob:“07/17,1995”,age:30,gender:“Female”,addr:“556 PEACHTREE RD”,city:“FLOWOOD”,zip:“39232”,cty:“Rankin”,p1:”(601) 939-4421”,p1t:“Cell”,p2:”(601) 555-1134”,p2t:“Home”,em:“tiffany.green95@yahoo.com”,ei:”$500.00”,rent:”$775.00”,elec:”$105.00”,gas:”$50.00”,wat:”$35.00”,ph:”$55.00”,hfn:“Jace”,hln:“Green”,hrel:“Child”,hssn:“418-92-6645”,hdob:“04/19,2020”,hage:“6 years”,hgen:“Male”,cn:“307225845”,pid:“261005500”,hid:“261005561”,wk:“DOROTHY BANKS”,fso:“RANKIN COUNTY DHS”},
+{fn:“Antwan”,mn:“M”,ln:“Taylor”,ssn:“387-44,9923”,dob:“02/06,1984”,age:42,gender:“Male”,addr:“1023 HICKORY HOLLOW LN”,city:“PEARL”,zip:“39208”,cty:“Rankin”,p1:”(601) 939-8820”,p1t:“Home”,p2:””,p2t:””,em:“antwan.taylor84@gmail.com”,ei:”$760.00”,rent:”$850.00”,elec:”$120.00”,gas:”$55.00”,wat:”$40.00”,ph:”$60.00”,hfn:“Malik”,hln:“Taylor”,hrel:“Child”,hssn:“387-86,7712”,hdob:“06,10,2015”,hage:“10 years”,hgen:“Male”,cn:“307225956”,pid:“261005600”,hid:“261005661”,wk:“ANGELA PRICE”,fso:“RANKIN COUNTY DHS”},
+{fn:“Lakisha”,mn:“T”,ln:“Mitchell”,ssn:“463-22,7756”,dob:“09,28,1997”,age:28,gender:“Female”,addr:“2200 CLOVER HILL DR”,city:“RIDGELAND”,zip:“39157”,cty:“Madison”,p1:”(601) 853,5510”,p1t:“Cell”,p2:”(601) 555,8890”,p2t:“Home”,em:“lakisha.mitchell97@gmail.com”,ei:”$340.00”,rent:”$825.00”,elec:”$115.00”,gas:”$50.00”,wat:”$35.00”,ph:”$55.00”,hfn:“Zoe”,hln:“Mitchell”,hrel:“Child”,hssn:“463-85,4401”,hdob:“11,14,2021”,hage:“4 years”,hgen:“Female”,cn:“307226067”,pid:“261005700”,hid:“261005761”,wk:“DIANE TUCKER”,fso:“MADISON COUNTY DHS”},
+{fn:“Quinton”,mn:“B”,ln:“Adams”,ssn:“541-88,2234”,dob:“05,22,1982”,age:43,gender:“Male”,addr:“371 IRONWOOD DR”,city:“SOUTHAVEN”,zip:“38671”,cty:“DeSoto”,p1:”(662) 349,7701”,p1t:“Home”,p2:””,p2t:””,em:“qadams82@hotmail.com”,ei:”$0.00”,rent:”$950.00”,elec:”$140.00”,gas:”$70.00”,wat:”$45.00”,ph:”$65.00”,hfn:“Dominic”,hln:“Adams”,hrel:“Child”,hssn:“541-90,5578”,hdob:“08,07,2016”,hage:“9 years”,hgen:“Male”,cn:“307226178”,pid:“261005800”,hid:“261005861”,wk:“TAMARA WEST”,fso:“DESOTO COUNTY DHS”}
+];
+
+function buildQueue(){
+const shuffled=[…POOL].sort(()=>Math.random()-0.5);
+const size=Math.floor(Math.random()*2)+3; // 3 or 4
+return shuffled.slice(0,size).map(a=>({
+…a,
+bd:new Date().toLocaleDateString(“en-US”,{month:“2-digit”,day:“2-digit”,year:“numeric”})+” 09:22 AM”,
+ad:(()=>{let d=new Date();d.setDate(d.getDate()+3);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return d.toLocaleDateString(“en-US”,{month:“2-digit”,day:“2-digit”,year:“numeric”});})(),
+at:“9:30 AM”
+}));
+}
+
+const T=”#3a8fa0”,DK=”#2a6a78”;
+const fi={padding:“6px 8px”,border:“1px solid #bcc8cc”,borderRadius:2,fontSize:13,background:”#fff”,color:”#1a2a33”,width:“100%”,boxSizing:“border-box”};
+const lb={fontSize:10,fontWeight:700,color:”#5a7a85”,textTransform:“uppercase”,marginBottom:2,display:“block”};
+const bt={padding:“7px 16px”,border:“none”,borderRadius:3,cursor:“pointer”,fontSize:12,fontWeight:700};
+const ts={textAlign:“center”,color:T,fontSize:15,margin:“0 0 14px”,fontWeight:700};
+const rw={display:“flex”,gap:10,flexWrap:“wrap”,marginBottom:8};
+
+function Toast({msg,type,onClose}){
+useEffect(()=>{const t=setTimeout(onClose,3500);return()=>clearTimeout(t)},[onClose]);
+return <div style={{position:“fixed”,top:16,right:16,background:type===“ok”?”#28a060”:type===“warn”?”#e8a820”:”#d43b3b”,color:”#fff”,padding:“12px 20px”,borderRadius:6,fontSize:13,fontWeight:600,boxShadow:“0 6px 24px rgba(0,0,0,.3)”,zIndex:10000,maxWidth:380}}>{msg}</div>;
+}
+
+const Fi=({l,v,w})=><div style={{flex:w||1,minWidth:90}}><label style={lb}>{l}</label><input readOnly value={v||””} style={fi}/></div>;
+const Fd=({l,v})=><div style={{flex:1,minWidth:90}}><label style={lb}>{l}</label><select disabled style={{…fi,appearance:“auto”}}><option>{v}</option></select></div>;
+const Rd=({v,o})=><span style={{display:“inline-flex”,gap:8}}>{(o||[“YES”,“NO”]).map(x=><label key={x} style={{display:“flex”,alignItems:“center”,gap:3,fontSize:12}}><span style={{width:12,height:12,borderRadius:“50%”,border:“2px solid “+T,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:v===x?T:“transparent”}}>{v===x&&<span style={{width:4,height:4,borderRadius:“50%”,background:”#fff”}}/>}</span>{x}</label>)}</span>;
+const Ck=({l,c})=><label style={{display:“flex”,alignItems:“center”,gap:4,fontSize:12}}><span style={{width:12,height:12,border:“2px solid “+T,borderRadius:2,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:c?T:“transparent”,color:”#fff”,fontSize:9}}>{c?“✓”:””}</span>{l}</label>;
+const Qr=({q,v})=><div style={{display:“flex”,alignItems:“flex-start”,gap:8,padding:“5px 0”,borderBottom:“1px solid #f0f0f0”}}><span style={{flex:1,fontSize:12,lineHeight:1.4}}>{q}</span><Rd v={v||“NO”}/></div>;
+
+function Hdr({banner,D}){
+return <div style={{flexShrink:0}}>
+<div style={{background:”#fff”,padding:“4px 12px”,borderBottom:“1px solid #d0dce0”,display:“flex”,alignItems:“center”}}>
+<span style={{fontSize:18,color:DK}}>☰</span><span style={{flex:1}}/>
+<span style={{fontSize:13,fontWeight:700,color:DK,letterSpacing:3}}>C.A.R.S.</span>
+<span style={{flex:1}}/><span style={{fontSize:10,color:”#7a9aa5”}}>J. Mitchell</span>
+</div>
+{banner&&<div style={{background:T,color:”#fff”,padding:“5px 12px”,display:“flex”,justifyContent:“space-between”,fontSize:10,fontWeight:700}}>
+<span>BUSINESS DATE: {D.bd}</span><span style={{color:”#ffd700”}}>EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span>
+</div>}
+
+  </div>;
+}
+
+function Prg({s,l}){
+return <div style={{padding:“6px 12px”,background:”#f6f9fa”,borderBottom:“1px solid #e0e8ec”,flexShrink:0}}>
+<div style={{display:“flex”,gap:1}}>{l.map((n,i)=><div key={i} style={{flex:1,textAlign:“center”}}>
+<div style={{height:3,borderRadius:2,background:i<s?”#28a060”:i===s?T:”#d0dce0”}}/>
+<div style={{fontSize:7,color:i<=s?DK:”#aaa”,marginTop:1}}>{n}</div>
+</div>)}</div>
+
+  </div>;
+}
+
+const BAll=({f})=><div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
+<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
+<button style={{…bt,background:DK,color:”#fff”}}>Move to ESAP</button>
+<button style={{…bt,background:T,color:”#fff”}}>Pre-Register</button>
+<button onClick={f} style={{…bt,background:T,color:”#fff”}}>Next</button>
+
+</div>;
+
+const BN=({f,b})=><div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
+<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
+{b&&<button onClick={b} style={{…bt,background:T,color:”#fff”}}>Previous</button>}
+<button onClick={f} style={{…bt,background:T,color:”#fff”}}>Next</button>
+
+</div>;
+
+function Welcome({f}){
+const[ok,setOk]=useState(false);
+return <div style={{height:“100%”,overflowY:“auto”,background:”#f0f4f6”,padding:16}}>
+<div style={{maxWidth:520,margin:“0 auto”,background:”#fff”,borderRadius:8,padding:“20px 24px”,boxShadow:“0 2px 12px rgba(0,0,0,.06)”,border:“1px solid #d0dce0”}}>
+<div style={{textAlign:“center”,marginBottom:12}}>
+<div style={{fontSize:24,fontWeight:800,color:DK,letterSpacing:3}}>C.A.R.S.</div>
+<div style={{fontSize:11,color:”#5a7a85”,fontStyle:“italic”}}>Interactive Training Simulator</div>
+<div style={{fontSize:10,color:”#999”,marginTop:4}}>Eligibility Clerk Training - Chapter 1</div>
+</div>
+<div style={{background:”#fef2f2”,border:“1px solid #e8a0a0”,borderRadius:6,padding:“10px 14px”,fontSize:11,lineHeight:1.6,color:”#5a2020”,marginBottom:12}}>
+<strong>LEGAL DISCLAIMER:</strong> This is a training simulation only. It is NOT the official C.A.R.S., MAVERICS, or BCS system and has no connection to any live MDHS database. All client data is entirely fictional. For internal training and onboarding purposes only. Not to be distributed publicly or sold commercially. System names and workflows are property of MDHS and/or their respective vendors, used here strictly for educational training of authorized personnel. No real case actions are performed and no data is transmitted or stored.
+</div>
+<div style={{background:”#f6f9fa”,border:“1px solid #d0dce0”,borderRadius:6,padding:“10px 14px”,fontSize:11,lineHeight:1.6,marginBottom:12}}>
+<strong>CONFIDENTIALITY NOTICE:</strong> All real client information in actual MDHS systems is confidential and protected under state and federal law. This simulation uses only fictional data. Do not use real client information in any training context.
+</div>
+<label style={{display:“flex”,gap:8,fontSize:12,cursor:“pointer”,padding:“8px 0”}} onClick={()=>setOk(!ok)}>
+<span style={{width:16,height:16,border:“2px solid “+T,borderRadius:3,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:ok?T:“transparent”,color:”#fff”,fontSize:10,flexShrink:0}}>{ok?“✓”:””}</span>
+I understand this is a training simulation and agree to the terms above.
+</label>
+{ok&&<div style={{marginTop:12}}>
+<div style={{background:”#e6f7ff”,borderRadius:6,padding:“10px 14px”,fontSize:12,lineHeight:1.7,marginBottom:10}}>
+<strong>Workflow:</strong> Login → Dashboard → 6 CARS screens → MAVERICS (8 steps) → Case Verification → Appointment → Submit<br/>
+<strong>Queue:</strong> You will process 3–4 randomly assigned applicants per session.
+</div>
+<div style={{background:”#f0faf4”,borderRadius:6,padding:“10px 14px”,fontSize:12,lineHeight:1.6,border:“1px solid #b8e6c8”,marginBottom:12}}>
+<strong>Login:</strong> <code style={{background:”#d0eef4”,padding:“1px 4px”,borderRadius:2}}>jmitchell</code> / <code style={{background:”#d0eef4”,padding:“1px 4px”,borderRadius:2}}>MDHS2026!</code>
+</div>
+<button onClick={f} style={{…bt,background:T,color:”#fff”,width:“100%”,padding:10,fontSize:14,borderRadius:5}}>Begin Training</button>
+</div>}
+</div>
+
+  </div>;
+}
+
+function Login({f}){
+const[u,setU]=useState(””);const[p,setP]=useState(””);const[e,setE]=useState(””);
+const go=()=>{if(u.toLowerCase()===“jmitchell”&&p===“MDHS2026!”){f();}else setE(“Invalid credentials.”);};
+return <div style={{height:“100%”,display:“flex”,flexDirection:“column”,background:”#f0f4f6”}}>
+<div style={{background:”#fff”,padding:“6px 14px”,borderBottom:“1px solid #d0dce0”,display:“flex”,justifyContent:“space-between”,alignItems:“center”,flexShrink:0}}>
+<span style={{fontSize:13,fontWeight:800,color:DK}}>MDHS <span style={{fontWeight:600,color:”#5a7a85”}}>BETTER ME</span></span>
+<span style={{fontSize:11,fontWeight:700,color:DK}}>LOGIN</span>
+</div>
+<div style={{flex:1,display:“flex”,alignItems:“center”,justifyContent:“center”}}>
+<div style={{width:300,textAlign:“center”}}>
+<div style={{fontSize:28,fontWeight:800,color:DK,letterSpacing:4,marginBottom:20}}>C.A.R.S.</div>
+<div style={{background:”#fff”,borderRadius:8,padding:“24px 20px”,border:“1px solid #d0dce0”}}>
+<div style={{marginBottom:12,textAlign:“left”}}><label style={{fontSize:10,fontWeight:700,color:”#5a7a85”,display:“block”,marginBottom:3}}>USERNAME</label><input value={u} onChange={x=>{setU(x.target.value);setE(””);}} style={{…fi,padding:“9px 10px”,fontSize:14}}/></div>
+<div style={{marginBottom:14,textAlign:“left”}}><label style={{fontSize:10,fontWeight:700,color:”#5a7a85”,display:“block”,marginBottom:3}}>PASSWORD</label><input value={p} onChange={x=>{setP(x.target.value);setE(””);}} type=“password” style={{…fi,padding:“9px 10px”,fontSize:14}} onKeyDown={x=>{if(x.key===“Enter”)go();}}/></div>
+{e&&<div style={{color:”#d43b3b”,fontSize:11,marginBottom:8,background:”#fef2f2”,padding:“4px 8px”,borderRadius:3}}>{e}</div>}
+<button onClick={go} style={{…bt,background:T,color:”#fff”,width:“100%”,padding:9,fontSize:14,borderRadius:4}}>LOGIN</button>
+</div>
+</div>
+</div>
+
+  </div>;
+}
+
+function Dash({queue,qIdx,f}){
+const remaining=queue.length-qIdx;
+const Ti=({i,t,d,b,fn,off,hl})=><div style={{background:”#fff”,borderRadius:6,padding:14,textAlign:“center”,border:hl?“2px solid “+T:“1px solid #d0dce0”}}>
+<div style={{fontSize:24,marginBottom:4}}>{i}</div>
+<div style={{fontSize:12,fontWeight:700,color:DK}}>{t}</div>
+<div style={{fontSize:9,color:”#7a9aa5”,marginTop:2,marginBottom:8,fontStyle:“italic”}}>{d}</div>
+<button onClick={fn} disabled={off} style={{…bt,background:off?”#ccc”:T,color:”#fff”,width:“100%”,opacity:off?0.6:1,fontSize:11}}>{b}</button>
+
+  </div>;
+  return <div style={{padding:16}}>
+    <h1 style={{textAlign:"center",fontSize:18,color:T,fontWeight:700,marginBottom:4}}>Dashboard</h1>
+    <div style={{textAlign:"center",marginBottom:14,fontSize:11,color:"#5a7a85"}}>
+      Queue: <strong style={{color:DK}}>{remaining} applicant{remaining!==1?"s":""} remaining</strong> this session
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,maxWidth:580,margin:"0 auto"}}>
+      <Ti i="📋" t="Online Registration" d="Process new digital applications" b={remaining>0?"Next Application":"Queue Empty"} fn={f} hl off={remaining===0}/>
+      <Ti i="✏️" t="Manual Entry" d="Process new paper applications" b="Coming Soon" off/>
+      <Ti i="📑" t="Online Claims" d="Submit a SNAP / TANF claim" b="SUBMIT A CLAIM" off/>
+      <Ti i="⏳" t="Client Pre-Registration" d="Missing SSN / Receiving benefits" b="Queue" off/>
+      <Ti i="📍" t="Client Address Verify" d="Verify Client with Address" b="Verify" off/>
+      <Ti i="📂" t="My Cases" d="View Assigned Cases" b="View Queue" off/>
+    </div>
+  </div>;
+}
+
+function S1({f,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>DIGITAL APPLICANT INFORMATION</h2><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:6}}>Demographics</div><div style={rw}><Fi l="First Name" v={D.fn}/><Fi l="Middle Name" v={D.mn}/><Fi l="Last Name" v={D.ln}/><Fd l="Suffix" v="Select Suffix"/></div><div style={rw}><Fi l="SSN" v={D.ssn}/><Fi l="Date of Birth" v={D.dob}/><div style={{flex:1,minWidth:120}}><label style={lb}>Applying For</label><div style={{display:“flex”,gap:12,padding:“4px 0”}}><Ck l="SNAP" c/><Ck l="TANF" c/></div></div><Fd l="Language" v="English"/></div><div style={{fontSize:11,fontWeight:700,color:DK,margin:“10px 0 6px”}}>Contact Information</div><div style={rw}><Fi l="Home Address 1" v={D.addr}/><Fi l="Home Address 2" v=""/><Fi l="Home City" v={D.city}/><Fd l="Home State" v="Mississippi"/></div><div style={rw}><Fi l="Zip Code" v={D.zip}/><Fd l="County" v={D.cty}/><div style={{flex:2,minWidth:180,display:“flex”,alignItems:“flex-end”,paddingBottom:4}}><Ck l="Mailing same as Residence" c/></div></div><div style={rw}><Fi l="Mailing Address" v={D.addr}/><Fi l="Mailing City" v={D.city}/><Fd l="Mailing State" v="Mississippi"/><Fi l="Mailing Zip" v={D.zip}/></div><div style={rw}><Fi l="Phone" v={D.p1}/><Fd l="Type" v={D.p1t}/><Fi l=“Phone 2” v={D.p2||””}/><Fd l=“Type” v={D.p2t||“N/A”}/></div><div style={{…rw,alignItems:“flex-end”}}><div style={{flex:1,minWidth:100}}><label style={lb}>E-Notices?</label><Rd v=“Yes” o={[“Yes”,“No”]}/></div><Fi l="Email" v={D.em}/></div><BAll f={f}/></div>;}
+
+function S2({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>INCOME</h2><Qr q=“Earned income (wages, tips, bonuses, self-employment)?” v={D.ei===”$0.00”?“NO”:“YES”}/>{D.ei!==”$0.00”&&<div style={{padding:“2px 0 6px 16px”,fontSize:12}}>Amount: <strong>{D.ei}</strong></div>}<Qr q="Unearned income (SS, disability, VA, pensions, child support)?" v="NO"/><Qr q="Expect income later this month?" v="NO"/><Qr q="Only income from migrant/seasonal farm work?" v="NO"/><BN f={f} b={b}/></div>;}
+
+function S3({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>RESOURCES</h2><Qr q="Cash, checking/savings, IRA, stocks, vehicles, property, land?" v="NO"/><h2 style={{…ts,margin:“12px 0 8px”}}>EXPENSES</h2><div style={rw}><Fi l="Rent/Mortgage" v={D.rent}/><Fi l="Electricity" v={D.elec}/><Fi l="Gas" v={D.gas}/></div><div style={{...rw,marginBottom:12}}><Fi l="Water" v={D.wat}/><Fi l="Phone" v={D.ph}/></div><Qr q="Pay for dependent child/disabled member care?" v="NO"/><Qr q="Anyone 60+ or disabled with medical expenses over $35?" v="NO"/><BN f={f} b={b}/></div>;}
+
+function S4({f,b}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>ADDITIONAL QUESTIONS</h2><Qr q="Deaf, hearing impaired, or need interpreter?" v="NO"/><Qr q="SNAP disqualification for fraud?" v="NO"/><Qr q="Hiding from law, jail for felony, violating parole?" v="NO"/><Qr q="Commercial boarding home resident?" v="NO"/><Qr q="On strike?" v="NO"/><BN f={f} b={b}/></div>;}
+
+function S5({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>HOUSEHOLD INFORMATION</h2><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:4}}>Head Of Household (PI)</div><div style={rw}><Fi l="First Name" v={D.fn}/><Fi l="Last Name" v={D.ln}/><Fd l="Relationship" v="Primary Individual"/></div><div style={rw}><Fi l="SSN" v={D.ssn}/><Fi l="DOB" v={D.dob}/><Fi l=“Age” v={D.age+” yrs”} w={0.4}/><Fd l="Gender" v={D.gender}/></div><div style={{borderTop:“1px solid #e0e8ec”,paddingTop:8,marginTop:4}}><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:4}}>Household Members</div><div style={rw}><Fi l="First Name" v={D.hfn}/><Fi l="Last Name" v={D.hln}/><Fd l="Relationship" v={D.hrel}/></div><div style={rw}><Fi l="SSN" v={D.hssn}/><Fi l="DOB" v={D.hdob}/><Fi l="Age" v={D.hage} w={0.4}/><Fd l="Gender" v={D.hgen}/></div></div><BN f={f} b={b}/></div>;}
+
+function S6({f,b}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>ADDITIONAL APPLICATION INFORMATION</h2><p style={{fontSize:10,color:”#7a9aa5”,fontStyle:“italic”,marginBottom:10}}>Household members not included on application</p><div style={{display:“flex”,gap:16,flexWrap:“wrap”,marginBottom:12}}><div><div style={{fontSize:10,fontWeight:700,marginBottom:4,textDecoration:“underline”}}>SNAP Authorized Rep</div><div style={{display:“flex”,gap:4}}><Fi l="First" v=""/><Fi l="Last" v=""/><Fi l="Phone" v=""/></div></div><div><div style={{fontSize:10,fontWeight:700,marginBottom:4,textDecoration:“underline”}}>SNAP Benefit Rep</div><div style={{display:“flex”,gap:4}}><Fi l="First" v=""/><Fi l="Last" v=""/><Fi l="Phone" v=""/></div></div></div><div style={{fontSize:12}}>Copy preference: <Rd v=“Electronic” o={[“Paper”,“Electronic”,“Refuse”]}/></div><BN f={f} b={b}/></div>;}
+
+function Mavs({f,D}){
+const[s,setS]=useState(0);const g=”#00ff41”,w=”#fff”,y=”#ffcc00”,dk=”#0d0d1a”;
+const L=({t,c})=><div style={{color:c||g}}>{t}</div>;
+const H=({t})=><React.Fragment><L t={”=”.repeat(44)} c=”#007722”/><L t={”  “+t} c={w}/><L t={”=”.repeat(44)} c=”#007722”/><br/></React.Fragment>;
+const B=({t,fn})=><button onClick={fn} style={{…bt,background:g,color:dk,marginTop:8,marginBottom:16,fontFamily:“monospace”}}>{t}</button>;
+const sc=[
+<div key={0}><H t="FULL SERVICE CLERICAL MENU (FUSC)"/><L t="  1. GENERAL INQUIRIES"/><div style={{color:”#00ff88”,background:“rgba(0,255,65,.08)”,padding:“1px 3px”}}>{”-> 2. APPLICATION REGISTRATION”}</div><L t="  3. NOTICE REQUESTS"/><L t="  4. ADD PROGRAM"/><L t="  5. CASE DESTRUCTION"/><br/><B t=“Select 2” fn={()=>setS(1)}/></div>,
+<div key={1}><H t="CLIENT INQUIRY (CLIR)"/><L t="  1. INQUIRE ON PERSON"/><L t="  2. SAVE NEW CLIENT"/><L t="  3. EXISTING CASE #"/><L t="  4. NEW CASE #"/><L t="  6. DRS INQUIRY"/><br/><L t={D.ln.toUpperCase()+”, “+D.fn.toUpperCase()+”  DOB: “+D.dob} c=”#aaa”/><br/><B t=“Inquire (1)” fn={()=>setS(2)}/></div>,
+<div key={2}><H t="CLIS - SHORT LIST"/><L t="NO CLIENTS FOUND" c="#e8a820"/><br/><L t={“SSN: “+D.ssn+”  DOB: “+D.dob} c=”#aaa”/><br/><B t=“Save New Client (2)” fn={()=>setS(3)}/></div>,
+<div key={3}><H t="DRS INQUIRY"/><L t={D.ln.toUpperCase()+”, “+D.fn.toUpperCase()}/><br/><L t="NO DISQUALIFICATIONS" c="#28a060"/><br/><B t=“Register New Case (4)” fn={()=>setS(4)}/></div>,
+<div key={4}><H t="REGISTRATION"/><L t={“CASE: “+D.cn+” (NEW)”} c={w}/><L t={“PI: “+D.ln.toUpperCase()+”, “+D.fn.toUpperCase()} c={w}/><L t={“ID: “+D.pid} c={w}/><br/><L t=“FS, AF  INITIAL  ONLINE  “+D.cty.toUpperCase()+”/SNAP+TANF”/><br/><L t="REGISTERED" c="#28a060"/><B t=“EXSW” fn={()=>setS(5)}/></div>,
+<div key={5}><H t="EXPEDITED SCREENING (EXSW)"/><L t={“CASE: “+D.cn} c={w}/><br/><L t={“INCOME: “+D.ei+”  RESOURCES: $0”}/><L t={“RENT: “+D.rent+”  UTILITIES: “+(parseInt(D.elec)+parseInt(D.gas)+parseInt(D.wat)).toString().replace(/\d+/,m=>”$”+m)}/><br/><L t="EXPEDITED: YES" c={y}/><B t=“ADDR” fn={()=>setS(6)}/></div>,
+<div key={6}><H t="ADDRESS (ADDR)"/><L t={D.addr} c={w}/><L t={D.city+”, MS “+D.zip} c={w}/><L t={“EMAIL: “+D.em} c={w}/><br/><L t="SAVED" c="#28a060"/><B t=“CAP1” fn={()=>setS(7)}/></div>,
+<div key={7}><H t="CASE ACTION (CAP1)"/><L t={“CASE: “+D.cn} c={w}/><L t={“FS REC’D  “+D.bd.split(” “)[0]} c={w}/><L t={“AF REC’D  “+D.bd.split(” “)[0]} c={w}/><br/><L t={“Case #: “+D.cn} c={y}/><br/><button onClick={f} style={{…bt,background:y,color:dk,fontFamily:“monospace”,marginBottom:16}}>Return to C.A.R.S.</button></div>
+];
+return <div style={{height:“100%”,display:“flex”,flexDirection:“column”,background:dk}}>
+<div style={{background:”#0a0a1a”,padding:“4px 12px”,display:“flex”,justifyContent:“space-between”,flexShrink:0}}>
+<span style={{color:g,fontSize:11,fontFamily:“monospace”}}>MAVERICS</span>
+<span style={{color:”#444”,fontSize:10}}>Step {s+1}/8</span>
+</div>
+<div style={{flex:1,overflowY:“auto”,padding:12,fontFamily:“monospace”,fontSize:12,color:g,lineHeight:1.5}}>{sc[s]}</div>
+
+  </div>;
+}
+
+function Verify({f,b,D}){
+const[cn,setCn]=useState(””);const[ok,setOk]=useState(false);const[er,setEr]=useState(””);
+const ck=()=>{if(cn===D.cn){setOk(true);setEr(””);}else setEr(cn.length<9?“Enter 9 digits”:“NO MATCH FOUND”);};
+return <div style={{padding:“12px 14px”}}><h2 style={ts}>CASE VERIFICATION</h2>
+<div style={{textAlign:“center”,marginBottom:14}}>
+<label style={lb}>MAVS CASE #</label>
+<input value={cn} onChange={e=>{setCn(e.target.value);setEr(””);setOk(false);}} placeholder=“9-digit case #” style={{…fi,width:200,textAlign:“center”,fontSize:14,fontFamily:“monospace”,margin:“0 auto”,display:“block”,border:“2px solid “+(er?”#d43b3b”:ok?”#28a060”:”#bcc8cc”)}} onKeyDown={e=>{if(e.key===“Enter”)ck();}}/>
+{er&&<div style={{color:”#d43b3b”,fontSize:11,marginTop:3}}>{er}</div>}
+<button onClick={ck} style={{…bt,background:DK,color:”#fff”,padding:“6px 24px”,marginTop:8}}>Get IDs</button>
+</div>
+{ok&&<div style={{padding:10,background:”#f0faf4”,border:“1px solid #28a060”,borderRadius:4,marginBottom:10}}>
+<div style={{fontSize:11,fontWeight:700}}>PI: {D.fn} {D.ln}</div>
+<input readOnly value={D.pid} style={{...fi,width:160,marginTop:3}}/>
+<div style={{fontSize:11,fontWeight:700,marginTop:8}}>HH: {D.hfn} {D.hln}</div>
+<input readOnly value={D.hid} style={{...fi,width:160,marginTop:3}}/>
+</div>}
+{ok?<BN f={f} b={b}/>:<div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
+<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
+<button disabled style={{…bt,background:”#ccc”,color:”#fff”,cursor:“not-allowed”}}>Next</button>
+</div>}
+
+  </div>;
+}
+
+function Appt({f,b,D}){
+return <div style={{padding:“12px 14px”}}><h2 style={ts}>Appointment</h2>
+<div style={rw}><Fi l="Date" v={D.ad}/><Fi l="Time" v={D.at}/></div>
+<div style={rw}><Fd l="FSO/Place" v={D.fso}/><Fd l="Case Worker" v={D.wk}/></div>
+<div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
+<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
+<button onClick={b} style={{…bt,background:T,color:”#fff”}}>Previous</button>
+<button onClick={f} style={{…bt,background:”#28a060”,color:”#fff”}}>Submit</button>
+</div>
+
+  </div>;
+}
+
+function Done({D,onNext,onFinish,isLast}){
+return <div style={{padding:24,textAlign:“center”}}>
+<div style={{fontSize:48}}>✅</div>
+<h2 style={{color:”#28a060”,fontSize:18,margin:“8px 0”}}>Application Complete!</h2>
+<p style={{color:”#5a7a85”,fontSize:12,maxWidth:340,margin:“0 auto”,lineHeight:1.5}}>Case {D.cn} for {D.fn} {D.ln} registered and routed to WorkSite.</p>
+<div style={{marginTop:12,padding:10,background:”#fff8e6”,border:“1px solid #e8a820”,borderRadius:5,fontSize:11,maxWidth:340,margin:“12px auto”}}>
+Do NOT print EA-900 from CARS — creates duplicates.
+</div>
+{isLast
+?<div>
+<div style={{marginTop:12,padding:12,background:”#e6f7ff”,border:“1px solid #90d0f0”,borderRadius:6,fontSize:12,maxWidth:340,margin:“12px auto”}}>
+🎉 <strong>Session Complete!</strong> You have processed all applicants in your queue.
+</div>
+<button onClick={onFinish} style={{…bt,background:T,color:”#fff”,marginTop:16,padding:“8px 24px”,fontSize:13}}>Restart Session</button>
+</div>
+:<button onClick={onNext} style={{…bt,background:T,color:”#fff”,marginTop:20,padding:“8px 24px”,fontSize:13}}>Next Applicant →</button>
+}
+
+  </div>;
+}
+
+function TB({p}){
+const[t,setT]=useState(new Date());
+useEffect(()=>{const i=setInterval(()=>setT(new Date()),60000);return()=>clearInterval(i);},[]);
+return <div style={{height:34,background:”#0d1520”,display:“flex”,alignItems:“center”,justifyContent:“space-between”,padding:“0 10px”,borderTop:“1px solid #1a2a3a”,flexShrink:0}}>
+<div style={{display:“flex”,gap:3}}>
+<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:”#1a3050”,color:”#8ab4f8”}}>Start</span>
+{p!==“welcome”&&p!==“login”&&<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:p!==“mavs”?”#0a3d5e”:”#1a3050”,color:”#fff”}}>C.A.R.S.</span>}
+{p===“mavs”&&<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:”#0a2e0a”,color:”#00ff41”}}>MAVERICS</span>}
+</div>
+<span style={{fontSize:10,color:”#8899aa”}}>{t.toLocaleTimeString([],{hour:“2-digit”,minute:“2-digit”})}</span>
+
+  </div>;
+}
+
+function App(){
+const[p,setP]=useState(“welcome”);
+const[s,setS]=useState(0);
+const[toast,setToast]=useState(null);
+const[queue,setQueue]=useState([]);
+const[qIdx,setQIdx]=useState(0);
+const sh=useCallback((m,t)=>setToast({m,t}),[]);
+const D=queue[qIdx]||queue[0]||POOL[0];
+const pl=[“Applicant”,“Income”,“Resources”,“Questions”,“Household”,“Add’l”,“MAVS”,“Verify”,“Appt”];
+
+const startSession=()=>{
+const q=buildQueue();
+setQueue(q);
+setQIdx(0);
+setP(“login”);
+};
+
+const nextApplicant=()=>{
+const next=qIdx+1;
+setQIdx(next);
+setS(0);
+setP(“dash”);
+sh(“Next applicant loaded — “+queue[next].fn+” “+queue[next].ln,“ok”);
+};
+
+const wrap=(st,ch)=><div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
+<Hdr banner D={D}/>
+<Prg s={st} l={pl}/>
+<div style={{flex:1,overflowY:“auto”,background:”#fff”}}>{ch}</div>
+
+  </div>;
+
+const body=()=>{
+if(p===“welcome”)return <Welcome f={startSession}/>;
+if(p===“login”)return <Login f={()=>{setP(“dash”);sh(“Welcome, J. Mitchell”,“ok”);}}/>;
+if(p===“dash”)return <div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
+<Hdr D={D}/>
+<div style={{flex:1,overflowY:“auto”,background:”#f0f4f6”}}>
+<Dash queue={queue} qIdx={qIdx} f={()=>{setP(“cars”);setS(0);sh(D.fn+” “+D.ln+” — Application loaded”,“ok”);}}/>
+</div>
+</div>;
+if(p===“cars”){
+const sc=[
+<S1 key={0} f={()=>setS(1)} D={D}/>,
+<S2 key={1} f={()=>setS(2)} b={()=>setS(0)} D={D}/>,
+<S3 key={2} f={()=>setS(3)} b={()=>setS(1)} D={D}/>,
+<S4 key={3} f={()=>setS(4)} b={()=>setS(2)}/>,
+<S5 key={4} f={()=>setS(5)} b={()=>setS(3)} D={D}/>,
+<S6 key={5} f={()=>{setP(“mavs”);sh(“Switch to MAVERICS terminal”,“warn”);}} b={()=>setS(4)}/>
+];
+return wrap(s,sc[s]);
+}
+if(p===“mavs”)return <Mavs f={()=>{setP(“vfy”);setS(0);sh(“Enter case # in CARS to verify”,“ok”);}} D={D}/>;
+if(p===“vfy”){
+const v=[
+<Verify key={0} f={()=>{setS(1);sh(“IDs verified — schedule appointment”,“ok”);}} b={()=>{}} D={D}/>,
+<Appt key={1} f={()=>{setP(“done”);sh(“Submitted!”,“ok”);}} b={()=>setS(0)} D={D}/>
+];
+return wrap(7+s,v[s]);
+}
+if(p===“done”){
+const isLast=qIdx>=queue.length-1;
+return <div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
+<Hdr D={D}/>
+<div style={{flex:1,overflowY:“auto”}}>
+<Done D={D} onNext={nextApplicant} onFinish={()=>{setP(“welcome”);setS(0);setQIdx(0);}} isLast={isLast}/>
+</div>
+</div>;
+}
+return null;
+};
+
+return <div style={{width:“100%”,height:“100vh”,display:“flex”,flexDirection:“column”,background:”#000”,overflow:“hidden”}}>
+<div style={{flex:1,overflow:“hidden”,display:“flex”,flexDirection:“column”}}>{body()}</div>
+<TB p={p}/>
+{toast&&<Toast msg={toast.m} type={toast.t} onClose={()=>setToast(null)}/>}
+
+  </div>;
+}
+
+ReactDOM.createRoot(document.getElementById(‘root’)).render(<App/>);
+</script>
+
+</body>
+</html>
