@@ -78,17 +78,6 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .login-field input{width:100%;padding:9px 10px;border:1px solid #bcc8cc;border-radius:2px;font-size:14px;font-family:inherit}
 .login-err{color:#d43b3b;font-size:11px;margin-bottom:8px;background:#fef2f2;padding:4px 8px;border-radius:3px}
 .login-btn{width:100%;padding:9px;font-size:14px;border-radius:4px;border:none;background:#3a8fa0;color:#fff;cursor:pointer;font-weight:700;font-family:inherit}
-.dash-wrap{padding:16px}
-.dash-title{text-align:center;font-size:18px;color:#3a8fa0;font-weight:700;margin-bottom:4px}
-.dash-sub{text-align:center;font-size:11px;color:#5a7a85;margin-bottom:14px}
-.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:580px;margin:0 auto}
-.dash-tile{background:#fff;border-radius:6px;padding:14px;text-align:center;border:1px solid #d0dce0}
-.dash-tile.hl{border:2px solid #3a8fa0}
-.tile-icon{font-size:24px;margin-bottom:4px}
-.tile-title{font-size:12px;font-weight:700;color:#2a6a78}
-.tile-desc{font-size:9px;color:#7a9aa5;margin-top:2px;margin-bottom:8px;font-style:italic}
-.tile-btn{width:100%;padding:7px;font-size:11px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff}
-.tile-btn:disabled{background:#ccc;cursor:not-allowed}
 .mavs-wrap{height:100%;display:flex;flex-direction:column;background:#0d0d1a}
 .mavs-bar{background:#0a0a1a;padding:4px 12px;display:flex;justify-content:space-between;flex-shrink:0}
 .mavs-title{color:#00ff41;font-size:11px;font-family:monospace}
@@ -108,6 +97,8 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .verify-result{padding:10px;background:#f0faf4;border:1px solid #28a060;border-radius:4px;margin-bottom:10px}
 .verify-result .vname{font-size:11px;font-weight:700;margin-bottom:3px}
 .verify-result input{width:160px;padding:5px 8px;border:1px solid #bcc8cc;border-radius:2px;font-size:12px;font-family:monospace;background:#fafafa;margin-top:2px;display:block}
+.appt-rules{background:#e6f7ff;border:1px solid #90d0f0;border-radius:5px;padding:10px 12px;font-size:11px;margin-bottom:14px;line-height:1.8}
+.appt-err{display:none;background:#fef2f2;border:1px solid #e8a0a0;border-radius:4px;padding:10px 12px;font-size:12px;color:#8b0000;margin-top:8px;line-height:1.8}
 .done-wrap{padding:24px;text-align:center}
 .done-icon{font-size:48px;margin-bottom:8px}
 .done-title{color:#28a060;font-size:18px;font-weight:700;margin-bottom:8px}
@@ -133,17 +124,17 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
         <div style="text-align:center;margin-bottom:12px">
           <div style="font-size:24px;font-weight:800;color:#2a6a78;letter-spacing:3px">C.A.R.S.</div>
           <div style="font-size:11px;color:#5a7a85;font-style:italic">Interactive Training Simulator</div>
-          <div style="font-size:10px;color:#999;margin-top:4px">Eligibility Clerk Training — Chapter 1</div>
+          <div style="font-size:10px;color:#999;margin-top:4px">Eligibility Clerk Training &mdash; Chapter 1</div>
         </div>
         <div class="disc"><strong>LEGAL DISCLAIMER:</strong> This is a training simulation only. It is NOT the official C.A.R.S., MAVERICS, or BCS system and has no connection to any live MDHS database. All client data is entirely fictional. For internal training and onboarding purposes only. Not to be distributed publicly or sold commercially. System names and workflows are property of MDHS and/or their respective vendors, used here strictly for educational training of authorized personnel. No real case actions are performed and no data is transmitted or stored.</div>
         <div class="conf"><strong>CONFIDENTIALITY NOTICE:</strong> All real client information in actual MDHS systems is confidential and protected under state and federal law. This simulation uses only fictional data. Do not use real client information in any training context.</div>
-        <div class="agree-row" id="agree-row" onclick="toggleAgree()">
+        <div class="agree-row" onclick="toggleAgree()">
           <div class="agree-chk" id="agree-chk"></div>
           <span>I understand this is a training simulation and agree to the terms above.</span>
         </div>
         <div id="agree-content" style="display:none;margin-top:12px">
-          <div class="info-box"><strong>Workflow:</strong> Login &rarr; Dashboard &rarr; 6 CARS screens &rarr; MAVERICS (8 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session.</div>
-          <div class="cred-box"><strong>Login:</strong> <code>jmitchell</code> / <code>MDHS2026!</code></div>
+          <div class="info-box"><strong>Workflow:</strong> Login &rarr; 6 CARS screens &rarr; MAVERICS (8 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session.</div>
+          <div class="cred-box"><strong>Login:</strong> <code>ETrainee</code> / <code>MDHS2026!</code></div>
           <button class="big-btn" onclick="startSession()">Begin Training</button>
         </div>
       </div>
@@ -172,41 +163,12 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
   </div>
 
-  <!-- DASHBOARD -->
-
-  <div id="pg-dash" class="pg">
-    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
-    <div class="scroll" style="background:#f0f4f6">
-      <div class="dash-wrap">
-        <div class="dash-title">Dashboard</div>
-        <div class="dash-sub" id="dash-sub">Queue: loading...</div>
-        <div class="dash-grid">
-          <div class="dash-tile hl">
-            <div class="tile-icon">&#128203;</div>
-            <div class="tile-title">Online Registration</div>
-            <div class="tile-desc">Process new digital applications</div>
-            <button class="tile-btn" id="dash-next-btn" onclick="startApplication()">Next Application</button>
-          </div>
-          <div class="dash-tile"><div class="tile-icon">&#9999;&#65039;</div><div class="tile-title">Manual Entry</div><div class="tile-desc">Process new paper applications</div><button class="tile-btn" disabled>Coming Soon</button></div>
-          <div class="dash-tile"><div class="tile-icon">&#128209;</div><div class="tile-title">Online Claims</div><div class="tile-desc">Submit a SNAP / TANF claim</div><button class="tile-btn" disabled>Submit a Claim</button></div>
-          <div class="dash-tile"><div class="tile-icon">&#8987;</div><div class="tile-title">Client Pre-Registration</div><div class="tile-desc">Missing SSN / Receiving benefits</div><button class="tile-btn" disabled>Queue</button></div>
-          <div class="dash-tile"><div class="tile-icon">&#128205;</div><div class="tile-title">Client Address Verify</div><div class="tile-desc">Verify Client with Address</div><button class="tile-btn" disabled>Verify</button></div>
-          <div class="dash-tile"><div class="tile-icon">&#128194;</div><div class="tile-title">My Cases</div><div class="tile-desc">View Assigned Cases</div><button class="tile-btn" disabled>View Queue</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- CARS SCREENS (S1-S6) -->
+  <!-- CARS SCREENS -->
 
   <div id="pg-cars" class="pg">
-    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
-    <div class="hdr-banner">
-      <span id="cars-bdate"></span>
-      <span class="exp">EXPEDITE: YES</span>
-      <span>CLIENT DOCUMENT: YES</span>
-    </div>
-    <div class="prg-wrap"><div class="prg-row" id="prg-row"></div></div>
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
+    <div class="hdr-banner"><span id="cars-bdate"></span><span class="exp">EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span></div>
+    <div class="prg-wrap"><div class="prg-row" id="prg-cars"></div></div>
     <div class="scroll"><div class="pad" id="cars-body"></div></div>
   </div>
 
@@ -219,23 +181,19 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
   </div>
 
-  <!-- VERIFY / APPT (reuses cars layout) -->
+  <!-- VERIFY + APPT -->
 
   <div id="pg-vfy" class="pg">
-    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
-    <div class="hdr-banner">
-      <span id="vfy-bdate"></span>
-      <span class="exp">EXPEDITE: YES</span>
-      <span>CLIENT DOCUMENT: YES</span>
-    </div>
-    <div class="prg-wrap"><div class="prg-row" id="prg-row-vfy"></div></div>
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
+    <div class="hdr-banner"><span id="vfy-bdate"></span><span class="exp">EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span></div>
+    <div class="prg-wrap"><div class="prg-row" id="prg-vfy"></div></div>
     <div class="scroll"><div class="pad" id="vfy-body"></div></div>
   </div>
 
   <!-- DONE -->
 
   <div id="pg-done" class="pg">
-    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
     <div class="scroll">
       <div class="done-wrap">
         <div class="done-icon">&#9989;</div>
@@ -258,14 +216,10 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
     <span id="tb-time"></span>
   </div>
-
-  <!-- TOAST -->
-
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
-// ── DATA ────────────────────────────────────────────────────────────────────
 var POOL = [
   {fn:"Tameka",mn:"R",ln:"Holloway",ssn:"428-76-3391",dob:"06/14/1989",age:36,gender:"Female",addr:"1247 MAGNOLIA CREEK DR",city:"HATTIESBURG",zip:"39401",cty:"Forrest",p1:"(601) 482-7193",p1t:"Home",p2:"(601) 555-0214",p2t:"Cell",em:"tameka.holloway89@gmail.com",ei:"$620.00",rent:"$675.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$55.00",hfn:"Jaylen",hln:"Holloway",hrel:"Child",hssn:"428-91-5567",hdob:"03/22/2019",hage:"7 years",hgen:"Male",cn:"307224189",pid:"261003847",hid:"261003902",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
   {fn:"Darnell",mn:"T",ln:"Washington",ssn:"512-44-8821",dob:"03/02/1985",age:41,gender:"Male",addr:"834 OAK GROVE RD",city:"JACKSON",zip:"39201",cty:"Hinds",p1:"(601) 334-7720",p1t:"Cell",p2:"",p2t:"N/A",em:"dwashington85@yahoo.com",ei:"$0.00",rent:"$550.00",elec:"$80.00",gas:"$0.00",wat:"$25.00",ph:"$45.00",hfn:"Mia",hln:"Washington",hrel:"Child",hssn:"512-91-3304",hdob:"07/11/2015",hage:"10 years",hgen:"Female",cn:"307224200",pid:"261003900",hid:"261003960",wk:"JAMES REED",fso:"HINDS COUNTY DHS"},
@@ -289,360 +243,362 @@ var POOL = [
   {fn:"Quinton",mn:"B",ln:"Adams",ssn:"541-88-2234",dob:"05/22/1982",age:43,gender:"Male",addr:"371 IRONWOOD DR",city:"SOUTHAVEN",zip:"38671",cty:"DeSoto",p1:"(662) 349-7701",p1t:"Home",p2:"",p2t:"N/A",em:"qadams82@hotmail.com",ei:"$0.00",rent:"$950.00",elec:"$140.00",gas:"$70.00",wat:"$45.00",ph:"$65.00",hfn:"Dominic",hln:"Adams",hrel:"Child",hssn:"541-90-5578",hdob:"08/07/2016",hage:"9 years",hgen:"Male",cn:"307226178",pid:"261005800",hid:"261005861",wk:"TAMARA WEST",fso:"DESOTO COUNTY DHS"}
 ];
 
-// ── STATE ───────────────────────────────────────────────────────────────────
-var state = {
-  agreed: false,
-  queue: [],
-  qIdx: 0,
-  carsStep: 0,
-  mavsStep: 0,
-  vfyStep: 0,
-  verifyOk: false
-};
+var state = { agreed:false, queue:[], qIdx:0, carsStep:0, mavsStep:0, vfyStep:0 };
 
 function D() { return state.queue[state.qIdx] || POOL[0]; }
 
 function buildQueue() {
-  var shuffled = POOL.slice().sort(function() { return Math.random() - 0.5; });
-  var size = Math.floor(Math.random() * 2) + 3;
+  var s = POOL.slice().sort(function(){ return Math.random()-0.5; });
+  var n = Math.floor(Math.random()*2)+3;
   var now = new Date();
-  var bd = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}) + ' 09:22 AM';
-  var appt = new Date();
-  appt.setDate(appt.getDate() + 3);
-  while (appt.getDay() === 0 || appt.getDay() === 6) appt.setDate(appt.getDate() + 1);
-  var ad = appt.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
-  return shuffled.slice(0, size).map(function(a) {
-    return Object.assign({}, a, { bd: bd, ad: ad, at: '9:30 AM' });
-  });
+  var bd = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'})+' 09:22 AM';
+  return s.slice(0,n).map(function(a){ return Object.assign({},a,{bd:bd}); });
 }
 
-// ── HELPERS ─────────────────────────────────────────────────────────────────
 function show(id) {
   var pages = document.querySelectorAll('.pg');
-  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('on');
+  for(var i=0;i<pages.length;i++) pages[i].classList.remove('on');
   document.getElementById(id).classList.add('on');
-  updateTaskbar(id);
-}
-
-function updateTaskbar(id) {
-  document.getElementById('tb-cars').style.display = (id === 'pg-cars' || id === 'pg-vfy' || id === 'pg-done' || id === 'pg-dash') ? 'inline-block' : 'none';
-  document.getElementById('tb-mavs').style.display = (id === 'pg-mavs') ? 'inline-block' : 'none';
+  document.getElementById('tb-cars').style.display = (id==='pg-cars'||id==='pg-vfy'||id==='pg-done') ? 'inline-block' : 'none';
+  document.getElementById('tb-mavs').style.display = (id==='pg-mavs') ? 'inline-block' : 'none';
 }
 
 function toast(msg, type) {
   var t = document.getElementById('toast');
-  t.className = 'toast ' + (type || 'ok');
+  t.className = 'toast '+(type||'ok');
   t.textContent = msg;
   t.style.display = 'block';
-  setTimeout(function() { t.style.display = 'none'; }, 3500);
-}
-
-function fi(label, val, flex) {
-  var f = flex ? 'flex:' + flex : 'flex:1';
-  return '<div class="f" style="' + f + ';min-width:80px"><label>' + label + '</label><input readonly value="' + (val || '') + '"></div>';
-}
-function fd(label, val) {
-  return '<div class="f" style="flex:1;min-width:80px"><label>' + label + '</label><select disabled><option>' + (val || '') + '</option></select></div>';
-}
-function radio(val, opts) {
-  opts = opts || ['YES', 'NO'];
-  return '<span class="radio">' + opts.map(function(o) {
-    return '<span><span class="rdot' + (val === o ? ' on' : '') + '"></span>' + o + '</span>';
-  }).join('') + '</span>';
-}
-function qrow(q, v) {
-  return '<div class="qrow"><span class="qt">' + q + '</span>' + radio(v || 'NO') + '</div>';
-}
-function btnRow(html) {
-  return '<div class="btn-row">' + html + '</div>';
-}
-
-var PRG_LABELS = ['Applicant','Income','Resources','Questions','Household',"Add'l",'MAVS','Verify','Appt'];
-
-function renderPrg(el, cur) {
-  el.innerHTML = PRG_LABELS.map(function(n, i) {
-    var barCls = i < cur ? 'done' : (i === cur ? 'cur' : '');
-    var lblCls = i <= cur ? 'lit' : '';
-    return '<div class="prg-step' + (i === cur ? ' active' : (i < cur ? ' done' : '')) + '">' +
-      '<div class="prg-bar ' + barCls + '"></div>' +
-      '<div class="prg-lbl ' + lblCls + '">' + n + '</div></div>';
-  }).join('');
+  setTimeout(function(){ t.style.display='none'; }, 3500);
 }
 
 function updateTime() {
   var t = new Date();
-  document.getElementById('tb-time').textContent = t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+  document.getElementById('tb-time').textContent = t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
 }
 setInterval(updateTime, 60000);
 updateTime();
 
-// ── WELCOME ─────────────────────────────────────────────────────────────────
-function toggleAgree() {
-  state.agreed = !state.agreed;
-  var chk = document.getElementById('agree-chk');
-  chk.className = 'agree-chk' + (state.agreed ? ' on' : '');
-  chk.textContent = state.agreed ? '\u2713' : '';
-  document.getElementById('agree-content').style.display = state.agreed ? 'block' : 'none';
+var PRG = ['Applicant','Income','Resources','Questions','Household',"Add'l",'MAVS','Verify','Appt'];
+function renderPrg(elId, cur) {
+  document.getElementById(elId).innerHTML = PRG.map(function(n,i){
+    var b = i<cur?'done':(i===cur?'cur':'');
+    var l = i<=cur?'lit':'';
+    return '<div class="prg-step"><div class="prg-bar '+b+'"></div><div class="prg-lbl '+l+'">'+n+'</div></div>';
+  }).join('');
 }
 
+function fi(lbl,val,flex) {
+  return '<div class="f" style="flex:'+(flex||1)+';min-width:80px"><label>'+lbl+'</label><input readonly value="'+(val||'')+'"></div>';
+}
+function fd(lbl,val) {
+  return '<div class="f" style="flex:1;min-width:80px"><label>'+lbl+'</label><select disabled><option>'+(val||'')+'</option></select></div>';
+}
+function radio(val,opts) {
+  opts = opts||['YES','NO'];
+  return '<span class="radio">'+opts.map(function(o){
+    return '<span><span class="rdot'+(val===o?' on':'')+'"></span>'+o+'</span>';
+  }).join('')+'</span>';
+}
+function qrow(q,v) {
+  return '<div class="qrow"><span class="qt">'+q+'</span>'+radio(v||'NO')+'</div>';
+}
+function btnRow(html) {
+  return '<div class="btn-row">'+html+'</div>';
+}
+
+// WELCOME
+function toggleAgree() {
+  state.agreed = !state.agreed;
+  var c = document.getElementById('agree-chk');
+  c.className = 'agree-chk'+(state.agreed?' on':'');
+  c.textContent = state.agreed ? '\u2713' : '';
+  document.getElementById('agree-content').style.display = state.agreed ? 'block' : 'none';
+}
 function startSession() {
   state.queue = buildQueue();
   state.qIdx = 0;
   show('pg-login');
 }
 
-// ── LOGIN ────────────────────────────────────────────────────────────────────
+// LOGIN
 function doLogin() {
   var u = document.getElementById('login-u').value.trim().toLowerCase();
   var p = document.getElementById('login-p').value;
   var err = document.getElementById('login-err');
-  if (u === 'jmitchell' && p === 'MDHS2026!') {
+  if (u==='etrainee' && p==='MDHS2026!') {
     err.style.display = 'none';
     document.getElementById('login-u').value = '';
     document.getElementById('login-p').value = '';
-    updateDash();
-    show('pg-dash');
-    toast('Welcome, J. Mitchell', 'ok');
+    state.carsStep = 0;
+    renderCars();
+    document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
+    show('pg-cars');
+    toast(D().fn+' '+D().ln+' \u2014 Application loaded','ok');
   } else {
-    err.textContent = 'Invalid credentials.';
+    err.textContent = 'Invalid credentials. Please try again.';
     err.style.display = 'block';
   }
 }
 
-// ── DASHBOARD ────────────────────────────────────────────────────────────────
-function updateDash() {
-  var rem = state.queue.length - state.qIdx;
-  var sub = document.getElementById('dash-sub');
-  sub.innerHTML = 'Queue: <strong style="color:#2a6a78">' + rem + ' applicant' + (rem !== 1 ? 's' : '') + ' remaining</strong> this session';
-  var btn = document.getElementById('dash-next-btn');
-  if (rem === 0) { btn.textContent = 'Queue Empty'; btn.disabled = true; }
-  else { btn.textContent = 'Next Application'; btn.disabled = false; }
-}
-
-function startApplication() {
-  state.carsStep = 0;
-  renderCars();
-  document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: ' + D().bd;
-  show('pg-cars');
-  toast(D().fn + ' ' + D().ln + ' — Application loaded', 'ok');
-}
-
-// ── CARS SCREENS ─────────────────────────────────────────────────────────────
+// CARS
 function renderCars() {
+  renderPrg('prg-cars', state.carsStep);
   var d = D();
-  renderPrg(document.getElementById('prg-row'), state.carsStep);
-  var body = document.getElementById('cars-body');
+  var b = document.getElementById('cars-body');
   var s = state.carsStep;
-
-  if (s === 0) {
-    body.innerHTML =
-      '<h2 class="sec-title">DIGITAL APPLICANT INFORMATION</h2>' +
-      '<div class="sub">Demographics</div>' +
-      '<div class="row">' + fi('First Name', d.fn) + fi('Middle Name', d.mn) + fi('Last Name', d.ln) + fd('Suffix','Select Suffix') + '</div>' +
-      '<div class="row">' + fi('SSN', d.ssn) + fi('Date of Birth', d.dob) +
-        '<div class="f" style="flex:1;min-width:120px"><label>Applying For</label><div class="check-row" style="display:flex;gap:10px;padding:4px 0">' +
-        '<span class="chk"><span class="chk-box">&#10003;</span> SNAP</span>' +
-        '<span class="chk"><span class="chk-box">&#10003;</span> TANF</span></div></div>' +
-        fd('Language','English') + '</div>' +
-      '<div class="sub">Contact Information</div>' +
-      '<div class="row">' + fi('Home Address 1', d.addr) + fi('Home Address 2','') + fi('Home City', d.city) + fd('Home State','Mississippi') + '</div>' +
-      '<div class="row">' + fi('Zip Code', d.zip) + fd('County', d.cty) +
-        '<div class="f" style="flex:2;min-width:160px;justify-content:flex-end;padding-bottom:4px"><span class="chk"><span class="chk-box">&#10003;</span> Mailing same as Residence</span></div></div>' +
-      '<div class="row">' + fi('Mailing Address', d.addr) + fi('Mailing City', d.city) + fd('Mailing State','Mississippi') + fi('Mailing Zip', d.zip) + '</div>' +
-      '<div class="row">' + fi('Phone', d.p1) + fd('Type', d.p1t) + fi('Phone 2', d.p2) + fd('Type', d.p2t) + '</div>' +
-      '<div class="row"><div class="f" style="flex:1;min-width:100px"><label>E-Notices?</label>' + radio('Yes',['Yes','No']) + '</div>' + fi('Email', d.em) + '</div>' +
-      btnRow('<button class="bc btn">Cancel</button><button class="bd btn">Move to ESAP</button><button class="bp btn">Pre-Register</button><button class="bn btn" onclick="carsNext()">Next</button>');
-  }
-
-  else if (s === 1) {
-    var hasIncome = d.ei !== '$0.00';
-    body.innerHTML =
-      '<h2 class="sec-title">INCOME</h2>' +
-      qrow('Earned income (wages, tips, bonuses, self-employment)?', hasIncome ? 'YES' : 'NO') +
-      (hasIncome ? '<div style="padding:2px 0 6px 16px;font-size:12px">Amount: <strong>' + d.ei + '</strong></div>' : '') +
-      qrow('Unearned income (SS, disability, VA, pensions, child support)?','NO') +
-      qrow('Expect income later this month?','NO') +
-      qrow('Only income from migrant/seasonal farm work?','NO') +
+  if (s===0) {
+    b.innerHTML =
+      '<h2 class="sec-title">DIGITAL APPLICANT INFORMATION</h2>'+
+      '<div class="sub">Demographics</div>'+
+      '<div class="row">'+fi('First Name',d.fn)+fi('Middle Name',d.mn)+fi('Last Name',d.ln)+fd('Suffix','Select Suffix')+'</div>'+
+      '<div class="row">'+fi('SSN',d.ssn)+fi('Date of Birth',d.dob)+
+        '<div class="f" style="flex:1;min-width:120px"><label>Applying For</label><div style="display:flex;gap:10px;padding:4px 0">'+
+        '<span class="chk"><span class="chk-box">&#10003;</span> SNAP</span>'+
+        '<span class="chk"><span class="chk-box">&#10003;</span> TANF</span></div></div>'+
+        fd('Language','English')+'</div>'+
+      '<div class="sub">Contact Information</div>'+
+      '<div class="row">'+fi('Home Address 1',d.addr)+fi('Home Address 2','')+fi('Home City',d.city)+fd('Home State','Mississippi')+'</div>'+
+      '<div class="row">'+fi('Zip Code',d.zip)+fd('County',d.cty)+
+        '<div class="f" style="flex:2;min-width:160px;justify-content:flex-end;padding-bottom:4px"><span class="chk"><span class="chk-box">&#10003;</span> Mailing same as Residence</span></div></div>'+
+      '<div class="row">'+fi('Mailing Address',d.addr)+fi('Mailing City',d.city)+fd('Mailing State','Mississippi')+fi('Mailing Zip',d.zip)+'</div>'+
+      '<div class="row">'+fi('Phone',d.p1)+fd('Type',d.p1t)+fi('Phone 2',d.p2)+fd('Type',d.p2t)+'</div>'+
+      '<div class="row"><div class="f" style="flex:1;min-width:100px"><label>E-Notices?</label>'+radio('Yes',['Yes','No'])+'</div>'+fi('Email',d.em)+'</div>'+
+      btnRow('<button class="bc">Cancel</button><button class="bd">Move to ESAP</button><button class="bp">Pre-Register</button><button class="bn" onclick="carsNext()">Next</button>');
+  } else if (s===1) {
+    var hi = d.ei!=='$0.00';
+    b.innerHTML =
+      '<h2 class="sec-title">INCOME</h2>'+
+      qrow('Earned income (wages, tips, bonuses, self-employment)?',hi?'YES':'NO')+
+      (hi?'<div style="padding:2px 0 6px 16px;font-size:12px">Amount: <strong>'+d.ei+'</strong></div>':'')+
+      qrow('Unearned income (SS, disability, VA, pensions, child support)?','NO')+
+      qrow('Expect income later this month?','NO')+
+      qrow('Only income from migrant/seasonal farm work?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
-  }
-
-  else if (s === 2) {
-    body.innerHTML =
-      '<h2 class="sec-title">RESOURCES</h2>' +
-      qrow('Cash, checking/savings, IRA, stocks, vehicles, property, land?','NO') +
-      '<h2 class="sec-title" style="margin-top:14px">EXPENSES</h2>' +
-      '<div class="row">' + fi('Rent/Mortgage', d.rent) + fi('Electricity', d.elec) + fi('Gas', d.gas) + '</div>' +
-      '<div class="row">' + fi('Water', d.wat) + fi('Phone', d.ph) + '</div>' +
-      qrow('Pay for dependent child/disabled member care?','NO') +
-      qrow('Anyone 60+ or disabled with medical expenses over $35?','NO') +
+  } else if (s===2) {
+    b.innerHTML =
+      '<h2 class="sec-title">RESOURCES</h2>'+
+      qrow('Cash, checking/savings, IRA, stocks, vehicles, property, land?','NO')+
+      '<h2 class="sec-title" style="margin-top:14px">EXPENSES</h2>'+
+      '<div class="row">'+fi('Rent/Mortgage',d.rent)+fi('Electricity',d.elec)+fi('Gas',d.gas)+'</div>'+
+      '<div class="row">'+fi('Water',d.wat)+fi('Phone',d.ph)+'</div>'+
+      qrow('Pay for dependent child/disabled member care?','NO')+
+      qrow('Anyone 60+ or disabled with medical expenses over $35?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
-  }
-
-  else if (s === 3) {
-    body.innerHTML =
-      '<h2 class="sec-title">ADDITIONAL QUESTIONS</h2>' +
-      qrow('Deaf, hearing impaired, or need interpreter?','NO') +
-      qrow('SNAP disqualification for fraud?','NO') +
-      qrow('Hiding from law, jail for felony, violating parole?','NO') +
-      qrow('Commercial boarding home resident?','NO') +
-      qrow('On strike?','NO') +
+  } else if (s===3) {
+    b.innerHTML =
+      '<h2 class="sec-title">ADDITIONAL QUESTIONS</h2>'+
+      qrow('Deaf, hearing impaired, or need interpreter?','NO')+
+      qrow('SNAP disqualification for fraud?','NO')+
+      qrow('Hiding from law, jail for felony, violating parole?','NO')+
+      qrow('Commercial boarding home resident?','NO')+
+      qrow('On strike?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
-  }
-
-  else if (s === 4) {
-    body.innerHTML =
-      '<h2 class="sec-title">HOUSEHOLD INFORMATION</h2>' +
-      '<div class="sub">Head Of Household (PI)</div>' +
-      '<div class="row">' + fi('First Name', d.fn) + fi('Last Name', d.ln) + fd('Relationship','Primary Individual') + '</div>' +
-      '<div class="row">' + fi('SSN', d.ssn) + fi('DOB', d.dob) + fi('Age', d.age + ' yrs', '0.4') + fd('Gender', d.gender) + '</div>' +
-      '<div style="border-top:1px solid #e0e8ec;padding-top:8px;margin-top:4px">' +
-      '<div class="sub">Household Members</div>' +
-      '<div class="row">' + fi('First Name', d.hfn) + fi('Last Name', d.hln) + fd('Relationship', d.hrel) + '</div>' +
-      '<div class="row">' + fi('SSN', d.hssn) + fi('DOB', d.hdob) + fi('Age', d.hage, '0.4') + fd('Gender', d.hgen) + '</div></div>' +
+  } else if (s===4) {
+    b.innerHTML =
+      '<h2 class="sec-title">HOUSEHOLD INFORMATION</h2>'+
+      '<div class="sub">Head Of Household (PI)</div>'+
+      '<div class="row">'+fi('First Name',d.fn)+fi('Last Name',d.ln)+fd('Relationship','Primary Individual')+'</div>'+
+      '<div class="row">'+fi('SSN',d.ssn)+fi('DOB',d.dob)+fi('Age',d.age+' yrs',0.4)+fd('Gender',d.gender)+'</div>'+
+      '<div style="border-top:1px solid #e0e8ec;padding-top:8px;margin-top:4px">'+
+      '<div class="sub">Household Members</div>'+
+      '<div class="row">'+fi('First Name',d.hfn)+fi('Last Name',d.hln)+fd('Relationship',d.hrel)+'</div>'+
+      '<div class="row">'+fi('SSN',d.hssn)+fi('DOB',d.hdob)+fi('Age',d.hage,0.4)+fd('Gender',d.hgen)+'</div></div>'+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
-  }
-
-  else if (s === 5) {
-    body.innerHTML =
-      '<h2 class="sec-title">ADDITIONAL APPLICATION INFORMATION</h2>' +
-      '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">Household members not included on application</p>' +
-      '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">' +
-        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Authorized Rep</div>' +
-        '<div class="row">' + fi('First','') + fi('Last','') + fi('Phone','') + '</div></div>' +
-        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Benefit Rep</div>' +
-        '<div class="row">' + fi('First','') + fi('Last','') + fi('Phone','') + '</div></div></div>' +
-      '<div style="font-size:12px;margin-bottom:10px">Copy preference: ' + radio('Electronic',['Paper','Electronic','Refuse']) + '</div>' +
+  } else if (s===5) {
+    b.innerHTML =
+      '<h2 class="sec-title">ADDITIONAL APPLICATION INFORMATION</h2>'+
+      '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">Household members not included on application</p>'+
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">'+
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Authorized Rep</div>'+
+        '<div class="row">'+fi('First','')+fi('Last','')+fi('Phone','')+'</div></div>'+
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Benefit Rep</div>'+
+        '<div class="row">'+fi('First','')+fi('Last','')+fi('Phone','')+'</div></div></div>'+
+      '<div style="font-size:12px;margin-bottom:10px">Copy preference: '+radio('Electronic',['Paper','Electronic','Refuse'])+'</div>'+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="goMavs()">Next</button>');
   }
+  document.querySelector('#pg-cars .scroll').scrollTop = 0;
 }
 
-function carsNext() {
-  state.carsStep++;
-  renderCars();
-  document.querySelector('.scroll').scrollTop = 0;
-}
-function carsPrev() {
-  state.carsStep--;
-  renderCars();
-  document.querySelector('.scroll').scrollTop = 0;
-}
+function carsNext() { state.carsStep++; renderCars(); }
+function carsPrev() { state.carsStep--; renderCars(); }
 function goMavs() {
   state.mavsStep = 0;
   renderMavs();
   show('pg-mavs');
-  toast('Switch to MAVERICS terminal', 'warn');
+  toast('Switch to MAVERICS terminal','warn');
 }
 
-// ── MAVERICS ─────────────────────────────────────────────────────────────────
+// MAVERICS
 function renderMavs() {
   var d = D();
   var s = state.mavsStep;
-  document.getElementById('mavs-step').textContent = 'Step ' + (s + 1) + '/8';
+  document.getElementById('mavs-step').textContent = 'Step '+(s+1)+'/8';
   var sep = '<div class="mavs-sep">============================================</div>';
   var html = '';
-
-  if (s === 0) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;FULL SERVICE CLERICAL MENU (FUSC)</div>' + sep + '<br>' +
-      '<div>&nbsp;&nbsp;1. GENERAL INQUIRIES</div>' +
-      '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">-&gt; 2. APPLICATION REGISTRATION</div>' +
-      '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div><div>&nbsp;&nbsp;4. ADD PROGRAM</div><div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>' +
+  if (s===0) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;FULL SERVICE CLERICAL MENU (FUSC)</div>'+sep+'<br>'+
+      '<div>&nbsp;&nbsp;1. GENERAL INQUIRIES</div>'+
+      '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">-&gt; 2. APPLICATION REGISTRATION</div>'+
+      '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div><div>&nbsp;&nbsp;4. ADD PROGRAM</div><div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>'+
       '<button class="mavs-btn" onclick="mavsNext()">Select 2</button>';
-  } else if (s === 1) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CLIENT INQUIRY (CLIR)</div>' + sep + '<br>' +
-      '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div><div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div><div>&nbsp;&nbsp;3. EXISTING CASE #</div><div>&nbsp;&nbsp;4. NEW CASE #</div><div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>' +
-      '<div class="mavs-dim">' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '&nbsp;&nbsp;DOB: ' + d.dob + '</div><br>' +
+  } else if (s===1) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;CLIENT INQUIRY (CLIR)</div>'+sep+'<br>'+
+      '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div><div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div>'+
+      '<div>&nbsp;&nbsp;3. EXISTING CASE #</div><div>&nbsp;&nbsp;4. NEW CASE #</div><div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>'+
+      '<div class="mavs-dim">'+d.ln.toUpperCase()+', '+d.fn.toUpperCase()+'&nbsp;&nbsp;DOB: '+d.dob+'</div><br>'+
       '<button class="mavs-btn" onclick="mavsNext()">Inquire (1)</button>';
-  } else if (s === 2) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CLIS - SHORT LIST</div>' + sep + '<br>' +
-      '<div class="mavs-warn">NO CLIENTS FOUND</div><br>' +
-      '<div class="mavs-dim">SSN: ' + d.ssn + '&nbsp;&nbsp;DOB: ' + d.dob + '</div><br>' +
+  } else if (s===2) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;CLIS - SHORT LIST</div>'+sep+'<br>'+
+      '<div class="mavs-warn">NO CLIENTS FOUND</div><br>'+
+      '<div class="mavs-dim">SSN: '+d.ssn+'&nbsp;&nbsp;DOB: '+d.dob+'</div><br>'+
       '<button class="mavs-btn" onclick="mavsNext()">Save New Client (2)</button>';
-  } else if (s === 3) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;DRS INQUIRY</div>' + sep + '<br>' +
-      '<div>' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '</div><br>' +
-      '<div class="mavs-ok">NO DISQUALIFICATIONS</div><br>' +
+  } else if (s===3) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;DRS INQUIRY</div>'+sep+'<br>'+
+      '<div>'+d.ln.toUpperCase()+', '+d.fn.toUpperCase()+'</div><br>'+
+      '<div class="mavs-ok">NO DISQUALIFICATIONS</div><br>'+
       '<button class="mavs-btn" onclick="mavsNext()">Register New Case (4)</button>';
-  } else if (s === 4) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;REGISTRATION</div>' + sep + '<br>' +
-      '<div class="mavs-head">CASE: ' + d.cn + ' (NEW)</div>' +
-      '<div class="mavs-head">PI: ' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '</div>' +
-      '<div class="mavs-head">ID: ' + d.pid + '</div><br>' +
-      '<div>FS, AF&nbsp;&nbsp;INITIAL&nbsp;&nbsp;ONLINE&nbsp;&nbsp;' + d.cty.toUpperCase() + '</div><br>' +
-      '<div class="mavs-ok">REGISTERED</div>' +
+  } else if (s===4) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;REGISTRATION</div>'+sep+'<br>'+
+      '<div class="mavs-head">CASE: '+d.cn+' (NEW)</div>'+
+      '<div class="mavs-head">PI: '+d.ln.toUpperCase()+', '+d.fn.toUpperCase()+'</div>'+
+      '<div class="mavs-head">ID: '+d.pid+'</div><br>'+
+      '<div>FS, AF&nbsp;&nbsp;INITIAL&nbsp;&nbsp;ONLINE&nbsp;&nbsp;'+d.cty.toUpperCase()+'</div><br>'+
+      '<div class="mavs-ok">REGISTERED</div>'+
       '<button class="mavs-btn" onclick="mavsNext()">EXSW</button>';
-  } else if (s === 5) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;EXPEDITED SCREENING (EXSW)</div>' + sep + '<br>' +
-      '<div class="mavs-head">CASE: ' + d.cn + '</div><br>' +
-      '<div>INCOME: ' + d.ei + '&nbsp;&nbsp;RESOURCES: $0</div>' +
-      '<div>RENT: ' + d.rent + '&nbsp;&nbsp;UTILITIES: ' + d.elec + '</div><br>' +
-      '<div class="mavs-warn">EXPEDITED: YES</div>' +
+  } else if (s===5) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;EXPEDITED SCREENING (EXSW)</div>'+sep+'<br>'+
+      '<div class="mavs-head">CASE: '+d.cn+'</div><br>'+
+      '<div>INCOME: '+d.ei+'&nbsp;&nbsp;RESOURCES: $0</div>'+
+      '<div>RENT: '+d.rent+'&nbsp;&nbsp;UTILITIES: '+d.elec+'</div><br>'+
+      '<div class="mavs-warn">EXPEDITED: YES</div>'+
       '<button class="mavs-btn" onclick="mavsNext()">ADDR</button>';
-  } else if (s === 6) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;ADDRESS (ADDR)</div>' + sep + '<br>' +
-      '<div class="mavs-head">' + d.addr + '</div>' +
-      '<div class="mavs-head">' + d.city + ', MS ' + d.zip + '</div>' +
-      '<div class="mavs-head">EMAIL: ' + d.em + '</div><br>' +
-      '<div class="mavs-ok">SAVED</div>' +
+  } else if (s===6) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;ADDRESS (ADDR)</div>'+sep+'<br>'+
+      '<div class="mavs-head">'+d.addr+'</div>'+
+      '<div class="mavs-head">'+d.city+', MS '+d.zip+'</div>'+
+      '<div class="mavs-head">EMAIL: '+d.em+'</div><br>'+
+      '<div class="mavs-ok">SAVED</div>'+
       '<button class="mavs-btn" onclick="mavsNext()">CAP1</button>';
-  } else if (s === 7) {
-    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CASE ACTION (CAP1)</div>' + sep + '<br>' +
-      '<div class="mavs-head">CASE: ' + d.cn + '</div>' +
-      "<div class=\"mavs-head\">FS REC'D&nbsp;&nbsp;" + d.bd.split(' ')[0] + '</div>' +
-      "<div class=\"mavs-head\">AF REC'D&nbsp;&nbsp;" + d.bd.split(' ')[0] + '</div><br>' +
-      '<div class="mavs-warn">Case #: ' + d.cn + '</div><br>' +
+  } else if (s===7) {
+    html = sep+'<div class="mavs-head">&nbsp;&nbsp;CASE ACTION (CAP1)</div>'+sep+'<br>'+
+      '<div class="mavs-head">CASE: '+d.cn+'</div>'+
+      '<div class="mavs-head">FS REC\'D&nbsp;&nbsp;'+d.bd.split(' ')[0]+'</div>'+
+      '<div class="mavs-head">AF REC\'D&nbsp;&nbsp;'+d.bd.split(' ')[0]+'</div><br>'+
+      '<div class="mavs-warn" style="font-size:14px;font-weight:bold">&#9888; WRITE DOWN YOUR CASE #: '+d.cn+'</div><br>'+
+      '<div style="color:#aaa;font-size:11px">You will need this number in the next step.</div><br>'+
       '<button class="mavs-btn" style="background:#ffcc00;color:#0d0d1a" onclick="goVerify()">Return to C.A.R.S.</button>';
   }
-
   document.getElementById('mavs-body').innerHTML = html;
 }
 
-function mavsNext() {
-  state.mavsStep++;
-  renderMavs();
-}
+function mavsNext() { state.mavsStep++; renderMavs(); }
+
 function goVerify() {
   state.vfyStep = 0;
-  state.verifyOk = false;
   renderVfy();
-  document.getElementById('vfy-bdate').textContent = 'BUSINESS DATE: ' + D().bd;
-  renderPrg(document.getElementById('prg-row-vfy'), 7);
+  document.getElementById('vfy-bdate').textContent = 'BUSINESS DATE: '+D().bd;
   show('pg-vfy');
-  toast('Enter case # in CARS to verify', 'ok');
+  toast('Enter case # in CARS to verify','ok');
 }
 
-// ── VERIFY + APPT ────────────────────────────────────────────────────────────
+// VERIFY + APPT
 function renderVfy() {
+  renderPrg('prg-vfy', 7+state.vfyStep);
   var d = D();
-  var body = document.getElementById('vfy-body');
-  renderPrg(document.getElementById('prg-row-vfy'), 7 + state.vfyStep);
+  var b = document.getElementById('vfy-body');
 
-  if (state.vfyStep === 0) {
-    body.innerHTML =
-      '<h2 class="sec-title">CASE VERIFICATION</h2>' +
-      '<div class="verify-center">' +
-        '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">MAVS CASE #</label>' +
-        '<input id="verify-cn" class="verify-input" placeholder="9-digit case #" maxlength="9" oninput="clearVerify()" onkeydown="if(event.key===\'Enter\')checkCase()">' +
-        '<div id="verify-err" class="verify-err" style="display:none"></div>' +
-        '<button style="margin-top:8px;padding:6px 24px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;background:#2a6a78;color:#fff;font-family:inherit" onclick="checkCase()">Get IDs</button>' +
-      '</div>' +
-      '<div id="verify-result" style="display:none" class="verify-result"></div>' +
-      '<div class="btn-row">' +
-        '<button class="bc">Cancel</button>' +
-        '<button id="verify-next-btn" disabled onclick="vfyNext()" style="padding:7px 16px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit">Next</button>' +
+  if (state.vfyStep===0) {
+    b.innerHTML =
+      '<h2 class="sec-title">CASE VERIFICATION</h2>'+
+      '<div class="verify-center">'+
+        '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">MAVS CASE #</label>'+
+        '<input id="verify-cn" class="verify-input" placeholder="9-digit case #" maxlength="9" oninput="clearVerifyErr()" onkeydown="if(event.key===\'Enter\')checkCase()">'+
+        '<div id="verify-err" class="verify-err" style="display:none"></div>'+
+        '<button style="margin-top:8px;padding:6px 24px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;background:#2a6a78;color:#fff;font-family:inherit" onclick="checkCase()">Get IDs</button>'+
+      '</div>'+
+      '<div id="verify-result" style="display:none" class="verify-result"></div>'+
+      '<div class="btn-row">'+
+        '<button class="bc">Cancel</button>'+
+        '<button id="vfy-next-btn" disabled style="padding:7px 16px;border:none;border-radius:3px;font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit;cursor:not-allowed" onclick="vfyNext()">Next</button>'+
       '</div>';
   } else {
-    body.innerHTML =
-      '<h2 class="sec-title">Appointment</h2>' +
-      '<div class="row">' + fi('Date', d.ad) + fi('Time', d.at) + '</div>' +
-      '<div class="row">' + fd('FSO/Place', d.fso) + fd('Case Worker', d.wk) + '</div>' +
-      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="vfyPrev()">Previous</button><button class="bs" onclick="submitCase()">Submit</button>');
+    // Build next 7 business days
+    var opts = '<option value="">-- Select Date --</option>';
+    var cnt = 0;
+    var chk = new Date();
+    chk.setDate(chk.getDate()+1);
+    while (cnt<7) {
+      if (chk.getDay()!==0 && chk.getDay()!==6) {
+        var mm = String(chk.getMonth()+1).padStart(2,'0');
+        var dd = String(chk.getDate()).padStart(2,'0');
+        var yy = chk.getFullYear();
+        var lbl = mm+'/'+dd+'/'+yy;
+        opts += '<option value="'+lbl+'">'+lbl+'</option>';
+        cnt++;
+      }
+      chk.setDate(chk.getDate()+1);
+    }
+
+    b.innerHTML =
+      '<h2 class="sec-title">Schedule Appointment</h2>'+
+      '<div class="appt-rules">'+
+        '<strong>MDHS Scheduling Rules:</strong><br>'+
+        '&#8226; Expedited cases must be scheduled within <strong>7 business days</strong><br>'+
+        '&#8226; Appointments must be on a <strong>weekday (Mon&ndash;Fri)</strong><br>'+
+        '&#8226; Hours: <strong>8:00 AM &ndash; 4:00 PM</strong> &mdash; lunch break unavailable 12:00&ndash;12:59 PM<br>'+
+        '&#8226; Select the correct FSO and assigned case worker for this county'+
+      '</div>'+
+      '<div class="row">'+
+        '<div class="f"><label>Appointment Date *</label>'+
+          '<select id="appt-date" onchange="clearApptErr()">'+opts+'</select>'+
+        '</div>'+
+        '<div class="f"><label>Appointment Time *</label>'+
+          '<select id="appt-time" onchange="clearApptErr()">'+
+            '<option value="">-- Select Time --</option>'+
+            '<option>8:00 AM</option><option>8:30 AM</option><option>9:00 AM</option>'+
+            '<option>9:30 AM</option><option>10:00 AM</option><option>10:30 AM</option>'+
+            '<option>11:00 AM</option><option>11:30 AM</option>'+
+            '<option value="LUNCH">12:00 PM (Lunch Break)</option>'+
+            '<option value="LUNCH">12:30 PM (Lunch Break)</option>'+
+            '<option>1:00 PM</option><option>1:30 PM</option><option>2:00 PM</option>'+
+            '<option>2:30 PM</option><option>3:00 PM</option><option>3:30 PM</option>'+
+            '<option>4:00 PM</option>'+
+            '<option value="AFTER">4:30 PM (After Hours)</option>'+
+            '<option value="AFTER">5:00 PM (After Hours)</option>'+
+          '</select>'+
+        '</div>'+
+      '</div>'+
+      '<div class="row">'+
+        '<div class="f"><label>FSO / Office *</label>'+
+          '<select id="appt-fso" onchange="clearApptErr()">'+
+            '<option value="">-- Select FSO --</option>'+
+            '<option value="CORRECT">'+d.fso+'</option>'+
+            '<option value="WRONG">HINDS COUNTY DHS</option>'+
+            '<option value="WRONG">HARRISON COUNTY DHS</option>'+
+            '<option value="WRONG">RANKIN COUNTY DHS</option>'+
+            '<option value="WRONG">LAUDERDALE COUNTY DHS</option>'+
+          '</select>'+
+        '</div>'+
+        '<div class="f"><label>Case Worker *</label>'+
+          '<select id="appt-wk" onchange="clearApptErr()">'+
+            '<option value="">-- Select Worker --</option>'+
+            '<option value="CORRECT">'+d.wk+'</option>'+
+            '<option value="WRONG">MICHAEL JOHNSON</option>'+
+            '<option value="WRONG">SARAH DAVIS</option>'+
+            '<option value="WRONG">ROBERT CLARK</option>'+
+          '</select>'+
+        '</div>'+
+      '</div>'+
+      '<div id="appt-err" class="appt-err"></div>'+
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="vfyPrev()">Previous</button><button class="bs" onclick="validateAppt()">Submit</button>');
   }
+  document.querySelector('#pg-vfy .scroll').scrollTop = 0;
 }
 
-function clearVerify() {
+function clearVerifyErr() {
   document.getElementById('verify-err').style.display = 'none';
-  var inp = document.getElementById('verify-cn');
-  if (inp) inp.className = 'verify-input';
+  var i = document.getElementById('verify-cn');
+  if(i) i.className = 'verify-input';
 }
 
 function checkCase() {
@@ -650,72 +606,90 @@ function checkCase() {
   var val = inp.value.trim();
   var err = document.getElementById('verify-err');
   var d = D();
-  if (val === d.cn) {
+  if (val===d.cn) {
     inp.className = 'verify-input ok';
     err.style.display = 'none';
     var res = document.getElementById('verify-result');
     res.innerHTML =
-      '<div class="vname">PI: ' + d.fn + ' ' + d.ln + '</div>' +
-      '<input readonly value="' + d.pid + '">' +
-      '<div class="vname" style="margin-top:8px">HH: ' + d.hfn + ' ' + d.hln + '</div>' +
-      '<input readonly value="' + d.hid + '">';
+      '<div class="vname">PI: '+d.fn+' '+d.ln+'</div>'+
+      '<input readonly value="'+d.pid+'">'+
+      '<div class="vname" style="margin-top:8px">HH: '+d.hfn+' '+d.hln+'</div>'+
+      '<input readonly value="'+d.hid+'">';
     res.style.display = 'block';
-    var btn = document.getElementById('verify-next-btn');
+    var btn = document.getElementById('vfy-next-btn');
     btn.disabled = false;
     btn.style.background = '#3a8fa0';
-    state.verifyOk = true;
-    toast('IDs verified — schedule appointment', 'ok');
+    btn.style.cursor = 'pointer';
+    toast('IDs verified — schedule appointment','ok');
   } else {
     inp.className = 'verify-input err';
-    err.textContent = val.length < 9 ? 'Enter 9 digits' : 'NO MATCH FOUND';
+    err.textContent = val.length<9 ? 'Case number must be 9 digits.' : 'NO MATCH FOUND. Check the case number from MAVERICS and try again.';
     err.style.display = 'block';
   }
 }
 
-function vfyNext() {
-  state.vfyStep = 1;
-  renderVfy();
+function vfyNext() { state.vfyStep = 1; renderVfy(); }
+function vfyPrev() { state.vfyStep = 0; renderVfy(); }
+
+function clearApptErr() {
+  document.getElementById('appt-err').style.display = 'none';
 }
-function vfyPrev() {
-  state.vfyStep = 0;
-  renderVfy();
+
+function validateAppt() {
+  var date = document.getElementById('appt-date').value;
+  var time = document.getElementById('appt-time').value;
+  var fso  = document.getElementById('appt-fso').value;
+  var wk   = document.getElementById('appt-wk').value;
+  var d    = D();
+  var msgs = [];
+
+  if (!date) msgs.push('&#8226; <strong>Appointment Date</strong> is required.');
+  if (!time) msgs.push('&#8226; <strong>Appointment Time</strong> is required.');
+  if (time==='LUNCH') msgs.push('&#8226; <strong>Invalid time:</strong> 12:00 PM &ndash; 12:59 PM is the lunch break. Select a time between 8:00 AM&ndash;11:30 AM or 1:00 PM&ndash;4:00 PM.');
+  if (time==='AFTER') msgs.push('&#8226; <strong>Invalid time:</strong> After-hours appointments are not permitted. Office hours end at 4:00 PM.');
+  if (!fso) msgs.push('&#8226; <strong>FSO / Office</strong> is required.');
+  if (fso==='WRONG') msgs.push('&#8226; <strong>Incorrect FSO:</strong> This client is in '+d.cty+' County. Select the matching county DHS office.');
+  if (!wk) msgs.push('&#8226; <strong>Case Worker</strong> is required.');
+  if (wk==='WRONG') msgs.push('&#8226; <strong>Incorrect case worker:</strong> Verify the worker assigned to this FSO and client.');
+
+  if (msgs.length>0) {
+    var e = document.getElementById('appt-err');
+    e.innerHTML = '<strong>&#9888;&nbsp;Please correct the following before submitting:</strong><br><br>'+msgs.join('<br>');
+    e.style.display = 'block';
+    return;
+  }
+  submitCase();
 }
 
 function submitCase() {
   var d = D();
-  document.getElementById('done-msg').textContent = 'Case ' + d.cn + ' for ' + d.fn + ' ' + d.ln + ' registered and routed to WorkSite.';
-  var isLast = state.qIdx >= state.queue.length - 1;
-  var sess = document.getElementById('done-session');
-  var btn = document.getElementById('done-btn');
-  if (isLast) {
-    sess.style.display = 'block';
-    btn.textContent = 'Restart Session';
-  } else {
-    sess.style.display = 'none';
-    btn.textContent = 'Next Applicant \u2192';
-  }
+  document.getElementById('done-msg').textContent = 'Case '+d.cn+' for '+d.fn+' '+d.ln+' registered and routed to WorkSite.';
+  var isLast = state.qIdx >= state.queue.length-1;
+  document.getElementById('done-session').style.display = isLast ? 'block' : 'none';
+  document.getElementById('done-btn').textContent = isLast ? 'Restart Session' : 'Next Applicant \u2192';
   show('pg-done');
-  toast('Submitted!', 'ok');
+  toast('Submitted!','ok');
 }
 
 function doneAction() {
-  var isLast = state.qIdx >= state.queue.length - 1;
+  var isLast = state.qIdx >= state.queue.length-1;
   if (isLast) {
     state.agreed = false;
-    document.getElementById('agree-chk').className = 'agree-chk';
-    document.getElementById('agree-chk').textContent = '';
+    var c = document.getElementById('agree-chk');
+    c.className = 'agree-chk';
+    c.textContent = '';
     document.getElementById('agree-content').style.display = 'none';
     show('pg-welcome');
   } else {
     state.qIdx++;
     state.carsStep = 0;
-    updateDash();
-    show('pg-dash');
-    toast('Next applicant: ' + D().fn + ' ' + D().ln, 'ok');
+    renderCars();
+    document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
+    show('pg-cars');
+    toast('Next applicant: '+D().fn+' '+D().ln,'ok');
   }
 }
 </script>
 
 </body>
-</html>
 </html>
