@@ -9,387 +9,713 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:#000}
-#root{width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden}
-input:focus,select:focus,button:focus{outline:2px solid #3a8fa0;outline-offset:1px}
-::-webkit-scrollbar{width:7px}
-::-webkit-scrollbar-thumb{background:#aaa;border-radius:4px}
-::-webkit-scrollbar-track{background:#eee}
-button{font-family:'Segoe UI',Tahoma,sans-serif}
+#app{width:100%;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.pg{display:none;flex-direction:column;height:100%;overflow:hidden}
+.pg.on{display:flex}
+#taskbar{height:34px;background:#0d1520;display:flex;align-items:center;justify-content:space-between;padding:0 10px;border-top:1px solid #1a2a3a;flex-shrink:0}
+.tb-btn{padding:2px 10px;border-radius:3px;font-size:10px;color:#fff;background:#1a3050}
+.tb-cars{background:#0a3d5e}
+.tb-mavs{background:#0a2e0a;color:#00ff41}
+#tb-time{font-size:10px;color:#8899aa}
+.hdr{background:#fff;padding:5px 12px;border-bottom:1px solid #d0dce0;display:flex;align-items:center;flex-shrink:0}
+.hdr-logo{flex:1;text-align:center;font-size:13px;font-weight:800;color:#2a6a78;letter-spacing:3px}
+.hdr-user{font-size:10px;color:#7a9aa5}
+.hdr-banner{background:#3a8fa0;color:#fff;padding:5px 12px;display:flex;justify-content:space-between;font-size:10px;font-weight:700;flex-shrink:0}
+.exp{color:#ffd700}
+.prg-wrap{padding:6px 10px;background:#f6f9fa;border-bottom:1px solid #e0e8ec;flex-shrink:0}
+.prg-row{display:flex;gap:1px}
+.prg-step{flex:1;text-align:center}
+.prg-bar{height:3px;border-radius:2px;background:#d0dce0;margin-bottom:2px}
+.prg-bar.done{background:#28a060}
+.prg-bar.cur{background:#3a8fa0}
+.prg-lbl{font-size:7px;color:#aaa}
+.prg-lbl.lit{color:#2a6a78}
+.scroll{flex:1;overflow-y:auto;background:#fff}
+.pad{padding:12px 14px}
+.sec-title{text-align:center;color:#3a8fa0;font-size:15px;font-weight:700;margin-bottom:14px}
+.sub{font-size:11px;font-weight:700;color:#2a6a78;margin:10px 0 5px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.f{display:flex;flex-direction:column;flex:1;min-width:80px}
+.f label{font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase;margin-bottom:2px}
+.f input,.f select{padding:6px 8px;border:1px solid #bcc8cc;border-radius:2px;font-size:13px;background:#fafafa;color:#1a2a33;font-family:inherit;width:100%}
+.chk{display:flex;align-items:center;gap:4px;font-size:12px;margin-right:8px}
+.chk-box{width:13px;height:13px;border:2px solid #3a8fa0;border-radius:2px;background:#3a8fa0;color:#fff;font-size:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.radio{display:inline-flex;gap:8px}
+.radio span{display:flex;align-items:center;gap:3px;font-size:12px;cursor:default}
+.rdot{width:12px;height:12px;border-radius:50%;border:2px solid #3a8fa0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;background:transparent}
+.rdot.on{background:#3a8fa0}
+.qrow{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f0f0f0}
+.qrow .qt{flex:1;font-size:12px;line-height:1.4}
+.btn-row{display:flex;justify-content:flex-end;gap:5px;padding:10px 0;border-top:1px solid #e0e8ec;margin-top:10px}
+button{font-family:inherit;padding:7px 16px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700}
+.bc{background:#d43b3b;color:#fff}
+.bp{background:#3a8fa0;color:#fff}
+.bn{background:#3a8fa0;color:#fff}
+.bs{background:#28a060;color:#fff}
+.bd{background:#2a6a78;color:#fff}
+button:disabled{background:#ccc!important;cursor:not-allowed}
+.welcome-wrap{height:100%;overflow-y:auto;background:#f0f4f6;padding:16px}
+.wcard{max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:20px 24px;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #d0dce0}
+.disc{background:#fef2f2;border:1px solid #e8a0a0;border-radius:6px;padding:10px 14px;font-size:11px;line-height:1.6;color:#5a2020;margin-bottom:12px}
+.conf{background:#f6f9fa;border:1px solid #d0dce0;border-radius:6px;padding:10px 14px;font-size:11px;line-height:1.6;margin-bottom:12px}
+.agree-row{display:flex;gap:8px;font-size:12px;cursor:pointer;padding:8px 0;align-items:flex-start}
+.agree-chk{width:16px;height:16px;border:2px solid #3a8fa0;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;background:transparent;color:#fff;font-size:10px}
+.agree-chk.on{background:#3a8fa0}
+.info-box{background:#e6f7ff;border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.7;margin-bottom:10px}
+.cred-box{background:#f0faf4;border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.6;border:1px solid #b8e6c8;margin-bottom:12px}
+code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
+.big-btn{width:100%;padding:10px;font-size:14px;border-radius:5px;border:none;background:#3a8fa0;color:#fff;cursor:pointer;font-weight:700;font-family:inherit}
+.login-wrap{height:100%;display:flex;flex-direction:column;background:#f0f4f6}
+.login-top{background:#fff;padding:6px 14px;border-bottom:1px solid #d0dce0;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.login-top .mdhs{font-size:13px;font-weight:800;color:#2a6a78}
+.login-top .tag{font-size:11px;font-weight:700;color:#2a6a78}
+.login-center{flex:1;display:flex;align-items:center;justify-content:center}
+.login-box{width:300px;text-align:center}
+.login-title{font-size:28px;font-weight:800;color:#2a6a78;letter-spacing:4px;margin-bottom:20px}
+.login-card{background:#fff;border-radius:8px;padding:24px 20px;border:1px solid #d0dce0}
+.login-field{margin-bottom:12px;text-align:left}
+.login-field label{font-size:10px;font-weight:700;color:#5a7a85;display:block;margin-bottom:3px;text-transform:uppercase}
+.login-field input{width:100%;padding:9px 10px;border:1px solid #bcc8cc;border-radius:2px;font-size:14px;font-family:inherit}
+.login-err{color:#d43b3b;font-size:11px;margin-bottom:8px;background:#fef2f2;padding:4px 8px;border-radius:3px}
+.login-btn{width:100%;padding:9px;font-size:14px;border-radius:4px;border:none;background:#3a8fa0;color:#fff;cursor:pointer;font-weight:700;font-family:inherit}
+.dash-wrap{padding:16px}
+.dash-title{text-align:center;font-size:18px;color:#3a8fa0;font-weight:700;margin-bottom:4px}
+.dash-sub{text-align:center;font-size:11px;color:#5a7a85;margin-bottom:14px}
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:580px;margin:0 auto}
+.dash-tile{background:#fff;border-radius:6px;padding:14px;text-align:center;border:1px solid #d0dce0}
+.dash-tile.hl{border:2px solid #3a8fa0}
+.tile-icon{font-size:24px;margin-bottom:4px}
+.tile-title{font-size:12px;font-weight:700;color:#2a6a78}
+.tile-desc{font-size:9px;color:#7a9aa5;margin-top:2px;margin-bottom:8px;font-style:italic}
+.tile-btn{width:100%;padding:7px;font-size:11px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff}
+.tile-btn:disabled{background:#ccc;cursor:not-allowed}
+.mavs-wrap{height:100%;display:flex;flex-direction:column;background:#0d0d1a}
+.mavs-bar{background:#0a0a1a;padding:4px 12px;display:flex;justify-content:space-between;flex-shrink:0}
+.mavs-title{color:#00ff41;font-size:11px;font-family:monospace}
+.mavs-step{color:#444;font-size:10px}
+.mavs-body{flex:1;overflow-y:auto;padding:12px;font-family:monospace;font-size:12px;color:#00ff41;line-height:1.6}
+.mavs-sep{color:#007722}
+.mavs-head{color:#fff}
+.mavs-dim{color:#aaa}
+.mavs-ok{color:#28a060}
+.mavs-warn{color:#ffcc00}
+.mavs-btn{padding:7px 16px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;font-family:monospace;background:#00ff41;color:#0d0d1a;margin:8px 0 16px;display:block}
+.verify-center{text-align:center;margin-bottom:14px}
+.verify-input{width:200px;padding:7px 10px;text-align:center;font-size:14px;font-family:monospace;border:2px solid #bcc8cc;border-radius:2px;display:block;margin:4px auto 0}
+.verify-input.ok{border-color:#28a060}
+.verify-input.err{border-color:#d43b3b}
+.verify-err{color:#d43b3b;font-size:11px;margin-top:3px}
+.verify-result{padding:10px;background:#f0faf4;border:1px solid #28a060;border-radius:4px;margin-bottom:10px}
+.verify-result .vname{font-size:11px;font-weight:700;margin-bottom:3px}
+.verify-result input{width:160px;padding:5px 8px;border:1px solid #bcc8cc;border-radius:2px;font-size:12px;font-family:monospace;background:#fafafa;margin-top:2px;display:block}
+.done-wrap{padding:24px;text-align:center}
+.done-icon{font-size:48px;margin-bottom:8px}
+.done-title{color:#28a060;font-size:18px;font-weight:700;margin-bottom:8px}
+.done-msg{color:#5a7a85;font-size:12px;max-width:340px;margin:0 auto;line-height:1.5}
+.done-warn{margin:12px auto;padding:10px;background:#fff8e6;border:1px solid #e8a820;border-radius:5px;font-size:11px;max-width:340px}
+.done-session{margin:12px auto;padding:12px;background:#e6f7ff;border:1px solid #90d0f0;border-radius:6px;font-size:12px;max-width:340px}
+.toast{position:fixed;top:16px;right:16px;padding:12px 20px;border-radius:6px;font-size:13px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.3);z-index:9999;max-width:340px;display:none}
+.toast.ok{background:#28a060;color:#fff}
+.toast.warn{background:#e8a820;color:#fff}
+.toast.err{background:#d43b3b;color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:#aaa;border-radius:3px}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
-<script type="text/babel">
-const {useState,useEffect,useCallback,useRef}=React;
+<div id="app">
 
-// ── APPLICANT POOL (20 fictional clients) ──────────────────────────────────
-const POOL=[
-{fn:“Tameka”,mn:“R”,ln:“Holloway”,ssn:“428-76-3391”,dob:“06/14/1989”,age:36,gender:“Female”,addr:“1247 MAGNOLIA CREEK DR”,city:“HATTIESBURG”,zip:“39401”,cty:“Forrest”,p1:”(601) 482-7193”,p1t:“Home”,p2:”(601) 555-0214”,p2t:“Cell”,em:“tameka.holloway89@gmail.com”,ei:”$620.00”,rent:”$675.00”,elec:”$95.00”,gas:”$40.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Jaylen”,hln:“Holloway”,hrel:“Child”,hssn:“428-91-5567”,hdob:“03/22/2019”,hage:“7 years”,hgen:“Male”,cn:“307224189”,pid:“261003847”,hid:“261003902”,wk:“PATRICIA WILLIAMS”,fso:“FORREST COUNTY DHS”},
-{fn:“Darnell”,mn:“T”,ln:“Washington”,ssn:“512-44-8821”,dob:“03/02/1985”,age:41,gender:“Male”,addr:“834 OAK GROVE RD”,city:“JACKSON”,zip:“39201”,cty:“Hinds”,p1:”(601) 334-7720”,p1t:“Cell”,p2:””,p2t:””,em:“dwashington85@yahoo.com”,ei:”$0.00”,rent:”$550.00”,elec:”$80.00”,gas:”$0.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Mia”,hln:“Washington”,hrel:“Child”,hssn:“512-91-3304”,hdob:“07/11/2015”,hage:“10 years”,hgen:“Female”,cn:“307224200”,pid:“261003900”,hid:“261003960”,wk:“JAMES REED”,fso:“HINDS COUNTY DHS”},
-{fn:“Latoya”,mn:“M”,ln:“Jenkins”,ssn:“601-33-9912”,dob:“11/19/1992”,age:33,gender:“Female”,addr:“2201 PINE VALLEY LN”,city:“MERIDIAN”,zip:“39301”,cty:“Lauderdale”,p1:”(601) 693-4411”,p1t:“Home”,p2:”(601) 555-8823”,p2t:“Cell”,em:“latoya.jenkins@gmail.com”,ei:”$480.00”,rent:”$600.00”,elec:”$110.00”,gas:”$50.00”,wat:”$35.00”,ph:”$60.00”,hfn:“Destiny”,hln:“Jenkins”,hrel:“Child”,hssn:“601-82-7741”,hdob:“04/05/2018”,hage:“8 years”,hgen:“Female”,cn:“307224301”,pid:“261004010”,hid:“261004071”,wk:“SHARON MOORE”,fso:“LAUDERDALE COUNTY DHS”},
-{fn:“Marcus”,mn:“A”,ln:“Brown”,ssn:“389-55-1123”,dob:“08/27/1979”,age:46,gender:“Male”,addr:“519 CEDAR BLUFF DR”,city:“BILOXI”,zip:“39530”,cty:“Harrison”,p1:”(228) 374-6602”,p1t:“Cell”,p2:””,p2t:””,em:“marcusbrown79@hotmail.com”,ei:”$740.00”,rent:”$800.00”,elec:”$125.00”,gas:”$55.00”,wat:”$40.00”,ph:”$50.00”,hfn:“Tyrone”,hln:“Brown”,hrel:“Child”,hssn:“389-88-4450”,hdob:“09/14/2012”,hage:“13 years”,hgen:“Male”,cn:“307224412”,pid:“261004200”,hid:“261004261”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
-{fn:“Shenika”,mn:“L”,ln:“Davis”,ssn:“447-22-6634”,dob:“01/30/1996”,age:30,gender:“Female”,addr:“78 WILLOW BEND RD”,city:“TUPELO”,zip:“38801”,cty:“Lee”,p1:”(662) 841-5530”,p1t:“Home”,p2:”(662) 555-2290”,p2t:“Cell”,em:“shenikadavis96@gmail.com”,ei:”$310.00”,rent:”$525.00”,elec:”$70.00”,gas:”$30.00”,wat:”$20.00”,ph:”$40.00”,hfn:“Aaliyah”,hln:“Davis”,hrel:“Child”,hssn:“447-90-1122”,hdob:“02/28/2021”,hage:“5 years”,hgen:“Female”,cn:“307224523”,pid:“261004300”,hid:“261004361”,wk:“ANGELA PRICE”,fso:“LEE COUNTY DHS”},
-{fn:“Reginald”,mn:“J”,ln:“Thomas”,ssn:“523-67-4490”,dob:“05/15/1983”,age:43,gender:“Male”,addr:“3302 DOGWOOD CIRCLE”,city:“GULFPORT”,zip:“39501”,cty:“Harrison”,p1:”(228) 863-7741”,p1t:“Cell”,p2:””,p2t:””,em:“rthomas83@gmail.com”,ei:”$0.00”,rent:”$700.00”,elec:”$105.00”,gas:”$45.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Keisha”,hln:“Thomas”,hrel:“Spouse”,hssn:“523-81-3345”,hdob:“08/03/1985”,hage:“41 years”,hgen:“Female”,cn:“307224634”,pid:“261004400”,hid:“261004461”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
-{fn:“Yolanda”,mn:“B”,ln:“Scott”,ssn:“334-88-2256”,dob:“07/04/1990”,age:35,gender:“Female”,addr:“990 RIVERDALE AVE”,city:“VICKSBURG”,zip:“39180”,cty:“Warren”,p1:”(601) 638-2200”,p1t:“Home”,p2:”(601) 555-4411”,p2t:“Cell”,em:“yolanda.scott90@yahoo.com”,ei:”$550.00”,rent:”$625.00”,elec:”$90.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Caleb”,hln:“Scott”,hrel:“Child”,hssn:“334-92-6678”,hdob:“11/20/2017”,hage:“8 years”,hgen:“Male”,cn:“307224745”,pid:“261004500”,hid:“261004561”,wk:“DOROTHY BANKS”,fso:“WARREN COUNTY DHS”},
-{fn:“Terrence”,mn:“K”,ln:“Williams”,ssn:“460-11-8834”,dob:“12/09/1988”,age:37,gender:“Male”,addr:“145 PECAN GROVE DR”,city:“NATCHEZ”,zip:“39120”,cty:“Adams”,p1:”(601) 445-3390”,p1t:“Cell”,p2:””,p2t:””,em:“twilli88@gmail.com”,ei:”$680.00”,rent:”$575.00”,elec:”$85.00”,gas:”$40.00”,wat:”$30.00”,ph:”$50.00”,hfn:“Jasmine”,hln:“Williams”,hrel:“Child”,hssn:“460-83-9910”,hdob:“06/17/2016”,hage:“9 years”,hgen:“Female”,cn:“307224856”,pid:“261004600”,hid:“261004661”,wk:“MARCUS BELL”,fso:“ADAMS COUNTY DHS”},
-{fn:“Keandra”,mn:“N”,ln:“Robinson”,ssn:“578-44-1122”,dob:“09/22/1994”,age:31,gender:“Female”,addr:“2889 SUNFLOWER ST”,city:“GREENVILLE”,zip:“38701”,cty:“Washington”,p1:”(662) 335-8820”,p1t:“Home”,p2:”(662) 555-7711”,p2t:“Cell”,em:“keandra.robinson94@gmail.com”,ei:”$0.00”,rent:”$490.00”,elec:”$75.00”,gas:”$25.00”,wat:”$20.00”,ph:”$40.00”,hfn:“Noah”,hln:“Robinson”,hrel:“Child”,hssn:“578-90-4456”,hdob:“03/14/2020”,hage:“6 years”,hgen:“Male”,cn:“307224967”,pid:“261004700”,hid:“261004761”,wk:“TAMARA WEST”,fso:“WASHINGTON COUNTY DHS”},
-{fn:“Derrick”,mn:“O”,ln:“Jackson”,ssn:“415-77-3345”,dob:“04/18/1981”,age:45,gender:“Male”,addr:“707 MAGNOLIA BLVD”,city:“COLUMBUS”,zip:“39701”,cty:“Lowndes”,p1:”(662) 328-4411”,p1t:“Cell”,p2:””,p2t:””,em:“djackson81@yahoo.com”,ei:”$820.00”,rent:”$750.00”,elec:”$115.00”,gas:”$60.00”,wat:”$35.00”,ph:”$60.00”,hfn:“Brianna”,hln:“Jackson”,hrel:“Child”,hssn:“415-82-6670”,hdob:“08/29/2014”,hage:“11 years”,hgen:“Female”,cn:“307225078”,pid:“261004800”,hid:“261004861”,wk:“LARRY SIMMONS”,fso:“LOWNDES COUNTY DHS”},
-{fn:“Monique”,mn:“C”,ln:“Harris”,ssn:“330-55-7789”,dob:“02/14/1991”,age:35,gender:“Female”,addr:“1560 HOLLY SPRINGS RD”,city:“OXFORD”,zip:“38655”,cty:“Lafayette”,p1:”(662) 234-5520”,p1t:“Home”,p2:”(662) 555-9933”,p2t:“Cell”,em:“monique.harris91@gmail.com”,ei:”$390.00”,rent:”$700.00”,elec:”$100.00”,gas:”$45.00”,wat:”$30.00”,ph:”$55.00”,hfn:“Isaiah”,hln:“Harris”,hrel:“Child”,hssn:“330-84-2211”,hdob:“10/05/2019”,hage:“6 years”,hgen:“Male”,cn:“307225189”,pid:“261004900”,hid:“261004961”,wk:“DIANE TUCKER”,fso:“LAFAYETTE COUNTY DHS”},
-{fn:“Calvin”,mn:“R”,ln:“Moore”,ssn:“498-22-6601”,dob:“06/30/1977”,age:48,gender:“Male”,addr:“444 CYPRESS CREEK DR”,city:“HATTIESBURG”,zip:“39402”,cty:“Forrest”,p1:”(601) 268-7730”,p1t:“Cell”,p2:””,p2t:””,em:“cmoore77@hotmail.com”,ei:”$0.00”,rent:”$625.00”,elec:”$90.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Tyra”,hln:“Moore”,hrel:“Child”,hssn:“498-91-4423”,hdob:“05/22/2016”,hage:“9 years”,hgen:“Female”,cn:“307225290”,pid:“261005000”,hid:“261005061”,wk:“PATRICIA WILLIAMS”,fso:“FORREST COUNTY DHS”},
-{fn:“Aaliyah”,mn:“S”,ln:“Turner”,ssn:“561-33-8812”,dob:“10/08/1999”,age:26,gender:“Female”,addr:“223 BIRCH LANE”,city:“LAUREL”,zip:“39440”,cty:“Jones”,p1:”(601) 425-6640”,p1t:“Cell”,p2:”(601) 555-3312”,p2t:“Home”,em:“aaliyah.turner99@gmail.com”,ei:”$270.00”,rent:”$450.00”,elec:”$65.00”,gas:”$20.00”,wat:”$20.00”,ph:”$35.00”,hfn:“Ava”,hln:“Turner”,hrel:“Child”,hssn:“561-88-7745”,hdob:“12/01/2022”,hage:“3 years”,hgen:“Female”,cn:“307225401”,pid:“261005100”,hid:“261005161”,wk:“JAMES REED”,fso:“JONES COUNTY DHS”},
-{fn:“Broderick”,mn:“D”,ln:“Lewis”,ssn:“479-66-2230”,dob:“08/11/1986”,age:39,gender:“Male”,addr:“3811 SYCAMORE PARK DR”,city:“STARKVILLE”,zip:“39759”,cty:“Oktibbeha”,p1:”(662) 323-8801”,p1t:“Home”,p2:””,p2t:””,em:“brodlewis86@yahoo.com”,ei:”$910.00”,rent:”$875.00”,elec:”$130.00”,gas:”$65.00”,wat:”$40.00”,ph:”$60.00”,hfn:“Jordan”,hln:“Lewis”,hrel:“Child”,hssn:“479-80-5567”,hdob:“07/16/2013”,hage:“12 years”,hgen:“Male”,cn:“307225512”,pid:“261005200”,hid:“261005261”,wk:“LARRY SIMMONS”,fso:“OKTIBBEHA COUNTY DHS”},
-{fn:“Shaniqua”,mn:“V”,ln:“White”,ssn:“344-99-5512”,dob:“03/25,1993”,age:33,gender:“Female”,addr:“102 AZALEA DR”,city:“BRANDON”,zip:“39042”,cty:“Rankin”,p1:”(601) 824-3301”,p1t:“Cell”,p2:”(601) 555-6678”,p2t:“Home”,em:“shaniqua.white93@gmail.com”,ei:”$430.00”,rent:”$725.00”,elec:”$95.00”,gas:”$40.00”,wat:”$30.00”,ph:”$50.00”,hfn:“Elijah”,hln:“White”,hrel:“Child”,hssn:“344-87-9923”,hdob:“01/08/2018”,hage:“8 years”,hgen:“Male”,cn:“307225623”,pid:“261005300”,hid:“261005361”,wk:“SHARON MOORE”,fso:“RANKIN COUNTY DHS”},
-{fn:“Jerome”,mn:“L”,ln:“Anderson”,ssn:“532-11-4478”,dob:“11/03,1980”,age:45,gender:“Male”,addr:“789 GULF WIND BLVD”,city:“PASS CHRISTIAN”,zip:“39571”,cty:“Harrison”,p1:”(228) 452-9900”,p1t:“Home”,p2:””,p2t:””,em:“jerome.anderson80@gmail.com”,ei:”$0.00”,rent:”$580.00”,elec:”$88.00”,gas:”$35.00”,wat:”$25.00”,ph:”$45.00”,hfn:“Savannah”,hln:“Anderson”,hrel:“Child”,hssn:“532-84-1123”,hdob:“09/30,2017”,hage:“8 years”,hgen:“Female”,cn:“307225734”,pid:“261005400”,hid:“261005461”,wk:“KEVIN HARRIS”,fso:“HARRISON COUNTY DHS”},
-{fn:“Tiffany”,mn:“A”,ln:“Green”,ssn:“418-77-3301”,dob:“07/17,1995”,age:30,gender:“Female”,addr:“556 PEACHTREE RD”,city:“FLOWOOD”,zip:“39232”,cty:“Rankin”,p1:”(601) 939-4421”,p1t:“Cell”,p2:”(601) 555-1134”,p2t:“Home”,em:“tiffany.green95@yahoo.com”,ei:”$500.00”,rent:”$775.00”,elec:”$105.00”,gas:”$50.00”,wat:”$35.00”,ph:”$55.00”,hfn:“Jace”,hln:“Green”,hrel:“Child”,hssn:“418-92-6645”,hdob:“04/19,2020”,hage:“6 years”,hgen:“Male”,cn:“307225845”,pid:“261005500”,hid:“261005561”,wk:“DOROTHY BANKS”,fso:“RANKIN COUNTY DHS”},
-{fn:“Antwan”,mn:“M”,ln:“Taylor”,ssn:“387-44,9923”,dob:“02/06,1984”,age:42,gender:“Male”,addr:“1023 HICKORY HOLLOW LN”,city:“PEARL”,zip:“39208”,cty:“Rankin”,p1:”(601) 939-8820”,p1t:“Home”,p2:””,p2t:””,em:“antwan.taylor84@gmail.com”,ei:”$760.00”,rent:”$850.00”,elec:”$120.00”,gas:”$55.00”,wat:”$40.00”,ph:”$60.00”,hfn:“Malik”,hln:“Taylor”,hrel:“Child”,hssn:“387-86,7712”,hdob:“06,10,2015”,hage:“10 years”,hgen:“Male”,cn:“307225956”,pid:“261005600”,hid:“261005661”,wk:“ANGELA PRICE”,fso:“RANKIN COUNTY DHS”},
-{fn:“Lakisha”,mn:“T”,ln:“Mitchell”,ssn:“463-22,7756”,dob:“09,28,1997”,age:28,gender:“Female”,addr:“2200 CLOVER HILL DR”,city:“RIDGELAND”,zip:“39157”,cty:“Madison”,p1:”(601) 853,5510”,p1t:“Cell”,p2:”(601) 555,8890”,p2t:“Home”,em:“lakisha.mitchell97@gmail.com”,ei:”$340.00”,rent:”$825.00”,elec:”$115.00”,gas:”$50.00”,wat:”$35.00”,ph:”$55.00”,hfn:“Zoe”,hln:“Mitchell”,hrel:“Child”,hssn:“463-85,4401”,hdob:“11,14,2021”,hage:“4 years”,hgen:“Female”,cn:“307226067”,pid:“261005700”,hid:“261005761”,wk:“DIANE TUCKER”,fso:“MADISON COUNTY DHS”},
-{fn:“Quinton”,mn:“B”,ln:“Adams”,ssn:“541-88,2234”,dob:“05,22,1982”,age:43,gender:“Male”,addr:“371 IRONWOOD DR”,city:“SOUTHAVEN”,zip:“38671”,cty:“DeSoto”,p1:”(662) 349,7701”,p1t:“Home”,p2:””,p2t:””,em:“qadams82@hotmail.com”,ei:”$0.00”,rent:”$950.00”,elec:”$140.00”,gas:”$70.00”,wat:”$45.00”,ph:”$65.00”,hfn:“Dominic”,hln:“Adams”,hrel:“Child”,hssn:“541-90,5578”,hdob:“08,07,2016”,hage:“9 years”,hgen:“Male”,cn:“307226178”,pid:“261005800”,hid:“261005861”,wk:“TAMARA WEST”,fso:“DESOTO COUNTY DHS”}
-];
+  <!-- WELCOME -->
 
-function buildQueue(){
-const shuffled=[…POOL].sort(()=>Math.random()-0.5);
-const size=Math.floor(Math.random()*2)+3; // 3 or 4
-return shuffled.slice(0,size).map(a=>({
-…a,
-bd:new Date().toLocaleDateString(“en-US”,{month:“2-digit”,day:“2-digit”,year:“numeric”})+” 09:22 AM”,
-ad:(()=>{let d=new Date();d.setDate(d.getDate()+3);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);return d.toLocaleDateString(“en-US”,{month:“2-digit”,day:“2-digit”,year:“numeric”});})(),
-at:“9:30 AM”
-}));
-}
-
-const T=”#3a8fa0”,DK=”#2a6a78”;
-const fi={padding:“6px 8px”,border:“1px solid #bcc8cc”,borderRadius:2,fontSize:13,background:”#fff”,color:”#1a2a33”,width:“100%”,boxSizing:“border-box”};
-const lb={fontSize:10,fontWeight:700,color:”#5a7a85”,textTransform:“uppercase”,marginBottom:2,display:“block”};
-const bt={padding:“7px 16px”,border:“none”,borderRadius:3,cursor:“pointer”,fontSize:12,fontWeight:700};
-const ts={textAlign:“center”,color:T,fontSize:15,margin:“0 0 14px”,fontWeight:700};
-const rw={display:“flex”,gap:10,flexWrap:“wrap”,marginBottom:8};
-
-function Toast({msg,type,onClose}){
-useEffect(()=>{const t=setTimeout(onClose,3500);return()=>clearTimeout(t)},[onClose]);
-return <div style={{position:“fixed”,top:16,right:16,background:type===“ok”?”#28a060”:type===“warn”?”#e8a820”:”#d43b3b”,color:”#fff”,padding:“12px 20px”,borderRadius:6,fontSize:13,fontWeight:600,boxShadow:“0 6px 24px rgba(0,0,0,.3)”,zIndex:10000,maxWidth:380}}>{msg}</div>;
-}
-
-const Fi=({l,v,w})=><div style={{flex:w||1,minWidth:90}}><label style={lb}>{l}</label><input readOnly value={v||””} style={fi}/></div>;
-const Fd=({l,v})=><div style={{flex:1,minWidth:90}}><label style={lb}>{l}</label><select disabled style={{…fi,appearance:“auto”}}><option>{v}</option></select></div>;
-const Rd=({v,o})=><span style={{display:“inline-flex”,gap:8}}>{(o||[“YES”,“NO”]).map(x=><label key={x} style={{display:“flex”,alignItems:“center”,gap:3,fontSize:12}}><span style={{width:12,height:12,borderRadius:“50%”,border:“2px solid “+T,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:v===x?T:“transparent”}}>{v===x&&<span style={{width:4,height:4,borderRadius:“50%”,background:”#fff”}}/>}</span>{x}</label>)}</span>;
-const Ck=({l,c})=><label style={{display:“flex”,alignItems:“center”,gap:4,fontSize:12}}><span style={{width:12,height:12,border:“2px solid “+T,borderRadius:2,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:c?T:“transparent”,color:”#fff”,fontSize:9}}>{c?“✓”:””}</span>{l}</label>;
-const Qr=({q,v})=><div style={{display:“flex”,alignItems:“flex-start”,gap:8,padding:“5px 0”,borderBottom:“1px solid #f0f0f0”}}><span style={{flex:1,fontSize:12,lineHeight:1.4}}>{q}</span><Rd v={v||“NO”}/></div>;
-
-function Hdr({banner,D}){
-return <div style={{flexShrink:0}}>
-<div style={{background:”#fff”,padding:“4px 12px”,borderBottom:“1px solid #d0dce0”,display:“flex”,alignItems:“center”}}>
-<span style={{fontSize:18,color:DK}}>☰</span><span style={{flex:1}}/>
-<span style={{fontSize:13,fontWeight:700,color:DK,letterSpacing:3}}>C.A.R.S.</span>
-<span style={{flex:1}}/><span style={{fontSize:10,color:”#7a9aa5”}}>J. Mitchell</span>
-</div>
-{banner&&<div style={{background:T,color:”#fff”,padding:“5px 12px”,display:“flex”,justifyContent:“space-between”,fontSize:10,fontWeight:700}}>
-<span>BUSINESS DATE: {D.bd}</span><span style={{color:”#ffd700”}}>EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span>
-</div>}
-
-  </div>;
-}
-
-function Prg({s,l}){
-return <div style={{padding:“6px 12px”,background:”#f6f9fa”,borderBottom:“1px solid #e0e8ec”,flexShrink:0}}>
-<div style={{display:“flex”,gap:1}}>{l.map((n,i)=><div key={i} style={{flex:1,textAlign:“center”}}>
-<div style={{height:3,borderRadius:2,background:i<s?”#28a060”:i===s?T:”#d0dce0”}}/>
-<div style={{fontSize:7,color:i<=s?DK:”#aaa”,marginTop:1}}>{n}</div>
-</div>)}</div>
-
-  </div>;
-}
-
-const BAll=({f})=><div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
-<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
-<button style={{…bt,background:DK,color:”#fff”}}>Move to ESAP</button>
-<button style={{…bt,background:T,color:”#fff”}}>Pre-Register</button>
-<button onClick={f} style={{…bt,background:T,color:”#fff”}}>Next</button>
-
-</div>;
-
-const BN=({f,b})=><div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
-<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
-{b&&<button onClick={b} style={{…bt,background:T,color:”#fff”}}>Previous</button>}
-<button onClick={f} style={{…bt,background:T,color:”#fff”}}>Next</button>
-
-</div>;
-
-function Welcome({f}){
-const[ok,setOk]=useState(false);
-return <div style={{height:“100%”,overflowY:“auto”,background:”#f0f4f6”,padding:16}}>
-<div style={{maxWidth:520,margin:“0 auto”,background:”#fff”,borderRadius:8,padding:“20px 24px”,boxShadow:“0 2px 12px rgba(0,0,0,.06)”,border:“1px solid #d0dce0”}}>
-<div style={{textAlign:“center”,marginBottom:12}}>
-<div style={{fontSize:24,fontWeight:800,color:DK,letterSpacing:3}}>C.A.R.S.</div>
-<div style={{fontSize:11,color:”#5a7a85”,fontStyle:“italic”}}>Interactive Training Simulator</div>
-<div style={{fontSize:10,color:”#999”,marginTop:4}}>Eligibility Clerk Training - Chapter 1</div>
-</div>
-<div style={{background:”#fef2f2”,border:“1px solid #e8a0a0”,borderRadius:6,padding:“10px 14px”,fontSize:11,lineHeight:1.6,color:”#5a2020”,marginBottom:12}}>
-<strong>LEGAL DISCLAIMER:</strong> This is a training simulation only. It is NOT the official C.A.R.S., MAVERICS, or BCS system and has no connection to any live MDHS database. All client data is entirely fictional. For internal training and onboarding purposes only. Not to be distributed publicly or sold commercially. System names and workflows are property of MDHS and/or their respective vendors, used here strictly for educational training of authorized personnel. No real case actions are performed and no data is transmitted or stored.
-</div>
-<div style={{background:”#f6f9fa”,border:“1px solid #d0dce0”,borderRadius:6,padding:“10px 14px”,fontSize:11,lineHeight:1.6,marginBottom:12}}>
-<strong>CONFIDENTIALITY NOTICE:</strong> All real client information in actual MDHS systems is confidential and protected under state and federal law. This simulation uses only fictional data. Do not use real client information in any training context.
-</div>
-<label style={{display:“flex”,gap:8,fontSize:12,cursor:“pointer”,padding:“8px 0”}} onClick={()=>setOk(!ok)}>
-<span style={{width:16,height:16,border:“2px solid “+T,borderRadius:3,display:“inline-flex”,alignItems:“center”,justifyContent:“center”,background:ok?T:“transparent”,color:”#fff”,fontSize:10,flexShrink:0}}>{ok?“✓”:””}</span>
-I understand this is a training simulation and agree to the terms above.
-</label>
-{ok&&<div style={{marginTop:12}}>
-<div style={{background:”#e6f7ff”,borderRadius:6,padding:“10px 14px”,fontSize:12,lineHeight:1.7,marginBottom:10}}>
-<strong>Workflow:</strong> Login → Dashboard → 6 CARS screens → MAVERICS (8 steps) → Case Verification → Appointment → Submit<br/>
-<strong>Queue:</strong> You will process 3–4 randomly assigned applicants per session.
-</div>
-<div style={{background:”#f0faf4”,borderRadius:6,padding:“10px 14px”,fontSize:12,lineHeight:1.6,border:“1px solid #b8e6c8”,marginBottom:12}}>
-<strong>Login:</strong> <code style={{background:”#d0eef4”,padding:“1px 4px”,borderRadius:2}}>jmitchell</code> / <code style={{background:”#d0eef4”,padding:“1px 4px”,borderRadius:2}}>MDHS2026!</code>
-</div>
-<button onClick={f} style={{…bt,background:T,color:”#fff”,width:“100%”,padding:10,fontSize:14,borderRadius:5}}>Begin Training</button>
-</div>}
-</div>
-
-  </div>;
-}
-
-function Login({f}){
-const[u,setU]=useState(””);const[p,setP]=useState(””);const[e,setE]=useState(””);
-const go=()=>{if(u.toLowerCase()===“jmitchell”&&p===“MDHS2026!”){f();}else setE(“Invalid credentials.”);};
-return <div style={{height:“100%”,display:“flex”,flexDirection:“column”,background:”#f0f4f6”}}>
-<div style={{background:”#fff”,padding:“6px 14px”,borderBottom:“1px solid #d0dce0”,display:“flex”,justifyContent:“space-between”,alignItems:“center”,flexShrink:0}}>
-<span style={{fontSize:13,fontWeight:800,color:DK}}>MDHS <span style={{fontWeight:600,color:”#5a7a85”}}>BETTER ME</span></span>
-<span style={{fontSize:11,fontWeight:700,color:DK}}>LOGIN</span>
-</div>
-<div style={{flex:1,display:“flex”,alignItems:“center”,justifyContent:“center”}}>
-<div style={{width:300,textAlign:“center”}}>
-<div style={{fontSize:28,fontWeight:800,color:DK,letterSpacing:4,marginBottom:20}}>C.A.R.S.</div>
-<div style={{background:”#fff”,borderRadius:8,padding:“24px 20px”,border:“1px solid #d0dce0”}}>
-<div style={{marginBottom:12,textAlign:“left”}}><label style={{fontSize:10,fontWeight:700,color:”#5a7a85”,display:“block”,marginBottom:3}}>USERNAME</label><input value={u} onChange={x=>{setU(x.target.value);setE(””);}} style={{…fi,padding:“9px 10px”,fontSize:14}}/></div>
-<div style={{marginBottom:14,textAlign:“left”}}><label style={{fontSize:10,fontWeight:700,color:”#5a7a85”,display:“block”,marginBottom:3}}>PASSWORD</label><input value={p} onChange={x=>{setP(x.target.value);setE(””);}} type=“password” style={{…fi,padding:“9px 10px”,fontSize:14}} onKeyDown={x=>{if(x.key===“Enter”)go();}}/></div>
-{e&&<div style={{color:”#d43b3b”,fontSize:11,marginBottom:8,background:”#fef2f2”,padding:“4px 8px”,borderRadius:3}}>{e}</div>}
-<button onClick={go} style={{…bt,background:T,color:”#fff”,width:“100%”,padding:9,fontSize:14,borderRadius:4}}>LOGIN</button>
-</div>
-</div>
-</div>
-
-  </div>;
-}
-
-function Dash({queue,qIdx,f}){
-const remaining=queue.length-qIdx;
-const Ti=({i,t,d,b,fn,off,hl})=><div style={{background:”#fff”,borderRadius:6,padding:14,textAlign:“center”,border:hl?“2px solid “+T:“1px solid #d0dce0”}}>
-<div style={{fontSize:24,marginBottom:4}}>{i}</div>
-<div style={{fontSize:12,fontWeight:700,color:DK}}>{t}</div>
-<div style={{fontSize:9,color:”#7a9aa5”,marginTop:2,marginBottom:8,fontStyle:“italic”}}>{d}</div>
-<button onClick={fn} disabled={off} style={{…bt,background:off?”#ccc”:T,color:”#fff”,width:“100%”,opacity:off?0.6:1,fontSize:11}}>{b}</button>
-
-  </div>;
-  return <div style={{padding:16}}>
-    <h1 style={{textAlign:"center",fontSize:18,color:T,fontWeight:700,marginBottom:4}}>Dashboard</h1>
-    <div style={{textAlign:"center",marginBottom:14,fontSize:11,color:"#5a7a85"}}>
-      Queue: <strong style={{color:DK}}>{remaining} applicant{remaining!==1?"s":""} remaining</strong> this session
+  <div id="pg-welcome" class="pg on">
+    <div class="welcome-wrap">
+      <div class="wcard">
+        <div style="text-align:center;margin-bottom:12px">
+          <div style="font-size:24px;font-weight:800;color:#2a6a78;letter-spacing:3px">C.A.R.S.</div>
+          <div style="font-size:11px;color:#5a7a85;font-style:italic">Interactive Training Simulator</div>
+          <div style="font-size:10px;color:#999;margin-top:4px">Eligibility Clerk Training — Chapter 1</div>
+        </div>
+        <div class="disc"><strong>LEGAL DISCLAIMER:</strong> This is a training simulation only. It is NOT the official C.A.R.S., MAVERICS, or BCS system and has no connection to any live MDHS database. All client data is entirely fictional. For internal training and onboarding purposes only. Not to be distributed publicly or sold commercially. System names and workflows are property of MDHS and/or their respective vendors, used here strictly for educational training of authorized personnel. No real case actions are performed and no data is transmitted or stored.</div>
+        <div class="conf"><strong>CONFIDENTIALITY NOTICE:</strong> All real client information in actual MDHS systems is confidential and protected under state and federal law. This simulation uses only fictional data. Do not use real client information in any training context.</div>
+        <div class="agree-row" id="agree-row" onclick="toggleAgree()">
+          <div class="agree-chk" id="agree-chk"></div>
+          <span>I understand this is a training simulation and agree to the terms above.</span>
+        </div>
+        <div id="agree-content" style="display:none;margin-top:12px">
+          <div class="info-box"><strong>Workflow:</strong> Login &rarr; Dashboard &rarr; 6 CARS screens &rarr; MAVERICS (8 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session.</div>
+          <div class="cred-box"><strong>Login:</strong> <code>jmitchell</code> / <code>MDHS2026!</code></div>
+          <button class="big-btn" onclick="startSession()">Begin Training</button>
+        </div>
+      </div>
     </div>
-    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,maxWidth:580,margin:"0 auto"}}>
-      <Ti i="📋" t="Online Registration" d="Process new digital applications" b={remaining>0?"Next Application":"Queue Empty"} fn={f} hl off={remaining===0}/>
-      <Ti i="✏️" t="Manual Entry" d="Process new paper applications" b="Coming Soon" off/>
-      <Ti i="📑" t="Online Claims" d="Submit a SNAP / TANF claim" b="SUBMIT A CLAIM" off/>
-      <Ti i="⏳" t="Client Pre-Registration" d="Missing SSN / Receiving benefits" b="Queue" off/>
-      <Ti i="📍" t="Client Address Verify" d="Verify Client with Address" b="Verify" off/>
-      <Ti i="📂" t="My Cases" d="View Assigned Cases" b="View Queue" off/>
+  </div>
+
+  <!-- LOGIN -->
+
+  <div id="pg-login" class="pg">
+    <div class="login-wrap">
+      <div class="login-top">
+        <span class="mdhs">MDHS <span style="font-weight:600;color:#5a7a85">BETTER ME</span></span>
+        <span class="tag">LOGIN</span>
+      </div>
+      <div class="login-center">
+        <div class="login-box">
+          <div class="login-title">C.A.R.S.</div>
+          <div class="login-card">
+            <div class="login-field"><label>Username</label><input id="login-u" type="text" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()"></div>
+            <div class="login-field"><label>Password</label><input id="login-p" type="password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+            <div id="login-err" class="login-err" style="display:none"></div>
+            <button class="login-btn" onclick="doLogin()">LOGIN</button>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>;
-}
+  </div>
 
-function S1({f,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>DIGITAL APPLICANT INFORMATION</h2><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:6}}>Demographics</div><div style={rw}><Fi l="First Name" v={D.fn}/><Fi l="Middle Name" v={D.mn}/><Fi l="Last Name" v={D.ln}/><Fd l="Suffix" v="Select Suffix"/></div><div style={rw}><Fi l="SSN" v={D.ssn}/><Fi l="Date of Birth" v={D.dob}/><div style={{flex:1,minWidth:120}}><label style={lb}>Applying For</label><div style={{display:“flex”,gap:12,padding:“4px 0”}}><Ck l="SNAP" c/><Ck l="TANF" c/></div></div><Fd l="Language" v="English"/></div><div style={{fontSize:11,fontWeight:700,color:DK,margin:“10px 0 6px”}}>Contact Information</div><div style={rw}><Fi l="Home Address 1" v={D.addr}/><Fi l="Home Address 2" v=""/><Fi l="Home City" v={D.city}/><Fd l="Home State" v="Mississippi"/></div><div style={rw}><Fi l="Zip Code" v={D.zip}/><Fd l="County" v={D.cty}/><div style={{flex:2,minWidth:180,display:“flex”,alignItems:“flex-end”,paddingBottom:4}}><Ck l="Mailing same as Residence" c/></div></div><div style={rw}><Fi l="Mailing Address" v={D.addr}/><Fi l="Mailing City" v={D.city}/><Fd l="Mailing State" v="Mississippi"/><Fi l="Mailing Zip" v={D.zip}/></div><div style={rw}><Fi l="Phone" v={D.p1}/><Fd l="Type" v={D.p1t}/><Fi l=“Phone 2” v={D.p2||””}/><Fd l=“Type” v={D.p2t||“N/A”}/></div><div style={{…rw,alignItems:“flex-end”}}><div style={{flex:1,minWidth:100}}><label style={lb}>E-Notices?</label><Rd v=“Yes” o={[“Yes”,“No”]}/></div><Fi l="Email" v={D.em}/></div><BAll f={f}/></div>;}
+  <!-- DASHBOARD -->
 
-function S2({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>INCOME</h2><Qr q=“Earned income (wages, tips, bonuses, self-employment)?” v={D.ei===”$0.00”?“NO”:“YES”}/>{D.ei!==”$0.00”&&<div style={{padding:“2px 0 6px 16px”,fontSize:12}}>Amount: <strong>{D.ei}</strong></div>}<Qr q="Unearned income (SS, disability, VA, pensions, child support)?" v="NO"/><Qr q="Expect income later this month?" v="NO"/><Qr q="Only income from migrant/seasonal farm work?" v="NO"/><BN f={f} b={b}/></div>;}
+  <div id="pg-dash" class="pg">
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
+    <div class="scroll" style="background:#f0f4f6">
+      <div class="dash-wrap">
+        <div class="dash-title">Dashboard</div>
+        <div class="dash-sub" id="dash-sub">Queue: loading...</div>
+        <div class="dash-grid">
+          <div class="dash-tile hl">
+            <div class="tile-icon">&#128203;</div>
+            <div class="tile-title">Online Registration</div>
+            <div class="tile-desc">Process new digital applications</div>
+            <button class="tile-btn" id="dash-next-btn" onclick="startApplication()">Next Application</button>
+          </div>
+          <div class="dash-tile"><div class="tile-icon">&#9999;&#65039;</div><div class="tile-title">Manual Entry</div><div class="tile-desc">Process new paper applications</div><button class="tile-btn" disabled>Coming Soon</button></div>
+          <div class="dash-tile"><div class="tile-icon">&#128209;</div><div class="tile-title">Online Claims</div><div class="tile-desc">Submit a SNAP / TANF claim</div><button class="tile-btn" disabled>Submit a Claim</button></div>
+          <div class="dash-tile"><div class="tile-icon">&#8987;</div><div class="tile-title">Client Pre-Registration</div><div class="tile-desc">Missing SSN / Receiving benefits</div><button class="tile-btn" disabled>Queue</button></div>
+          <div class="dash-tile"><div class="tile-icon">&#128205;</div><div class="tile-title">Client Address Verify</div><div class="tile-desc">Verify Client with Address</div><button class="tile-btn" disabled>Verify</button></div>
+          <div class="dash-tile"><div class="tile-icon">&#128194;</div><div class="tile-title">My Cases</div><div class="tile-desc">View Assigned Cases</div><button class="tile-btn" disabled>View Queue</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-function S3({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>RESOURCES</h2><Qr q="Cash, checking/savings, IRA, stocks, vehicles, property, land?" v="NO"/><h2 style={{…ts,margin:“12px 0 8px”}}>EXPENSES</h2><div style={rw}><Fi l="Rent/Mortgage" v={D.rent}/><Fi l="Electricity" v={D.elec}/><Fi l="Gas" v={D.gas}/></div><div style={{...rw,marginBottom:12}}><Fi l="Water" v={D.wat}/><Fi l="Phone" v={D.ph}/></div><Qr q="Pay for dependent child/disabled member care?" v="NO"/><Qr q="Anyone 60+ or disabled with medical expenses over $35?" v="NO"/><BN f={f} b={b}/></div>;}
+  <!-- CARS SCREENS (S1-S6) -->
 
-function S4({f,b}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>ADDITIONAL QUESTIONS</h2><Qr q="Deaf, hearing impaired, or need interpreter?" v="NO"/><Qr q="SNAP disqualification for fraud?" v="NO"/><Qr q="Hiding from law, jail for felony, violating parole?" v="NO"/><Qr q="Commercial boarding home resident?" v="NO"/><Qr q="On strike?" v="NO"/><BN f={f} b={b}/></div>;}
+  <div id="pg-cars" class="pg">
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
+    <div class="hdr-banner">
+      <span id="cars-bdate"></span>
+      <span class="exp">EXPEDITE: YES</span>
+      <span>CLIENT DOCUMENT: YES</span>
+    </div>
+    <div class="prg-wrap"><div class="prg-row" id="prg-row"></div></div>
+    <div class="scroll"><div class="pad" id="cars-body"></div></div>
+  </div>
 
-function S5({f,b,D}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>HOUSEHOLD INFORMATION</h2><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:4}}>Head Of Household (PI)</div><div style={rw}><Fi l="First Name" v={D.fn}/><Fi l="Last Name" v={D.ln}/><Fd l="Relationship" v="Primary Individual"/></div><div style={rw}><Fi l="SSN" v={D.ssn}/><Fi l="DOB" v={D.dob}/><Fi l=“Age” v={D.age+” yrs”} w={0.4}/><Fd l="Gender" v={D.gender}/></div><div style={{borderTop:“1px solid #e0e8ec”,paddingTop:8,marginTop:4}}><div style={{fontSize:11,fontWeight:700,color:DK,marginBottom:4}}>Household Members</div><div style={rw}><Fi l="First Name" v={D.hfn}/><Fi l="Last Name" v={D.hln}/><Fd l="Relationship" v={D.hrel}/></div><div style={rw}><Fi l="SSN" v={D.hssn}/><Fi l="DOB" v={D.hdob}/><Fi l="Age" v={D.hage} w={0.4}/><Fd l="Gender" v={D.hgen}/></div></div><BN f={f} b={b}/></div>;}
+  <!-- MAVERICS -->
 
-function S6({f,b}){return <div style={{padding:“12px 14px”}}><h2 style={ts}>ADDITIONAL APPLICATION INFORMATION</h2><p style={{fontSize:10,color:”#7a9aa5”,fontStyle:“italic”,marginBottom:10}}>Household members not included on application</p><div style={{display:“flex”,gap:16,flexWrap:“wrap”,marginBottom:12}}><div><div style={{fontSize:10,fontWeight:700,marginBottom:4,textDecoration:“underline”}}>SNAP Authorized Rep</div><div style={{display:“flex”,gap:4}}><Fi l="First" v=""/><Fi l="Last" v=""/><Fi l="Phone" v=""/></div></div><div><div style={{fontSize:10,fontWeight:700,marginBottom:4,textDecoration:“underline”}}>SNAP Benefit Rep</div><div style={{display:“flex”,gap:4}}><Fi l="First" v=""/><Fi l="Last" v=""/><Fi l="Phone" v=""/></div></div></div><div style={{fontSize:12}}>Copy preference: <Rd v=“Electronic” o={[“Paper”,“Electronic”,“Refuse”]}/></div><BN f={f} b={b}/></div>;}
+  <div id="pg-mavs" class="pg">
+    <div class="mavs-wrap" style="height:100%">
+      <div class="mavs-bar"><span class="mavs-title">MAVERICS</span><span class="mavs-step" id="mavs-step">Step 1/8</span></div>
+      <div class="mavs-body" id="mavs-body"></div>
+    </div>
+  </div>
 
-function Mavs({f,D}){
-const[s,setS]=useState(0);const g=”#00ff41”,w=”#fff”,y=”#ffcc00”,dk=”#0d0d1a”;
-const L=({t,c})=><div style={{color:c||g}}>{t}</div>;
-const H=({t})=><React.Fragment><L t={”=”.repeat(44)} c=”#007722”/><L t={”  “+t} c={w}/><L t={”=”.repeat(44)} c=”#007722”/><br/></React.Fragment>;
-const B=({t,fn})=><button onClick={fn} style={{…bt,background:g,color:dk,marginTop:8,marginBottom:16,fontFamily:“monospace”}}>{t}</button>;
-const sc=[
-<div key={0}><H t="FULL SERVICE CLERICAL MENU (FUSC)"/><L t="  1. GENERAL INQUIRIES"/><div style={{color:”#00ff88”,background:“rgba(0,255,65,.08)”,padding:“1px 3px”}}>{”-> 2. APPLICATION REGISTRATION”}</div><L t="  3. NOTICE REQUESTS"/><L t="  4. ADD PROGRAM"/><L t="  5. CASE DESTRUCTION"/><br/><B t=“Select 2” fn={()=>setS(1)}/></div>,
-<div key={1}><H t="CLIENT INQUIRY (CLIR)"/><L t="  1. INQUIRE ON PERSON"/><L t="  2. SAVE NEW CLIENT"/><L t="  3. EXISTING CASE #"/><L t="  4. NEW CASE #"/><L t="  6. DRS INQUIRY"/><br/><L t={D.ln.toUpperCase()+”, “+D.fn.toUpperCase()+”  DOB: “+D.dob} c=”#aaa”/><br/><B t=“Inquire (1)” fn={()=>setS(2)}/></div>,
-<div key={2}><H t="CLIS - SHORT LIST"/><L t="NO CLIENTS FOUND" c="#e8a820"/><br/><L t={“SSN: “+D.ssn+”  DOB: “+D.dob} c=”#aaa”/><br/><B t=“Save New Client (2)” fn={()=>setS(3)}/></div>,
-<div key={3}><H t="DRS INQUIRY"/><L t={D.ln.toUpperCase()+”, “+D.fn.toUpperCase()}/><br/><L t="NO DISQUALIFICATIONS" c="#28a060"/><br/><B t=“Register New Case (4)” fn={()=>setS(4)}/></div>,
-<div key={4}><H t="REGISTRATION"/><L t={“CASE: “+D.cn+” (NEW)”} c={w}/><L t={“PI: “+D.ln.toUpperCase()+”, “+D.fn.toUpperCase()} c={w}/><L t={“ID: “+D.pid} c={w}/><br/><L t=“FS, AF  INITIAL  ONLINE  “+D.cty.toUpperCase()+”/SNAP+TANF”/><br/><L t="REGISTERED" c="#28a060"/><B t=“EXSW” fn={()=>setS(5)}/></div>,
-<div key={5}><H t="EXPEDITED SCREENING (EXSW)"/><L t={“CASE: “+D.cn} c={w}/><br/><L t={“INCOME: “+D.ei+”  RESOURCES: $0”}/><L t={“RENT: “+D.rent+”  UTILITIES: “+(parseInt(D.elec)+parseInt(D.gas)+parseInt(D.wat)).toString().replace(/\d+/,m=>”$”+m)}/><br/><L t="EXPEDITED: YES" c={y}/><B t=“ADDR” fn={()=>setS(6)}/></div>,
-<div key={6}><H t="ADDRESS (ADDR)"/><L t={D.addr} c={w}/><L t={D.city+”, MS “+D.zip} c={w}/><L t={“EMAIL: “+D.em} c={w}/><br/><L t="SAVED" c="#28a060"/><B t=“CAP1” fn={()=>setS(7)}/></div>,
-<div key={7}><H t="CASE ACTION (CAP1)"/><L t={“CASE: “+D.cn} c={w}/><L t={“FS REC’D  “+D.bd.split(” “)[0]} c={w}/><L t={“AF REC’D  “+D.bd.split(” “)[0]} c={w}/><br/><L t={“Case #: “+D.cn} c={y}/><br/><button onClick={f} style={{…bt,background:y,color:dk,fontFamily:“monospace”,marginBottom:16}}>Return to C.A.R.S.</button></div>
+  <!-- VERIFY / APPT (reuses cars layout) -->
+
+  <div id="pg-vfy" class="pg">
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
+    <div class="hdr-banner">
+      <span id="vfy-bdate"></span>
+      <span class="exp">EXPEDITE: YES</span>
+      <span>CLIENT DOCUMENT: YES</span>
+    </div>
+    <div class="prg-wrap"><div class="prg-row" id="prg-row-vfy"></div></div>
+    <div class="scroll"><div class="pad" id="vfy-body"></div></div>
+  </div>
+
+  <!-- DONE -->
+
+  <div id="pg-done" class="pg">
+    <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">J. Mitchell</span></div>
+    <div class="scroll">
+      <div class="done-wrap">
+        <div class="done-icon">&#9989;</div>
+        <div class="done-title">Application Complete!</div>
+        <div class="done-msg" id="done-msg"></div>
+        <div class="done-warn">Do NOT print EA-900 from CARS &mdash; creates duplicates.</div>
+        <div id="done-session" style="display:none" class="done-session">&#127881; <strong>Session Complete!</strong> You have processed all applicants in your queue.</div>
+        <button id="done-btn" style="margin-top:16px;padding:8px 24px;font-size:13px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff" onclick="doneAction()"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TASKBAR -->
+
+  <div id="taskbar">
+    <div style="display:flex;gap:3px">
+      <span class="tb-btn">Start</span>
+      <span class="tb-btn tb-cars" id="tb-cars" style="display:none">C.A.R.S.</span>
+      <span class="tb-btn tb-mavs" id="tb-mavs" style="display:none">MAVERICS</span>
+    </div>
+    <span id="tb-time"></span>
+  </div>
+
+  <!-- TOAST -->
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────────
+var POOL = [
+  {fn:"Tameka",mn:"R",ln:"Holloway",ssn:"428-76-3391",dob:"06/14/1989",age:36,gender:"Female",addr:"1247 MAGNOLIA CREEK DR",city:"HATTIESBURG",zip:"39401",cty:"Forrest",p1:"(601) 482-7193",p1t:"Home",p2:"(601) 555-0214",p2t:"Cell",em:"tameka.holloway89@gmail.com",ei:"$620.00",rent:"$675.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$55.00",hfn:"Jaylen",hln:"Holloway",hrel:"Child",hssn:"428-91-5567",hdob:"03/22/2019",hage:"7 years",hgen:"Male",cn:"307224189",pid:"261003847",hid:"261003902",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
+  {fn:"Darnell",mn:"T",ln:"Washington",ssn:"512-44-8821",dob:"03/02/1985",age:41,gender:"Male",addr:"834 OAK GROVE RD",city:"JACKSON",zip:"39201",cty:"Hinds",p1:"(601) 334-7720",p1t:"Cell",p2:"",p2t:"N/A",em:"dwashington85@yahoo.com",ei:"$0.00",rent:"$550.00",elec:"$80.00",gas:"$0.00",wat:"$25.00",ph:"$45.00",hfn:"Mia",hln:"Washington",hrel:"Child",hssn:"512-91-3304",hdob:"07/11/2015",hage:"10 years",hgen:"Female",cn:"307224200",pid:"261003900",hid:"261003960",wk:"JAMES REED",fso:"HINDS COUNTY DHS"},
+  {fn:"Latoya",mn:"M",ln:"Jenkins",ssn:"601-33-9912",dob:"11/19/1992",age:33,gender:"Female",addr:"2201 PINE VALLEY LN",city:"MERIDIAN",zip:"39301",cty:"Lauderdale",p1:"(601) 693-4411",p1t:"Home",p2:"(601) 555-8823",p2t:"Cell",em:"latoya.jenkins@gmail.com",ei:"$480.00",rent:"$600.00",elec:"$110.00",gas:"$50.00",wat:"$35.00",ph:"$60.00",hfn:"Destiny",hln:"Jenkins",hrel:"Child",hssn:"601-82-7741",hdob:"04/05/2018",hage:"8 years",hgen:"Female",cn:"307224301",pid:"261004010",hid:"261004071",wk:"SHARON MOORE",fso:"LAUDERDALE COUNTY DHS"},
+  {fn:"Marcus",mn:"A",ln:"Brown",ssn:"389-55-1123",dob:"08/27/1979",age:46,gender:"Male",addr:"519 CEDAR BLUFF DR",city:"BILOXI",zip:"39530",cty:"Harrison",p1:"(228) 374-6602",p1t:"Cell",p2:"",p2t:"N/A",em:"marcusbrown79@hotmail.com",ei:"$740.00",rent:"$800.00",elec:"$125.00",gas:"$55.00",wat:"$40.00",ph:"$50.00",hfn:"Tyrone",hln:"Brown",hrel:"Child",hssn:"389-88-4450",hdob:"09/14/2012",hage:"13 years",hgen:"Male",cn:"307224412",pid:"261004200",hid:"261004261",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {fn:"Shenika",mn:"L",ln:"Davis",ssn:"447-22-6634",dob:"01/30/1996",age:30,gender:"Female",addr:"78 WILLOW BEND RD",city:"TUPELO",zip:"38801",cty:"Lee",p1:"(662) 841-5530",p1t:"Home",p2:"(662) 555-2290",p2t:"Cell",em:"shenikadavis96@gmail.com",ei:"$310.00",rent:"$525.00",elec:"$70.00",gas:"$30.00",wat:"$20.00",ph:"$40.00",hfn:"Aaliyah",hln:"Davis",hrel:"Child",hssn:"447-90-1122",hdob:"02/28/2021",hage:"5 years",hgen:"Female",cn:"307224523",pid:"261004300",hid:"261004361",wk:"ANGELA PRICE",fso:"LEE COUNTY DHS"},
+  {fn:"Reginald",mn:"J",ln:"Thomas",ssn:"523-67-4490",dob:"05/15/1983",age:43,gender:"Male",addr:"3302 DOGWOOD CIRCLE",city:"GULFPORT",zip:"39501",cty:"Harrison",p1:"(228) 863-7741",p1t:"Cell",p2:"",p2t:"N/A",em:"rthomas83@gmail.com",ei:"$0.00",rent:"$700.00",elec:"$105.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Keisha",hln:"Thomas",hrel:"Spouse",hssn:"523-81-3345",hdob:"08/03/1985",hage:"41 years",hgen:"Female",cn:"307224634",pid:"261004400",hid:"261004461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {fn:"Yolanda",mn:"B",ln:"Scott",ssn:"334-88-2256",dob:"07/04/1990",age:35,gender:"Female",addr:"990 RIVERDALE AVE",city:"VICKSBURG",zip:"39180",cty:"Warren",p1:"(601) 638-2200",p1t:"Home",p2:"(601) 555-4411",p2t:"Cell",em:"yolanda.scott90@yahoo.com",ei:"$550.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Caleb",hln:"Scott",hrel:"Child",hssn:"334-92-6678",hdob:"11/20/2017",hage:"8 years",hgen:"Male",cn:"307224745",pid:"261004500",hid:"261004561",wk:"DOROTHY BANKS",fso:"WARREN COUNTY DHS"},
+  {fn:"Terrence",mn:"K",ln:"Williams",ssn:"460-11-8834",dob:"12/09/1988",age:37,gender:"Male",addr:"145 PECAN GROVE DR",city:"NATCHEZ",zip:"39120",cty:"Adams",p1:"(601) 445-3390",p1t:"Cell",p2:"",p2t:"N/A",em:"twilli88@gmail.com",ei:"$680.00",rent:"$575.00",elec:"$85.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Jasmine",hln:"Williams",hrel:"Child",hssn:"460-83-9910",hdob:"06/17/2016",hage:"9 years",hgen:"Female",cn:"307224856",pid:"261004600",hid:"261004661",wk:"MARCUS BELL",fso:"ADAMS COUNTY DHS"},
+  {fn:"Keandra",mn:"N",ln:"Robinson",ssn:"578-44-1122",dob:"09/22/1994",age:31,gender:"Female",addr:"2889 SUNFLOWER ST",city:"GREENVILLE",zip:"38701",cty:"Washington",p1:"(662) 335-8820",p1t:"Home",p2:"(662) 555-7711",p2t:"Cell",em:"keandra.robinson94@gmail.com",ei:"$0.00",rent:"$490.00",elec:"$75.00",gas:"$25.00",wat:"$20.00",ph:"$40.00",hfn:"Noah",hln:"Robinson",hrel:"Child",hssn:"578-90-4456",hdob:"03/14/2020",hage:"6 years",hgen:"Male",cn:"307224967",pid:"261004700",hid:"261004761",wk:"TAMARA WEST",fso:"WASHINGTON COUNTY DHS"},
+  {fn:"Derrick",mn:"O",ln:"Jackson",ssn:"415-77-3345",dob:"04/18/1981",age:45,gender:"Male",addr:"707 MAGNOLIA BLVD",city:"COLUMBUS",zip:"39701",cty:"Lowndes",p1:"(662) 328-4411",p1t:"Cell",p2:"",p2t:"N/A",em:"djackson81@yahoo.com",ei:"$820.00",rent:"$750.00",elec:"$115.00",gas:"$60.00",wat:"$35.00",ph:"$60.00",hfn:"Brianna",hln:"Jackson",hrel:"Child",hssn:"415-82-6670",hdob:"08/29/2014",hage:"11 years",hgen:"Female",cn:"307225078",pid:"261004800",hid:"261004861",wk:"LARRY SIMMONS",fso:"LOWNDES COUNTY DHS"},
+  {fn:"Monique",mn:"C",ln:"Harris",ssn:"330-55-7789",dob:"02/14/1991",age:35,gender:"Female",addr:"1560 HOLLY SPRINGS RD",city:"OXFORD",zip:"38655",cty:"Lafayette",p1:"(662) 234-5520",p1t:"Home",p2:"(662) 555-9933",p2t:"Cell",em:"monique.harris91@gmail.com",ei:"$390.00",rent:"$700.00",elec:"$100.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Isaiah",hln:"Harris",hrel:"Child",hssn:"330-84-2211",hdob:"10/05/2019",hage:"6 years",hgen:"Male",cn:"307225189",pid:"261004900",hid:"261004961",wk:"DIANE TUCKER",fso:"LAFAYETTE COUNTY DHS"},
+  {fn:"Calvin",mn:"R",ln:"Moore",ssn:"498-22-6601",dob:"06/30/1977",age:48,gender:"Male",addr:"444 CYPRESS CREEK DR",city:"HATTIESBURG",zip:"39402",cty:"Forrest",p1:"(601) 268-7730",p1t:"Cell",p2:"",p2t:"N/A",em:"cmoore77@hotmail.com",ei:"$0.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Tyra",hln:"Moore",hrel:"Child",hssn:"498-91-4423",hdob:"05/22/2016",hage:"9 years",hgen:"Female",cn:"307225290",pid:"261005000",hid:"261005061",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
+  {fn:"Aaliyah",mn:"S",ln:"Turner",ssn:"561-33-8812",dob:"10/08/1999",age:26,gender:"Female",addr:"223 BIRCH LANE",city:"LAUREL",zip:"39440",cty:"Jones",p1:"(601) 425-6640",p1t:"Cell",p2:"(601) 555-3312",p2t:"Home",em:"aaliyah.turner99@gmail.com",ei:"$270.00",rent:"$450.00",elec:"$65.00",gas:"$20.00",wat:"$20.00",ph:"$35.00",hfn:"Ava",hln:"Turner",hrel:"Child",hssn:"561-88-7745",hdob:"12/01/2022",hage:"3 years",hgen:"Female",cn:"307225401",pid:"261005100",hid:"261005161",wk:"JAMES REED",fso:"JONES COUNTY DHS"},
+  {fn:"Broderick",mn:"D",ln:"Lewis",ssn:"479-66-2230",dob:"08/11/1986",age:39,gender:"Male",addr:"3811 SYCAMORE PARK DR",city:"STARKVILLE",zip:"39759",cty:"Oktibbeha",p1:"(662) 323-8801",p1t:"Home",p2:"",p2t:"N/A",em:"brodlewis86@yahoo.com",ei:"$910.00",rent:"$875.00",elec:"$130.00",gas:"$65.00",wat:"$40.00",ph:"$60.00",hfn:"Jordan",hln:"Lewis",hrel:"Child",hssn:"479-80-5567",hdob:"07/16/2013",hage:"12 years",hgen:"Male",cn:"307225512",pid:"261005200",hid:"261005261",wk:"LARRY SIMMONS",fso:"OKTIBBEHA COUNTY DHS"},
+  {fn:"Shaniqua",mn:"V",ln:"White",ssn:"344-99-5512",dob:"03/25/1993",age:33,gender:"Female",addr:"102 AZALEA DR",city:"BRANDON",zip:"39042",cty:"Rankin",p1:"(601) 824-3301",p1t:"Cell",p2:"(601) 555-6678",p2t:"Home",em:"shaniqua.white93@gmail.com",ei:"$430.00",rent:"$725.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Elijah",hln:"White",hrel:"Child",hssn:"344-87-9923",hdob:"01/08/2018",hage:"8 years",hgen:"Male",cn:"307225623",pid:"261005300",hid:"261005361",wk:"SHARON MOORE",fso:"RANKIN COUNTY DHS"},
+  {fn:"Jerome",mn:"L",ln:"Anderson",ssn:"532-11-4478",dob:"11/03/1980",age:45,gender:"Male",addr:"789 GULF WIND BLVD",city:"PASS CHRISTIAN",zip:"39571",cty:"Harrison",p1:"(228) 452-9900",p1t:"Home",p2:"",p2t:"N/A",em:"jerome.anderson80@gmail.com",ei:"$0.00",rent:"$580.00",elec:"$88.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Savannah",hln:"Anderson",hrel:"Child",hssn:"532-84-1123",hdob:"09/30/2017",hage:"8 years",hgen:"Female",cn:"307225734",pid:"261005400",hid:"261005461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {fn:"Tiffany",mn:"A",ln:"Green",ssn:"418-77-3301",dob:"07/17/1995",age:30,gender:"Female",addr:"556 PEACHTREE RD",city:"FLOWOOD",zip:"39232",cty:"Rankin",p1:"(601) 939-4421",p1t:"Cell",p2:"(601) 555-1134",p2t:"Home",em:"tiffany.green95@yahoo.com",ei:"$500.00",rent:"$775.00",elec:"$105.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Jace",hln:"Green",hrel:"Child",hssn:"418-92-6645",hdob:"04/19/2020",hage:"6 years",hgen:"Male",cn:"307225845",pid:"261005500",hid:"261005561",wk:"DOROTHY BANKS",fso:"RANKIN COUNTY DHS"},
+  {fn:"Antwan",mn:"M",ln:"Taylor",ssn:"387-44-9923",dob:"02/06/1984",age:42,gender:"Male",addr:"1023 HICKORY HOLLOW LN",city:"PEARL",zip:"39208",cty:"Rankin",p1:"(601) 939-8820",p1t:"Home",p2:"",p2t:"N/A",em:"antwan.taylor84@gmail.com",ei:"$760.00",rent:"$850.00",elec:"$120.00",gas:"$55.00",wat:"$40.00",ph:"$60.00",hfn:"Malik",hln:"Taylor",hrel:"Child",hssn:"387-86-7712",hdob:"06/10/2015",hage:"10 years",hgen:"Male",cn:"307225956",pid:"261005600",hid:"261005661",wk:"ANGELA PRICE",fso:"RANKIN COUNTY DHS"},
+  {fn:"Lakisha",mn:"T",ln:"Mitchell",ssn:"463-22-7756",dob:"09/28/1997",age:28,gender:"Female",addr:"2200 CLOVER HILL DR",city:"RIDGELAND",zip:"39157",cty:"Madison",p1:"(601) 853-5510",p1t:"Cell",p2:"(601) 555-8890",p2t:"Home",em:"lakisha.mitchell97@gmail.com",ei:"$340.00",rent:"$825.00",elec:"$115.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Zoe",hln:"Mitchell",hrel:"Child",hssn:"463-85-4401",hdob:"11/14/2021",hage:"4 years",hgen:"Female",cn:"307226067",pid:"261005700",hid:"261005761",wk:"DIANE TUCKER",fso:"MADISON COUNTY DHS"},
+  {fn:"Quinton",mn:"B",ln:"Adams",ssn:"541-88-2234",dob:"05/22/1982",age:43,gender:"Male",addr:"371 IRONWOOD DR",city:"SOUTHAVEN",zip:"38671",cty:"DeSoto",p1:"(662) 349-7701",p1t:"Home",p2:"",p2t:"N/A",em:"qadams82@hotmail.com",ei:"$0.00",rent:"$950.00",elec:"$140.00",gas:"$70.00",wat:"$45.00",ph:"$65.00",hfn:"Dominic",hln:"Adams",hrel:"Child",hssn:"541-90-5578",hdob:"08/07/2016",hage:"9 years",hgen:"Male",cn:"307226178",pid:"261005800",hid:"261005861",wk:"TAMARA WEST",fso:"DESOTO COUNTY DHS"}
 ];
-return <div style={{height:“100%”,display:“flex”,flexDirection:“column”,background:dk}}>
-<div style={{background:”#0a0a1a”,padding:“4px 12px”,display:“flex”,justifyContent:“space-between”,flexShrink:0}}>
-<span style={{color:g,fontSize:11,fontFamily:“monospace”}}>MAVERICS</span>
-<span style={{color:”#444”,fontSize:10}}>Step {s+1}/8</span>
-</div>
-<div style={{flex:1,overflowY:“auto”,padding:12,fontFamily:“monospace”,fontSize:12,color:g,lineHeight:1.5}}>{sc[s]}</div>
 
-  </div>;
-}
-
-function Verify({f,b,D}){
-const[cn,setCn]=useState(””);const[ok,setOk]=useState(false);const[er,setEr]=useState(””);
-const ck=()=>{if(cn===D.cn){setOk(true);setEr(””);}else setEr(cn.length<9?“Enter 9 digits”:“NO MATCH FOUND”);};
-return <div style={{padding:“12px 14px”}}><h2 style={ts}>CASE VERIFICATION</h2>
-<div style={{textAlign:“center”,marginBottom:14}}>
-<label style={lb}>MAVS CASE #</label>
-<input value={cn} onChange={e=>{setCn(e.target.value);setEr(””);setOk(false);}} placeholder=“9-digit case #” style={{…fi,width:200,textAlign:“center”,fontSize:14,fontFamily:“monospace”,margin:“0 auto”,display:“block”,border:“2px solid “+(er?”#d43b3b”:ok?”#28a060”:”#bcc8cc”)}} onKeyDown={e=>{if(e.key===“Enter”)ck();}}/>
-{er&&<div style={{color:”#d43b3b”,fontSize:11,marginTop:3}}>{er}</div>}
-<button onClick={ck} style={{…bt,background:DK,color:”#fff”,padding:“6px 24px”,marginTop:8}}>Get IDs</button>
-</div>
-{ok&&<div style={{padding:10,background:”#f0faf4”,border:“1px solid #28a060”,borderRadius:4,marginBottom:10}}>
-<div style={{fontSize:11,fontWeight:700}}>PI: {D.fn} {D.ln}</div>
-<input readOnly value={D.pid} style={{...fi,width:160,marginTop:3}}/>
-<div style={{fontSize:11,fontWeight:700,marginTop:8}}>HH: {D.hfn} {D.hln}</div>
-<input readOnly value={D.hid} style={{...fi,width:160,marginTop:3}}/>
-</div>}
-{ok?<BN f={f} b={b}/>:<div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
-<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
-<button disabled style={{…bt,background:”#ccc”,color:”#fff”,cursor:“not-allowed”}}>Next</button>
-</div>}
-
-  </div>;
-}
-
-function Appt({f,b,D}){
-return <div style={{padding:“12px 14px”}}><h2 style={ts}>Appointment</h2>
-<div style={rw}><Fi l="Date" v={D.ad}/><Fi l="Time" v={D.at}/></div>
-<div style={rw}><Fd l="FSO/Place" v={D.fso}/><Fd l="Case Worker" v={D.wk}/></div>
-<div style={{display:“flex”,justifyContent:“flex-end”,gap:5,padding:“10px 0”,borderTop:“1px solid #e0e8ec”,marginTop:10}}>
-<button style={{…bt,background:”#d43b3b”,color:”#fff”}}>Cancel</button>
-<button onClick={b} style={{…bt,background:T,color:”#fff”}}>Previous</button>
-<button onClick={f} style={{…bt,background:”#28a060”,color:”#fff”}}>Submit</button>
-</div>
-
-  </div>;
-}
-
-function Done({D,onNext,onFinish,isLast}){
-return <div style={{padding:24,textAlign:“center”}}>
-<div style={{fontSize:48}}>✅</div>
-<h2 style={{color:”#28a060”,fontSize:18,margin:“8px 0”}}>Application Complete!</h2>
-<p style={{color:”#5a7a85”,fontSize:12,maxWidth:340,margin:“0 auto”,lineHeight:1.5}}>Case {D.cn} for {D.fn} {D.ln} registered and routed to WorkSite.</p>
-<div style={{marginTop:12,padding:10,background:”#fff8e6”,border:“1px solid #e8a820”,borderRadius:5,fontSize:11,maxWidth:340,margin:“12px auto”}}>
-Do NOT print EA-900 from CARS — creates duplicates.
-</div>
-{isLast
-?<div>
-<div style={{marginTop:12,padding:12,background:”#e6f7ff”,border:“1px solid #90d0f0”,borderRadius:6,fontSize:12,maxWidth:340,margin:“12px auto”}}>
-🎉 <strong>Session Complete!</strong> You have processed all applicants in your queue.
-</div>
-<button onClick={onFinish} style={{…bt,background:T,color:”#fff”,marginTop:16,padding:“8px 24px”,fontSize:13}}>Restart Session</button>
-</div>
-:<button onClick={onNext} style={{…bt,background:T,color:”#fff”,marginTop:20,padding:“8px 24px”,fontSize:13}}>Next Applicant →</button>
-}
-
-  </div>;
-}
-
-function TB({p}){
-const[t,setT]=useState(new Date());
-useEffect(()=>{const i=setInterval(()=>setT(new Date()),60000);return()=>clearInterval(i);},[]);
-return <div style={{height:34,background:”#0d1520”,display:“flex”,alignItems:“center”,justifyContent:“space-between”,padding:“0 10px”,borderTop:“1px solid #1a2a3a”,flexShrink:0}}>
-<div style={{display:“flex”,gap:3}}>
-<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:”#1a3050”,color:”#8ab4f8”}}>Start</span>
-{p!==“welcome”&&p!==“login”&&<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:p!==“mavs”?”#0a3d5e”:”#1a3050”,color:”#fff”}}>C.A.R.S.</span>}
-{p===“mavs”&&<span style={{padding:“2px 8px”,borderRadius:3,fontSize:10,background:”#0a2e0a”,color:”#00ff41”}}>MAVERICS</span>}
-</div>
-<span style={{fontSize:10,color:”#8899aa”}}>{t.toLocaleTimeString([],{hour:“2-digit”,minute:“2-digit”})}</span>
-
-  </div>;
-}
-
-function App(){
-const[p,setP]=useState(“welcome”);
-const[s,setS]=useState(0);
-const[toast,setToast]=useState(null);
-const[queue,setQueue]=useState([]);
-const[qIdx,setQIdx]=useState(0);
-const sh=useCallback((m,t)=>setToast({m,t}),[]);
-const D=queue[qIdx]||queue[0]||POOL[0];
-const pl=[“Applicant”,“Income”,“Resources”,“Questions”,“Household”,“Add’l”,“MAVS”,“Verify”,“Appt”];
-
-const startSession=()=>{
-const q=buildQueue();
-setQueue(q);
-setQIdx(0);
-setP(“login”);
+// ── STATE ───────────────────────────────────────────────────────────────────
+var state = {
+  agreed: false,
+  queue: [],
+  qIdx: 0,
+  carsStep: 0,
+  mavsStep: 0,
+  vfyStep: 0,
+  verifyOk: false
 };
 
-const nextApplicant=()=>{
-const next=qIdx+1;
-setQIdx(next);
-setS(0);
-setP(“dash”);
-sh(“Next applicant loaded — “+queue[next].fn+” “+queue[next].ln,“ok”);
-};
+function D() { return state.queue[state.qIdx] || POOL[0]; }
 
-const wrap=(st,ch)=><div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
-<Hdr banner D={D}/>
-<Prg s={st} l={pl}/>
-<div style={{flex:1,overflowY:“auto”,background:”#fff”}}>{ch}</div>
-
-  </div>;
-
-const body=()=>{
-if(p===“welcome”)return <Welcome f={startSession}/>;
-if(p===“login”)return <Login f={()=>{setP(“dash”);sh(“Welcome, J. Mitchell”,“ok”);}}/>;
-if(p===“dash”)return <div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
-<Hdr D={D}/>
-<div style={{flex:1,overflowY:“auto”,background:”#f0f4f6”}}>
-<Dash queue={queue} qIdx={qIdx} f={()=>{setP(“cars”);setS(0);sh(D.fn+” “+D.ln+” — Application loaded”,“ok”);}}/>
-</div>
-</div>;
-if(p===“cars”){
-const sc=[
-<S1 key={0} f={()=>setS(1)} D={D}/>,
-<S2 key={1} f={()=>setS(2)} b={()=>setS(0)} D={D}/>,
-<S3 key={2} f={()=>setS(3)} b={()=>setS(1)} D={D}/>,
-<S4 key={3} f={()=>setS(4)} b={()=>setS(2)}/>,
-<S5 key={4} f={()=>setS(5)} b={()=>setS(3)} D={D}/>,
-<S6 key={5} f={()=>{setP(“mavs”);sh(“Switch to MAVERICS terminal”,“warn”);}} b={()=>setS(4)}/>
-];
-return wrap(s,sc[s]);
-}
-if(p===“mavs”)return <Mavs f={()=>{setP(“vfy”);setS(0);sh(“Enter case # in CARS to verify”,“ok”);}} D={D}/>;
-if(p===“vfy”){
-const v=[
-<Verify key={0} f={()=>{setS(1);sh(“IDs verified — schedule appointment”,“ok”);}} b={()=>{}} D={D}/>,
-<Appt key={1} f={()=>{setP(“done”);sh(“Submitted!”,“ok”);}} b={()=>setS(0)} D={D}/>
-];
-return wrap(7+s,v[s]);
-}
-if(p===“done”){
-const isLast=qIdx>=queue.length-1;
-return <div style={{display:“flex”,flexDirection:“column”,height:“100%”}}>
-<Hdr D={D}/>
-<div style={{flex:1,overflowY:“auto”}}>
-<Done D={D} onNext={nextApplicant} onFinish={()=>{setP(“welcome”);setS(0);setQIdx(0);}} isLast={isLast}/>
-</div>
-</div>;
-}
-return null;
-};
-
-return <div style={{width:“100%”,height:“100vh”,display:“flex”,flexDirection:“column”,background:”#000”,overflow:“hidden”}}>
-<div style={{flex:1,overflow:“hidden”,display:“flex”,flexDirection:“column”}}>{body()}</div>
-<TB p={p}/>
-{toast&&<Toast msg={toast.m} type={toast.t} onClose={()=>setToast(null)}/>}
-
-  </div>;
+function buildQueue() {
+  var shuffled = POOL.slice().sort(function() { return Math.random() - 0.5; });
+  var size = Math.floor(Math.random() * 2) + 3;
+  var now = new Date();
+  var bd = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'}) + ' 09:22 AM';
+  var appt = new Date();
+  appt.setDate(appt.getDate() + 3);
+  while (appt.getDay() === 0 || appt.getDay() === 6) appt.setDate(appt.getDate() + 1);
+  var ad = appt.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  return shuffled.slice(0, size).map(function(a) {
+    return Object.assign({}, a, { bd: bd, ad: ad, at: '9:30 AM' });
+  });
 }
 
-ReactDOM.createRoot(document.getElementById(‘root’)).render(<App/>);
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+function show(id) {
+  var pages = document.querySelectorAll('.pg');
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove('on');
+  document.getElementById(id).classList.add('on');
+  updateTaskbar(id);
+}
+
+function updateTaskbar(id) {
+  document.getElementById('tb-cars').style.display = (id === 'pg-cars' || id === 'pg-vfy' || id === 'pg-done' || id === 'pg-dash') ? 'inline-block' : 'none';
+  document.getElementById('tb-mavs').style.display = (id === 'pg-mavs') ? 'inline-block' : 'none';
+}
+
+function toast(msg, type) {
+  var t = document.getElementById('toast');
+  t.className = 'toast ' + (type || 'ok');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function() { t.style.display = 'none'; }, 3500);
+}
+
+function fi(label, val, flex) {
+  var f = flex ? 'flex:' + flex : 'flex:1';
+  return '<div class="f" style="' + f + ';min-width:80px"><label>' + label + '</label><input readonly value="' + (val || '') + '"></div>';
+}
+function fd(label, val) {
+  return '<div class="f" style="flex:1;min-width:80px"><label>' + label + '</label><select disabled><option>' + (val || '') + '</option></select></div>';
+}
+function radio(val, opts) {
+  opts = opts || ['YES', 'NO'];
+  return '<span class="radio">' + opts.map(function(o) {
+    return '<span><span class="rdot' + (val === o ? ' on' : '') + '"></span>' + o + '</span>';
+  }).join('') + '</span>';
+}
+function qrow(q, v) {
+  return '<div class="qrow"><span class="qt">' + q + '</span>' + radio(v || 'NO') + '</div>';
+}
+function btnRow(html) {
+  return '<div class="btn-row">' + html + '</div>';
+}
+
+var PRG_LABELS = ['Applicant','Income','Resources','Questions','Household',"Add'l",'MAVS','Verify','Appt'];
+
+function renderPrg(el, cur) {
+  el.innerHTML = PRG_LABELS.map(function(n, i) {
+    var barCls = i < cur ? 'done' : (i === cur ? 'cur' : '');
+    var lblCls = i <= cur ? 'lit' : '';
+    return '<div class="prg-step' + (i === cur ? ' active' : (i < cur ? ' done' : '')) + '">' +
+      '<div class="prg-bar ' + barCls + '"></div>' +
+      '<div class="prg-lbl ' + lblCls + '">' + n + '</div></div>';
+  }).join('');
+}
+
+function updateTime() {
+  var t = new Date();
+  document.getElementById('tb-time').textContent = t.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+setInterval(updateTime, 60000);
+updateTime();
+
+// ── WELCOME ─────────────────────────────────────────────────────────────────
+function toggleAgree() {
+  state.agreed = !state.agreed;
+  var chk = document.getElementById('agree-chk');
+  chk.className = 'agree-chk' + (state.agreed ? ' on' : '');
+  chk.textContent = state.agreed ? '\u2713' : '';
+  document.getElementById('agree-content').style.display = state.agreed ? 'block' : 'none';
+}
+
+function startSession() {
+  state.queue = buildQueue();
+  state.qIdx = 0;
+  show('pg-login');
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────────
+function doLogin() {
+  var u = document.getElementById('login-u').value.trim().toLowerCase();
+  var p = document.getElementById('login-p').value;
+  var err = document.getElementById('login-err');
+  if (u === 'jmitchell' && p === 'MDHS2026!') {
+    err.style.display = 'none';
+    document.getElementById('login-u').value = '';
+    document.getElementById('login-p').value = '';
+    updateDash();
+    show('pg-dash');
+    toast('Welcome, J. Mitchell', 'ok');
+  } else {
+    err.textContent = 'Invalid credentials.';
+    err.style.display = 'block';
+  }
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
+function updateDash() {
+  var rem = state.queue.length - state.qIdx;
+  var sub = document.getElementById('dash-sub');
+  sub.innerHTML = 'Queue: <strong style="color:#2a6a78">' + rem + ' applicant' + (rem !== 1 ? 's' : '') + ' remaining</strong> this session';
+  var btn = document.getElementById('dash-next-btn');
+  if (rem === 0) { btn.textContent = 'Queue Empty'; btn.disabled = true; }
+  else { btn.textContent = 'Next Application'; btn.disabled = false; }
+}
+
+function startApplication() {
+  state.carsStep = 0;
+  renderCars();
+  document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: ' + D().bd;
+  show('pg-cars');
+  toast(D().fn + ' ' + D().ln + ' — Application loaded', 'ok');
+}
+
+// ── CARS SCREENS ─────────────────────────────────────────────────────────────
+function renderCars() {
+  var d = D();
+  renderPrg(document.getElementById('prg-row'), state.carsStep);
+  var body = document.getElementById('cars-body');
+  var s = state.carsStep;
+
+  if (s === 0) {
+    body.innerHTML =
+      '<h2 class="sec-title">DIGITAL APPLICANT INFORMATION</h2>' +
+      '<div class="sub">Demographics</div>' +
+      '<div class="row">' + fi('First Name', d.fn) + fi('Middle Name', d.mn) + fi('Last Name', d.ln) + fd('Suffix','Select Suffix') + '</div>' +
+      '<div class="row">' + fi('SSN', d.ssn) + fi('Date of Birth', d.dob) +
+        '<div class="f" style="flex:1;min-width:120px"><label>Applying For</label><div class="check-row" style="display:flex;gap:10px;padding:4px 0">' +
+        '<span class="chk"><span class="chk-box">&#10003;</span> SNAP</span>' +
+        '<span class="chk"><span class="chk-box">&#10003;</span> TANF</span></div></div>' +
+        fd('Language','English') + '</div>' +
+      '<div class="sub">Contact Information</div>' +
+      '<div class="row">' + fi('Home Address 1', d.addr) + fi('Home Address 2','') + fi('Home City', d.city) + fd('Home State','Mississippi') + '</div>' +
+      '<div class="row">' + fi('Zip Code', d.zip) + fd('County', d.cty) +
+        '<div class="f" style="flex:2;min-width:160px;justify-content:flex-end;padding-bottom:4px"><span class="chk"><span class="chk-box">&#10003;</span> Mailing same as Residence</span></div></div>' +
+      '<div class="row">' + fi('Mailing Address', d.addr) + fi('Mailing City', d.city) + fd('Mailing State','Mississippi') + fi('Mailing Zip', d.zip) + '</div>' +
+      '<div class="row">' + fi('Phone', d.p1) + fd('Type', d.p1t) + fi('Phone 2', d.p2) + fd('Type', d.p2t) + '</div>' +
+      '<div class="row"><div class="f" style="flex:1;min-width:100px"><label>E-Notices?</label>' + radio('Yes',['Yes','No']) + '</div>' + fi('Email', d.em) + '</div>' +
+      btnRow('<button class="bc btn">Cancel</button><button class="bd btn">Move to ESAP</button><button class="bp btn">Pre-Register</button><button class="bn btn" onclick="carsNext()">Next</button>');
+  }
+
+  else if (s === 1) {
+    var hasIncome = d.ei !== '$0.00';
+    body.innerHTML =
+      '<h2 class="sec-title">INCOME</h2>' +
+      qrow('Earned income (wages, tips, bonuses, self-employment)?', hasIncome ? 'YES' : 'NO') +
+      (hasIncome ? '<div style="padding:2px 0 6px 16px;font-size:12px">Amount: <strong>' + d.ei + '</strong></div>' : '') +
+      qrow('Unearned income (SS, disability, VA, pensions, child support)?','NO') +
+      qrow('Expect income later this month?','NO') +
+      qrow('Only income from migrant/seasonal farm work?','NO') +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
+  }
+
+  else if (s === 2) {
+    body.innerHTML =
+      '<h2 class="sec-title">RESOURCES</h2>' +
+      qrow('Cash, checking/savings, IRA, stocks, vehicles, property, land?','NO') +
+      '<h2 class="sec-title" style="margin-top:14px">EXPENSES</h2>' +
+      '<div class="row">' + fi('Rent/Mortgage', d.rent) + fi('Electricity', d.elec) + fi('Gas', d.gas) + '</div>' +
+      '<div class="row">' + fi('Water', d.wat) + fi('Phone', d.ph) + '</div>' +
+      qrow('Pay for dependent child/disabled member care?','NO') +
+      qrow('Anyone 60+ or disabled with medical expenses over $35?','NO') +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
+  }
+
+  else if (s === 3) {
+    body.innerHTML =
+      '<h2 class="sec-title">ADDITIONAL QUESTIONS</h2>' +
+      qrow('Deaf, hearing impaired, or need interpreter?','NO') +
+      qrow('SNAP disqualification for fraud?','NO') +
+      qrow('Hiding from law, jail for felony, violating parole?','NO') +
+      qrow('Commercial boarding home resident?','NO') +
+      qrow('On strike?','NO') +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
+  }
+
+  else if (s === 4) {
+    body.innerHTML =
+      '<h2 class="sec-title">HOUSEHOLD INFORMATION</h2>' +
+      '<div class="sub">Head Of Household (PI)</div>' +
+      '<div class="row">' + fi('First Name', d.fn) + fi('Last Name', d.ln) + fd('Relationship','Primary Individual') + '</div>' +
+      '<div class="row">' + fi('SSN', d.ssn) + fi('DOB', d.dob) + fi('Age', d.age + ' yrs', '0.4') + fd('Gender', d.gender) + '</div>' +
+      '<div style="border-top:1px solid #e0e8ec;padding-top:8px;margin-top:4px">' +
+      '<div class="sub">Household Members</div>' +
+      '<div class="row">' + fi('First Name', d.hfn) + fi('Last Name', d.hln) + fd('Relationship', d.hrel) + '</div>' +
+      '<div class="row">' + fi('SSN', d.hssn) + fi('DOB', d.hdob) + fi('Age', d.hage, '0.4') + fd('Gender', d.hgen) + '</div></div>' +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="carsNext()">Next</button>');
+  }
+
+  else if (s === 5) {
+    body.innerHTML =
+      '<h2 class="sec-title">ADDITIONAL APPLICATION INFORMATION</h2>' +
+      '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">Household members not included on application</p>' +
+      '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">' +
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Authorized Rep</div>' +
+        '<div class="row">' + fi('First','') + fi('Last','') + fi('Phone','') + '</div></div>' +
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Benefit Rep</div>' +
+        '<div class="row">' + fi('First','') + fi('Last','') + fi('Phone','') + '</div></div></div>' +
+      '<div style="font-size:12px;margin-bottom:10px">Copy preference: ' + radio('Electronic',['Paper','Electronic','Refuse']) + '</div>' +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button><button class="bn" onclick="goMavs()">Next</button>');
+  }
+}
+
+function carsNext() {
+  state.carsStep++;
+  renderCars();
+  document.querySelector('.scroll').scrollTop = 0;
+}
+function carsPrev() {
+  state.carsStep--;
+  renderCars();
+  document.querySelector('.scroll').scrollTop = 0;
+}
+function goMavs() {
+  state.mavsStep = 0;
+  renderMavs();
+  show('pg-mavs');
+  toast('Switch to MAVERICS terminal', 'warn');
+}
+
+// ── MAVERICS ─────────────────────────────────────────────────────────────────
+function renderMavs() {
+  var d = D();
+  var s = state.mavsStep;
+  document.getElementById('mavs-step').textContent = 'Step ' + (s + 1) + '/8';
+  var sep = '<div class="mavs-sep">============================================</div>';
+  var html = '';
+
+  if (s === 0) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;FULL SERVICE CLERICAL MENU (FUSC)</div>' + sep + '<br>' +
+      '<div>&nbsp;&nbsp;1. GENERAL INQUIRIES</div>' +
+      '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">-&gt; 2. APPLICATION REGISTRATION</div>' +
+      '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div><div>&nbsp;&nbsp;4. ADD PROGRAM</div><div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>' +
+      '<button class="mavs-btn" onclick="mavsNext()">Select 2</button>';
+  } else if (s === 1) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CLIENT INQUIRY (CLIR)</div>' + sep + '<br>' +
+      '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div><div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div><div>&nbsp;&nbsp;3. EXISTING CASE #</div><div>&nbsp;&nbsp;4. NEW CASE #</div><div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>' +
+      '<div class="mavs-dim">' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '&nbsp;&nbsp;DOB: ' + d.dob + '</div><br>' +
+      '<button class="mavs-btn" onclick="mavsNext()">Inquire (1)</button>';
+  } else if (s === 2) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CLIS - SHORT LIST</div>' + sep + '<br>' +
+      '<div class="mavs-warn">NO CLIENTS FOUND</div><br>' +
+      '<div class="mavs-dim">SSN: ' + d.ssn + '&nbsp;&nbsp;DOB: ' + d.dob + '</div><br>' +
+      '<button class="mavs-btn" onclick="mavsNext()">Save New Client (2)</button>';
+  } else if (s === 3) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;DRS INQUIRY</div>' + sep + '<br>' +
+      '<div>' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '</div><br>' +
+      '<div class="mavs-ok">NO DISQUALIFICATIONS</div><br>' +
+      '<button class="mavs-btn" onclick="mavsNext()">Register New Case (4)</button>';
+  } else if (s === 4) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;REGISTRATION</div>' + sep + '<br>' +
+      '<div class="mavs-head">CASE: ' + d.cn + ' (NEW)</div>' +
+      '<div class="mavs-head">PI: ' + d.ln.toUpperCase() + ', ' + d.fn.toUpperCase() + '</div>' +
+      '<div class="mavs-head">ID: ' + d.pid + '</div><br>' +
+      '<div>FS, AF&nbsp;&nbsp;INITIAL&nbsp;&nbsp;ONLINE&nbsp;&nbsp;' + d.cty.toUpperCase() + '</div><br>' +
+      '<div class="mavs-ok">REGISTERED</div>' +
+      '<button class="mavs-btn" onclick="mavsNext()">EXSW</button>';
+  } else if (s === 5) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;EXPEDITED SCREENING (EXSW)</div>' + sep + '<br>' +
+      '<div class="mavs-head">CASE: ' + d.cn + '</div><br>' +
+      '<div>INCOME: ' + d.ei + '&nbsp;&nbsp;RESOURCES: $0</div>' +
+      '<div>RENT: ' + d.rent + '&nbsp;&nbsp;UTILITIES: ' + d.elec + '</div><br>' +
+      '<div class="mavs-warn">EXPEDITED: YES</div>' +
+      '<button class="mavs-btn" onclick="mavsNext()">ADDR</button>';
+  } else if (s === 6) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;ADDRESS (ADDR)</div>' + sep + '<br>' +
+      '<div class="mavs-head">' + d.addr + '</div>' +
+      '<div class="mavs-head">' + d.city + ', MS ' + d.zip + '</div>' +
+      '<div class="mavs-head">EMAIL: ' + d.em + '</div><br>' +
+      '<div class="mavs-ok">SAVED</div>' +
+      '<button class="mavs-btn" onclick="mavsNext()">CAP1</button>';
+  } else if (s === 7) {
+    html = sep + '<div class="mavs-head">&nbsp;&nbsp;CASE ACTION (CAP1)</div>' + sep + '<br>' +
+      '<div class="mavs-head">CASE: ' + d.cn + '</div>' +
+      "<div class=\"mavs-head\">FS REC'D&nbsp;&nbsp;" + d.bd.split(' ')[0] + '</div>' +
+      "<div class=\"mavs-head\">AF REC'D&nbsp;&nbsp;" + d.bd.split(' ')[0] + '</div><br>' +
+      '<div class="mavs-warn">Case #: ' + d.cn + '</div><br>' +
+      '<button class="mavs-btn" style="background:#ffcc00;color:#0d0d1a" onclick="goVerify()">Return to C.A.R.S.</button>';
+  }
+
+  document.getElementById('mavs-body').innerHTML = html;
+}
+
+function mavsNext() {
+  state.mavsStep++;
+  renderMavs();
+}
+function goVerify() {
+  state.vfyStep = 0;
+  state.verifyOk = false;
+  renderVfy();
+  document.getElementById('vfy-bdate').textContent = 'BUSINESS DATE: ' + D().bd;
+  renderPrg(document.getElementById('prg-row-vfy'), 7);
+  show('pg-vfy');
+  toast('Enter case # in CARS to verify', 'ok');
+}
+
+// ── VERIFY + APPT ────────────────────────────────────────────────────────────
+function renderVfy() {
+  var d = D();
+  var body = document.getElementById('vfy-body');
+  renderPrg(document.getElementById('prg-row-vfy'), 7 + state.vfyStep);
+
+  if (state.vfyStep === 0) {
+    body.innerHTML =
+      '<h2 class="sec-title">CASE VERIFICATION</h2>' +
+      '<div class="verify-center">' +
+        '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">MAVS CASE #</label>' +
+        '<input id="verify-cn" class="verify-input" placeholder="9-digit case #" maxlength="9" oninput="clearVerify()" onkeydown="if(event.key===\'Enter\')checkCase()">' +
+        '<div id="verify-err" class="verify-err" style="display:none"></div>' +
+        '<button style="margin-top:8px;padding:6px 24px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;background:#2a6a78;color:#fff;font-family:inherit" onclick="checkCase()">Get IDs</button>' +
+      '</div>' +
+      '<div id="verify-result" style="display:none" class="verify-result"></div>' +
+      '<div class="btn-row">' +
+        '<button class="bc">Cancel</button>' +
+        '<button id="verify-next-btn" disabled onclick="vfyNext()" style="padding:7px 16px;border:none;border-radius:3px;cursor:pointer;font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit">Next</button>' +
+      '</div>';
+  } else {
+    body.innerHTML =
+      '<h2 class="sec-title">Appointment</h2>' +
+      '<div class="row">' + fi('Date', d.ad) + fi('Time', d.at) + '</div>' +
+      '<div class="row">' + fd('FSO/Place', d.fso) + fd('Case Worker', d.wk) + '</div>' +
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="vfyPrev()">Previous</button><button class="bs" onclick="submitCase()">Submit</button>');
+  }
+}
+
+function clearVerify() {
+  document.getElementById('verify-err').style.display = 'none';
+  var inp = document.getElementById('verify-cn');
+  if (inp) inp.className = 'verify-input';
+}
+
+function checkCase() {
+  var inp = document.getElementById('verify-cn');
+  var val = inp.value.trim();
+  var err = document.getElementById('verify-err');
+  var d = D();
+  if (val === d.cn) {
+    inp.className = 'verify-input ok';
+    err.style.display = 'none';
+    var res = document.getElementById('verify-result');
+    res.innerHTML =
+      '<div class="vname">PI: ' + d.fn + ' ' + d.ln + '</div>' +
+      '<input readonly value="' + d.pid + '">' +
+      '<div class="vname" style="margin-top:8px">HH: ' + d.hfn + ' ' + d.hln + '</div>' +
+      '<input readonly value="' + d.hid + '">';
+    res.style.display = 'block';
+    var btn = document.getElementById('verify-next-btn');
+    btn.disabled = false;
+    btn.style.background = '#3a8fa0';
+    state.verifyOk = true;
+    toast('IDs verified — schedule appointment', 'ok');
+  } else {
+    inp.className = 'verify-input err';
+    err.textContent = val.length < 9 ? 'Enter 9 digits' : 'NO MATCH FOUND';
+    err.style.display = 'block';
+  }
+}
+
+function vfyNext() {
+  state.vfyStep = 1;
+  renderVfy();
+}
+function vfyPrev() {
+  state.vfyStep = 0;
+  renderVfy();
+}
+
+function submitCase() {
+  var d = D();
+  document.getElementById('done-msg').textContent = 'Case ' + d.cn + ' for ' + d.fn + ' ' + d.ln + ' registered and routed to WorkSite.';
+  var isLast = state.qIdx >= state.queue.length - 1;
+  var sess = document.getElementById('done-session');
+  var btn = document.getElementById('done-btn');
+  if (isLast) {
+    sess.style.display = 'block';
+    btn.textContent = 'Restart Session';
+  } else {
+    sess.style.display = 'none';
+    btn.textContent = 'Next Applicant \u2192';
+  }
+  show('pg-done');
+  toast('Submitted!', 'ok');
+}
+
+function doneAction() {
+  var isLast = state.qIdx >= state.queue.length - 1;
+  if (isLast) {
+    state.agreed = false;
+    document.getElementById('agree-chk').className = 'agree-chk';
+    document.getElementById('agree-chk').textContent = '';
+    document.getElementById('agree-content').style.display = 'none';
+    show('pg-welcome');
+  } else {
+    state.qIdx++;
+    state.carsStep = 0;
+    updateDash();
+    show('pg-dash');
+    toast('Next applicant: ' + D().fn + ' ' + D().ln, 'ok');
+  }
+}
 </script>
 
 </body>
+</html>
 </html>
