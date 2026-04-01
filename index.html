@@ -5,475 +5,273 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MDHS County Training Simulator</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body,#root{height:100%;width:100%;overflow:hidden}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#0a0e17}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#1a1f2e}
-::-webkit-scrollbar-thumb{background:#3a4a6b;border-radius:3px}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
-.fade-in{animation:fadeIn .4s ease both}
-.slide-in{animation:slideIn .35s ease both}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#020617}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0f172a}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.sim-app{width:100%;height:100%;display:flex;flex-direction:column;background:#020617;color:#e2e8f0;overflow:hidden}
+.sim-header{background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:2px solid #0f766e;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sim-body{flex:1;overflow:auto;display:flex;flex-direction:column}
+.sim-footer{background:#020617;border-top:1px solid #1e293b;padding:6px 16px;display:flex;justify-content:space-between;font-size:10px;color:#475569;flex-shrink:0}
+.sim-card{background:#111827;border:1px solid #1e293b;border-radius:6px;padding:16px;margin:8px 0}
+.sim-input{background:#0a0e17;border:1px solid #334155;border-radius:3px;padding:7px 10px;color:#e2e8f0;font-size:13px;width:100%;outline:none;font-family:inherit}
+.sim-input:focus{border-color:#0f766e}
+.sim-label{display:block;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.sim-btn{padding:8px 18px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:inherit}
+.sim-btn:disabled{opacity:.35;cursor:not-allowed}
+.sim-btn-p{background:#0f766e;color:#fff}.sim-btn-p:hover:not(:disabled){background:#0d9488}
+.sim-btn-s{background:#1e293b;color:#94a3b8;border:1px solid #334155}.sim-btn-s:hover:not(:disabled){background:#334155}
+.sim-btn-g{background:linear-gradient(135deg,#ca8a04,#a16207);color:#0f172a;font-weight:700}
+.cars-hdr{background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #60a5fa;flex-shrink:0}
+.cars-body{background:#f5f5f5;color:#333;padding:16px;flex:1;overflow:auto}
+.cars-field-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:2px}
+.cars-field-val{background:#fafafa;border:1px solid #d1d5db;border-radius:3px;padding:6px 10px;font-size:13px;color:#1f2937}
+.term-shell{background:#000;font-family:'Courier New',Courier,monospace;color:#4ade80;padding:16px;flex:1;overflow:auto;font-size:13px;line-height:1.6}
+.term-hdr{background:#1e3a8a;color:#fff;font-family:'Courier New',Courier,monospace;padding:7px 14px;font-size:12px;display:flex;justify-content:space-between;border-bottom:2px solid #06b6d4;flex-shrink:0}
+.term-tag{background:#fff;color:#1e3a8a;padding:1px 8px;font-weight:700;font-size:11px;margin-left:20px}
+.tl{color:#4ade80}.tv{color:#fff}.th{color:#fde047;font-weight:700}
+.nav-bar{display:flex;justify-content:space-between;padding-top:12px;margin-top:12px;border-top:1px solid #1e293b}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.banner{border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:11px;display:flex;align-items:center;gap:8px}
+.banner-exp{background:#fef2f2;border:1px solid #fca5a5}
+.banner-reg{background:#eff6ff;border:1px solid #93c5fd}
+.center-col{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.ea-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ea-form{background:#fff;color:#000;font-family:'Times New Roman',serif;padding:24px;max-width:680px;width:100%;border-radius:4px;max-height:80vh;overflow:auto}
+.ea-form table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+.ea-form td,.ea-form th{border:1px solid #000;padding:3px 5px}
+.ea-form th{background:#eee;font-weight:700;text-align:left}
+.ea-sect{font-size:12px;font-weight:700;border-bottom:1px solid #000;margin-bottom:6px;padding-bottom:2px}
+.pbar{height:3px;background:#1e293b;border-radius:2px;overflow:hidden;width:80px}
+.pfill{height:100%;background:linear-gradient(90deg,#0f766e,#06b6d4);border-radius:2px;transition:width .5s}
+.view-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:3px;padding:4px 10px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit}
+.view-btn:hover{background:rgba(255,255,255,.35)}
 </style>
-<script type="text/babel">
+</head>
+<body>
+<div id="root"></div>
+<script>
+"use strict";
+var h = React.createElement;
+var useState = React.useState;
+var useEffect = React.useEffect;
 
-/* ============================================================
-MDHS COUNTY TRAINING SIMULATOR v2.0
-Full eligibility clerk workflow training tool
-============================================================ */
-
-const { useState, useEffect, useCallback, useRef, useMemo } = React;
-
-/* ––––– CONSTANTS & DATA ––––– */
-
-const SCENARIOS = {
+var SCENARIOS = {
 expedited: {
 label: “Expedited”,
 applicant: {
-firstName: “Tameka”, lastName: “Holloway”, mi: “R”,
-dob: “03/15/1989”, ssn: “429-55-8173”, sex: “F”, race: “B”,
-address: “1247 Hardy St, Hattiesburg, MS 39401”,
-mailingAddress: “Same as Residence”,
-phone: “(601) 555-0147”, email: “tameka.holloway@email.com”,
-county: “Forrest”,
-householdSize: 3,
-householdMembers: [
-{ name: “Holloway, Tameka R”, relation: “PI”, dob: “03/15/1989”, ssn: “429-55-8173”, sex: “F” },
-{ name: “Holloway, Jayden M”, relation: “Son”, dob: “09/22/2016”, ssn: “429-55-9201”, sex: “M” },
-{ name: “Holloway, Amari D”, relation: “Daughter”, dob: “01/08/2020”, ssn: “429-55-9302”, sex: “F” }
+firstName:“Tameka”,lastName:“Holloway”,mi:“R”,dob:“03/15/1989”,ssn:“429-55-8173”,sex:“F”,race:“B”,
+address:“1247 Hardy St, Hattiesburg, MS 39401”,mailingAddress:“Same as Residence”,
+phone:”(601) 555-0147”,email:“tameka.holloway@email.com”,county:“Forrest”,householdSize:3,
+householdMembers:[
+{name:“Holloway, Tameka R”,relation:“PI”,dob:“03/15/1989”,ssn:“429-55-8173”,sex:“F”},
+{name:“Holloway, Jayden M”,relation:“Son”,dob:“09/22/2016”,ssn:“429-55-9201”,sex:“M”},
+{name:“Holloway, Amari D”,relation:“Daughter”,dob:“01/08/2020”,ssn:“429-55-9302”,sex:“F”}
 ],
-income: { employment: “$780.00/month”, selfEmployment: “$0.00”, otherIncome: “$0.00”, totalMonthly: “$780.00” },
-resources: { cashOnHand: “$45.00”, checkingAccount: “$112.00”, savingsAccount: “$0.00”, vehicles: “2009 Toyota Corolla”, totalLiquid: “$157.00” },
-expenses: { rent: “$750.00”, utilities: “$185.00”, phone: “$55.00”, totalMonthly: “$990.00” },
-programsApplied: “FS”,
-appSource: “O”,
-isExpedited: true,
-expeditedReason: “Gross monthly income ($780) + liquid resources ($157) = $937 < Rent + utilities ($935). Expenses exceed income and resources.”
+income:{“Employment”:”$780.00/mo”,“Self Employment”:”$0.00”,“Other Income”:”$0.00”,“Total Monthly”:”$780.00”},
+resources:{“Cash On Hand”:”$45.00”,“Checking”:”$112.00”,“Savings”:”$0.00”,“Vehicles”:“2009 Toyota Corolla”,“Total Liquid”:”$157.00”},
+expenses:{“Rent”:”$750.00”,“Utilities”:”$185.00”,“Phone”:”$55.00”,“Total Monthly”:”$990.00”},
+programsApplied:“FS”,appSource:“O”,isExpedited:true,
+expeditedReason:“Gross income ($780) + liquid resources ($157) = $937. Rent + utilities = $935. Expenses exceed income.”
 },
-caseNumber: “414008623”,
-fso: “740”,
-caseload: “01”,
-unit: “1”,
-workerName: “REDDING, DOMINIQUE”
+caseNumber:“414008623”,fso:“740”,caseload:“01”,unit:“1”,workerName:“REDDING, DOMINIQUE”
 },
 nonExpedited: {
 label: “Non-Expedited”,
 applicant: {
-firstName: “Marcus”, lastName: “Henderson”, mi: “J”,
-dob: “07/22/1985”, ssn: “428-61-7234”, sex: “M”, race: “B”,
-address: “832 Main St, Laurel, MS 39440”,
-mailingAddress: “PO Box 214, Laurel, MS 39441”,
-phone: “(601) 555-0283”, email: “marcus.henderson@email.com”,
-county: “Jones”,
-householdSize: 2,
-householdMembers: [
-{ name: “Henderson, Marcus J”, relation: “PI”, dob: “07/22/1985”, ssn: “428-61-7234”, sex: “M” },
-{ name: “Henderson, Keisha L”, relation: “Spouse”, dob: “11/03/1987”, ssn: “428-61-8456”, sex: “F” }
+firstName:“Marcus”,lastName:“Henderson”,mi:“J”,dob:“07/22/1985”,ssn:“428-61-7234”,sex:“M”,race:“B”,
+address:“832 Main St, Laurel, MS 39440”,mailingAddress:“PO Box 214, Laurel, MS 39441”,
+phone:”(601) 555-0283”,email:“marcus.henderson@email.com”,county:“Jones”,householdSize:2,
+householdMembers:[
+{name:“Henderson, Marcus J”,relation:“PI”,dob:“07/22/1985”,ssn:“428-61-7234”,sex:“M”},
+{name:“Henderson, Keisha L”,relation:“Spouse”,dob:“11/03/1987”,ssn:“428-61-8456”,sex:“F”}
 ],
-income: { employment: “$2,450.00/month”, selfEmployment: “$0.00”, otherIncome: “$320.00/month (Child Support)”, totalMonthly: “$2,770.00” },
-resources: { cashOnHand: “$200.00”, checkingAccount: “$1,340.00”, savingsAccount: “$500.00”, vehicles: “2017 Honda Civic”, totalLiquid: “$2,040.00” },
-expenses: { rent: “$850.00”, utilities: “$210.00”, phone: “$120.00”, totalMonthly: “$1,180.00” },
-programsApplied: “FS”,
-appSource: “O”,
-isExpedited: false,
-expeditedReason: “Gross monthly income ($2,770) + liquid resources ($2,040) = $4,810 > Rent + utilities ($1,060). Income and resources exceed shelter costs.”
+income:{“Employment”:”$2,450.00/mo”,“Self Employment”:”$0.00”,“Other Income”:”$320.00/mo”,“Total Monthly”:”$2,770.00”},
+resources:{“Cash On Hand”:”$200.00”,“Checking”:”$1,340.00”,“Savings”:”$500.00”,“Vehicles”:“2017 Honda Civic”,“Total Liquid”:”$2,040.00”},
+expenses:{“Rent”:”$850.00”,“Utilities”:”$210.00”,“Phone”:”$120.00”,“Total Monthly”:”$1,180.00”},
+programsApplied:“FS”,appSource:“O”,isExpedited:false,
+expeditedReason:“Gross income ($2,770) + liquid resources ($2,040) = $4,810. Rent + utilities = $1,060. Income exceeds shelter costs.”
 },
-caseNumber: “307224189”,
-fso: “741”,
-caseload: “03”,
-unit: “2”,
-workerName: “JOHNSON, PATRICIA”
+caseNumber:“307224189”,fso:“741”,caseload:“03”,unit:“2”,workerName:“JOHNSON, PATRICIA”
 }
 };
 
-const SCREEN_FLOW = [
-“welcome”,“disclaimer”,“login”,“carsDashboard”,“carsApplicantInfo”,
-“carsIncome”,“carsResources”,“carsAdditionalQuestions”,“carsHousehold”,
-“carsAdditionalAppInfo”,“mavsFUSC”,“mavsCLIR”,“mavsCLIS”,“mavsCLRE”,
-“mavsCLPR”,“mavsCLIR_DRS”,“mavsDRPR”,“mavsREAP”,“mavsEXSW”,“mavsADDR”,
-“mavsCAP1”,“mavsNORE”,“mavsNOTI”,“carsCase”,“carsAppointment”,“complete”
-];
+var SCREENS=[“welcome”,“disclaimer”,“login”,“dashboard”,“carsApplicant”,“carsIncome”,“carsResources”,“carsQuestions”,“carsHousehold”,“carsAddlInfo”,“mavsFUSC”,“mavsCLIR”,“mavsCLIS”,“mavsCLRE”,“mavsCLPR”,“mavsCLIR_DRS”,“mavsDRPR”,“mavsREAP”,“mavsEXSW”,“mavsADDR”,“mavsCAP1”,“mavsNORE”,“mavsNOTI”,“carsCase”,“carsAppt”,“complete”];
+var DAYS=[“SUNDAY”,“MONDAY”,“TUESDAY”,“WEDNESDAY”,“THURSDAY”,“FRIDAY”,“SATURDAY”];
+var today=new Date();
+var todayStr=String(today.getMonth()+1).padStart(2,“0”)+String(today.getDate()).padStart(2,“0”)+today.getFullYear();
+var todayDisp=today.toLocaleDateString();
+var benMonth=String(today.getMonth()+1).padStart(2,“0”)+String(today.getFullYear()).slice(-2);
 
-const NON_NAV_SCREENS = [“welcome”,“disclaimer”,“login”,“complete”];
-
-/* ––––– TRACKER STORE ––––– */
-function createTracker() {
-return {
-startTime: null,
-endTime: null,
-screensVisited: [],
-errors: [],
-scenarioType: null,
-completed: false
-};
+function getApptDate(isExp){
+var d=new Date();
+if(isExp){d.setDate(d.getDate()+1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);}
+else{d.setDate(d.getDate()+7);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);}
+return d;
 }
 
-/* ––––– STYLES ––––– */
-const S = {
-app: { width: “100%”, height: “100%”, display: “flex”, flexDirection: “column”, background: “#0B1D3A”, color: “#e0e8f0”, overflow: “hidden” },
-header: { background: “linear-gradient(135deg, #0B1D3A 0%, #142744 100%)”, borderBottom: “2px solid #007A8C”, padding: “10px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, minHeight: “50px”, flexShrink: 0 },
-headerTitle: { color: “#fff”, fontSize: “15px”, fontWeight: 700, letterSpacing: “0.5px” },
-headerSub: { color: “#007A8C”, fontSize: “11px”, fontWeight: 400 },
-body: { flex: 1, overflow: “auto”, display: “flex”, flexDirection: “column” },
-footer: { background: “#060a12”, borderTop: “1px solid #1a2a44”, padding: “8px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, fontSize: “11px”, color: “#556”, flexShrink: 0 },
-btn: { padding: “9px 22px”, border: “none”, borderRadius: “4px”, cursor: “pointer”, fontSize: “13px”, fontWeight: 600, transition: “all .2s” },
-btnPrimary: { background: “#007A8C”, color: “#fff” },
-btnSecondary: { background: “#1a2a44”, color: “#8899aa”, border: “1px solid #2a3a54” },
-btnDanger: { background: “#8B0000”, color: “#fff” },
-btnGold: { background: “linear-gradient(135deg, #C5A55A, #A8893A)”, color: “#0B1D3A” },
-card: { background: “#111827”, border: “1px solid #1e293b”, borderRadius: “6px”, padding: “20px”, margin: “10px 0” },
-input: { background: “#0a0e17”, border: “1px solid #2a3a54”, borderRadius: “3px”, padding: “8px 12px”, color: “#e0e8f0”, fontSize: “13px”, width: “100%”, outline: “none” },
-select: { background: “#0a0e17”, border: “1px solid #2a3a54”, borderRadius: “3px”, padding: “8px 12px”, color: “#e0e8f0”, fontSize: “13px”, outline: “none” },
-label: { display: “block”, fontSize: “11px”, color: “#8899aa”, marginBottom: “4px”, fontWeight: 600, textTransform: “uppercase”, letterSpacing: “0.5px” },
-terminal: { background: “#000”, fontFamily: “‘Courier New’, Courier, monospace”, color: “#00ff41”, padding: “20px”, borderRadius: “4px”, border: “1px solid #1a3a1a”, minHeight: “300px” },
-termHeader: { background: “#003366”, color: “#fff”, fontFamily: “‘Courier New’, Courier, monospace”, padding: “8px 15px”, fontSize: “13px”, display: “flex”, justifyContent: “space-between”, borderBottom: “2px solid #0099cc” },
-carsHeader: { background: “linear-gradient(135deg, #1565C0, #0D47A1)”, color: “#fff”, padding: “12px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, borderBottom: “3px solid #42A5F5” },
-carsBody: { background: “#f5f5f5”, color: “#333”, padding: “20px”, flex: 1 },
-carsLabel: { fontSize: “11px”, fontWeight: 700, color: “#555”, marginBottom: “3px”, textTransform: “uppercase” },
-carsInput: { background: “#fff”, border: “1px solid #ccc”, borderRadius: “3px”, padding: “7px 10px”, color: “#333”, fontSize: “13px”, width: “100%” },
-carsBtn: { background: “#1565C0”, color: “#fff”, border: “none”, borderRadius: “3px”, padding: “8px 20px”, fontSize: “13px”, fontWeight: 600, cursor: “pointer” },
-banner: { background: “#E3F2FD”, border: “1px solid #90CAF9”, borderRadius: “4px”, padding: “10px 15px”, marginBottom: “15px”, display: “flex”, alignItems: “center”, gap: “10px” },
-bannerExp: { background: “#FFEBEE”, border: “1px solid #EF9A9A” },
-progressBar: { height: “3px”, background: “#1a2a44”, borderRadius: “2px”, overflow: “hidden” },
-progressFill: { height: “100%”, background: “linear-gradient(90deg, #007A8C, #00BCD4)”, transition: “width .5s ease”, borderRadius: “2px” },
-eaForm: { background: “#fff”, color: “#000”, fontFamily: “Times New Roman, serif”, padding: “30px”, maxWidth: “700px”, margin: “0 auto”, border: “1px solid #999”, maxHeight: “70vh”, overflow: “auto” }
-};
-
-/* ––––– UTILITY COMPONENTS ––––– */
-
-function ProgressBar({ current, total }) {
-var pct = Math.round((current / total) * 100);
-return React.createElement(“div”, { style: S.progressBar },
-React.createElement(“div”, { style: Object.assign({}, S.progressFill, { width: pct + “%” }) })
+function NavBar(p){
+return h(“div”,{className:“nav-bar”},
+h(“div”,null,p.onBack?h(“button”,{className:“sim-btn sim-btn-s”,onClick:p.onBack,disabled:p.backDisabled},p.backLabel||”\u2190 Back”):null),
+p.onNext?h(“button”,{className:“sim-btn sim-btn-p”,onClick:p.nextDisabled?undefined:p.onNext,disabled:p.nextDisabled},p.nextLabel||“Next \u2192”):null
 );
 }
 
-function NavButtons({ onBack, onNext, backLabel, nextLabel, backDisabled, nextDisabled, extraButtons }) {
-return React.createElement(“div”, { style: { display: “flex”, gap: “10px”, justifyContent: “space-between”, padding: “15px 0”, borderTop: “1px solid #1e293b”, marginTop: “15px” } },
-React.createElement(“div”, { style: { display: “flex”, gap: “8px” } },
-onBack && React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnSecondary, backDisabled ? { opacity: 0.4, cursor: “not-allowed” } : {}),
-onClick: backDisabled ? undefined : onBack,
-disabled: backDisabled
-}, backLabel || “Back”),
-extraButtons
-),
-onNext && React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnPrimary, nextDisabled ? { opacity: 0.4, cursor: “not-allowed” } : {}),
-onClick: nextDisabled ? undefined : onNext,
-disabled: nextDisabled
-}, nextLabel || “Next”)
+function CarsHdr(p){
+return h(“div”,{className:“cars-hdr”},
+h(“span”,{style:{fontWeight:700,fontSize:“13px”}},p.title),
+p.onViewApp?h(“button”,{className:“view-btn”,onClick:p.onViewApp},“View Full Application”):null
 );
 }
 
-function TerminalField({ label, value, editable, onChange, width }) {
-var w = width || “auto”;
-return React.createElement(“span”, { style: { display: “inline-block”, marginRight: “15px” } },
-React.createElement(“span”, { style: { color: “#00cc33”, fontSize: “12px” } }, label + “ “),
-editable
-? React.createElement(“input”, {
-style: { background: “#001a00”, border: “1px solid #00ff41”, color: “#00ff41”, fontFamily: “inherit”, fontSize: “13px”, padding: “2px 6px”, width: w },
-value: value || “”,
-onChange: function(e) { onChange(e.target.value); }
-})
-: React.createElement(“span”, { style: { color: “#fff”, fontSize: “13px”, textDecoration: “underline” } }, value)
+function CarsField(p){
+return h(“div”,null,
+h(“div”,{className:“cars-field-label”},p.label),
+h(“div”,{className:“cars-field-val”},p.value)
 );
 }
 
-function EA900Modal({ applicant, onClose }) {
-if (!applicant) return null;
-var members = applicant.householdMembers || [];
-return React.createElement(“div”, {
-style: { position: “fixed”, top: 0, left: 0, right: 0, bottom: 0, background: “rgba(0,0,0,0.85)”, zIndex: 9999, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “20px” },
-onClick: function(e) { if (e.target === e.currentTarget) onClose(); }
-},
-React.createElement(“div”, { style: S.eaForm, className: “fade-in” },
-React.createElement(“div”, { style: { textAlign: “center”, borderBottom: “2px solid #000”, paddingBottom: “12px”, marginBottom: “15px” } },
-React.createElement(“div”, { style: { fontSize: “11px”, fontWeight: 700 } }, “STATE OF MISSISSIPPI”),
-React.createElement(“div”, { style: { fontSize: “11px” } }, “DEPARTMENT OF HUMAN SERVICES”),
-React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, marginTop: “8px” } }, “MDHS-EA-900”),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700 } }, “APPLICATION FOR SNAP & TANF BENEFITS”)
+function TL(p){return h(“div”,null,h(“span”,{className:“tl”},p.l+” “),h(“span”,{className:p.hi?“th”:“tv”},p.v));}
+
+function MavsShell(p){
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(“div”,{className:“term-hdr”},
+h(“div”,null,h(“span”,{style:{fontWeight:700}},“MDHS    MAVERICS”),h(“span”,{className:“term-tag”},p.sn)),
+h(“span”,{style:{fontSize:“10px”,opacity:.7}},p.sub||””)
 ),
-React.createElement(“div”, { style: { fontSize: “11px”, marginBottom: “6px”, fontWeight: 700 } }, “FOR OFFICE USE ONLY”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “15px”, border: “1px solid #000” } },
-React.createElement(“tbody”, null,
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “30%” } }, “Date Received:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, new Date().toLocaleDateString()),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “25%” } }, “Case Number:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, “Pending”)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “County:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.county),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Expedited:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, color: applicant.isExpedited ? “#c00” : “#000”, fontWeight: applicant.isExpedited ? 700 : 400 } }, applicant.isExpedited ? “YES” : “NO”)
-)
-)
-),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 1: APPLICANT INFORMATION”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
-React.createElement(“tbody”, null,
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “25%” } }, “Name:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.lastName + “, “ + applicant.firstName + “ “ + applicant.mi)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Date of Birth:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.dob)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “SSN:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.ssn)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Address:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.address)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Phone:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.phone)
-),
-React.createElement(“tr”, null,
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Programs Applied For:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.programsApplied === “FS” ? “SNAP (Food Stamps)” : applicant.programsApplied)
-)
-)
-),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 2: HOUSEHOLD MEMBERS”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “10px”, marginBottom: “12px”, border: “1px solid #000” } },
-React.createElement(“thead”, null,
-React.createElement(“tr”, null,
-[“Name”, “Relationship”, “DOB”, “SSN”, “Sex”].map(function(h) {
-return React.createElement(“th”, { key: h, style: { border: “1px solid #000”, padding: “4px”, background: “#eee”, fontWeight: 700 } }, h);
-})
-)
-),
-React.createElement(“tbody”, null,
-members.map(function(m, i) {
-return React.createElement(“tr”, { key: i },
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.name),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.relation),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.dob),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.ssn),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.sex)
+h(“div”,{className:“term-shell”},p.children,h(NavBar,{onBack:p.onBack,onNext:p.onNext,nextLabel:p.nextLabel||“ENTER \u2192”}))
 );
-})
-)
+}
+
+/* === EA-900 MODAL === */
+function EA900(p){
+if(!p.a)return null;
+var a=p.a;
+function C(pr){return h(“td”,{style:{border:“1px solid #000”,padding:“3px 5px”,fontSize:“11px”,fontWeight:pr.b?“700”:“400”,width:pr.w||“auto”}},pr.children);}
+function Sect(pr){return h(“div”,{className:“ea-sect”},pr.children);}
+function DataTbl(pr){
+var rows=[];
+var keys=Object.keys(pr.data);
+for(var i=0;i<keys.length;i++){
+rows.push(h(“tr”,{key:keys[i]},C({b:true,w:“40%”,children:keys[i]+”:”}),C({children:pr.data[keys[i]]})));
+}
+return h(“table”,null,h(“tbody”,null,rows));
+}
+var mRows=[];
+for(var i=0;i<a.householdMembers.length;i++){
+var m=a.householdMembers[i];
+mRows.push(h(“tr”,{key:i},h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.name),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.relation),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.dob),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.ssn),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.sex)));
+}
+return h(“div”,{className:“ea-overlay”,onClick:function(e){if(e.target===e.currentTarget)p.onClose();}},
+h(“div”,{className:“ea-form”},
+h(“div”,{style:{textAlign:“center”,borderBottom:“2px solid #000”,paddingBottom:“10px”,marginBottom:“12px”}},
+h(“div”,{style:{fontSize:“11px”,fontWeight:700}},“STATE OF MISSISSIPPI”),
+h(“div”,{style:{fontSize:“11px”}},“DEPARTMENT OF HUMAN SERVICES”),
+h(“div”,{style:{fontSize:“14px”,fontWeight:700,marginTop:“6px”}},“MDHS-EA-900”),
+h(“div”,{style:{fontSize:“12px”,fontWeight:700}},“APPLICATION FOR SNAP & TANF BENEFITS”)
 ),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 3: INCOME”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
-React.createElement(“tbody”, null,
-Object.entries(applicant.income).map(function(pair) {
-var key = pair[0]; var val = pair[1];
-var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
-return React.createElement(“tr”, { key: key },
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
-);
-})
-)
+h(“div”,{style:{fontSize:“11px”,fontWeight:700,marginBottom:“4px”}},“FOR OFFICE USE ONLY”),
+h(“table”,null,h(“tbody”,null,
+h(“tr”,null,C({b:true,w:“30%”,children:“Date Received:”}),C({children:todayDisp}),C({b:true,children:“Case Number:”}),C({children:“Pending”})),
+h(“tr”,null,C({b:true,w:“30%”,children:“County:”}),C({children:a.county}),C({b:true,children:“Expedited:”}),h(“td”,{style:{border:“1px solid #000”,padding:“3px 5px”,fontSize:“11px”,color:a.isExpedited?”#c00”:”#000”,fontWeight:a.isExpedited?“700”:“400”}},a.isExpedited?“YES”:“NO”))
+)),
+Sect({children:“SECTION 1: APPLICANT INFORMATION”}),
+h(“table”,null,h(“tbody”,null,
+[[“Name”,a.lastName+”, “+a.firstName+” “+a.mi],[“DOB”,a.dob],[“SSN”,a.ssn],[“Address”,a.address],[“Phone”,a.phone],[“Programs”,a.programsApplied===“FS”?“SNAP (Food Stamps)”:a.programsApplied]].map(function(r){return h(“tr”,{key:r[0]},C({b:true,w:“30%”,children:r[0]+”:”}),C({children:r[1]}));})
+)),
+Sect({children:“SECTION 2: HOUSEHOLD MEMBERS”}),
+h(“table”,null,
+h(“thead”,null,h(“tr”,null,[“Name”,“Relation”,“DOB”,“SSN”,“Sex”].map(function(x){return h(“th”,{key:x,style:{border:“1px solid #000”,padding:“3px”,background:”#eee”,fontSize:“10px”,fontWeight:700,textAlign:“left”}},x);}))),
+h(“tbody”,null,mRows)
 ),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 4: RESOURCES”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
-React.createElement(“tbody”, null,
-Object.entries(applicant.resources).map(function(pair) {
-var key = pair[0]; var val = pair[1];
-var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
-return React.createElement(“tr”, { key: key },
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
-);
-})
-)
+Sect({children:“SECTION 3: INCOME”}),DataTbl({data:a.income}),
+Sect({children:“SECTION 4: RESOURCES”}),DataTbl({data:a.resources}),
+Sect({children:“SECTION 5: EXPENSES”}),DataTbl({data:a.expenses}),
+h(“div”,{style:{borderTop:“2px solid #000”,paddingTop:“8px”,fontSize:“11px”,textAlign:“center”,fontStyle:“italic”,marginTop:“10px”}},
+“Applicant Signature: “,h(“span”,{style:{textDecoration:“underline”}},a.firstName+” “+a.lastName),” | Date: “+todayDisp
 ),
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 5: EXPENSES”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “15px”, border: “1px solid #000” } },
-React.createElement(“tbody”, null,
-Object.entries(applicant.expenses).map(function(pair) {
-var key = pair[0]; var val = pair[1];
-var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
-return React.createElement(“tr”, { key: key },
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
-React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
-);
-})
-)
-),
-React.createElement(“div”, { style: { borderTop: “2px solid #000”, paddingTop: “10px”, fontSize: “11px”, textAlign: “center”, fontStyle: “italic” } },
-“Applicant Signature: “, React.createElement(“span”, { style: { textDecoration: “underline” } }, applicant.firstName + “ “ + applicant.lastName),
-“  |  Date: “, new Date().toLocaleDateString()
-),
-React.createElement(“div”, { style: { textAlign: “center”, marginTop: “15px” } },
-React.createElement(“button”, { onClick: onClose, style: { background: “#333”, color: “#fff”, border: “none”, padding: “8px 30px”, borderRadius: “3px”, cursor: “pointer”, fontSize: “13px” } }, “Close Application”)
+h(“div”,{style:{textAlign:“center”,marginTop:“12px”}},
+h(“button”,{onClick:p.onClose,style:{background:”#333”,color:”#fff”,border:“none”,padding:“7px 24px”,borderRadius:“3px”,cursor:“pointer”,fontSize:“12px”,fontFamily:“inherit”}},“Close Application”)
 )
 )
 );
 }
 
-/* ––––– SCREEN COMPONENTS ––––– */
+/* === SCREENS === */
 
-function WelcomeScreen({ traineeName, setTraineeName, onNext }) {
-var firstName = traineeName.first || “”;
-var lastName = traineeName.last || “”;
-var canProceed = firstName.trim().length > 0 && lastName.trim().length > 0;
-
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
-React.createElement(“div”, { style: { maxWidth: “480px”, width: “100%”, textAlign: “center” }, className: “fade-in” },
-React.createElement(“div”, { style: { fontSize: “11px”, color: “#007A8C”, fontWeight: 700, letterSpacing: “2px”, marginBottom: “8px”, textTransform: “uppercase” } }, “Mississippi Department of Human Services”),
-React.createElement(“h1”, { style: { fontSize: “26px”, fontWeight: 700, color: “#fff”, marginBottom: “6px” } }, “MDHS County Training Simulator”),
-React.createElement(“p”, { style: { color: “#7888a0”, fontSize: “13px”, marginBottom: “30px”, lineHeight: “1.5” } },
-“Immersive training experience for eligibility clerks. Practice the full application registration workflow in CARS and MAVERICS.”
+function WelcomeScreen(p){
+var fn=p.tn.first||””;var ln=p.tn.last||””;
+var ok=fn.trim().length>0&&ln.trim().length>0;
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“440px”,width:“100%”,textAlign:“center”}},
+h(“div”,{style:{fontSize:“10px”,color:”#0f766e”,fontWeight:700,letterSpacing:“2px”,textTransform:“uppercase”,marginBottom:“6px”}},“Mississippi Department of Human Services”),
+h(“h1”,{style:{fontSize:“22px”,fontWeight:700,color:”#fff”,marginBottom:“4px”}},“MDHS County Training Simulator”),
+h(“p”,{style:{color:”#64748b”,fontSize:“12px”,marginBottom:“24px”,lineHeight:“1.5”}},“Immersive training for eligibility clerks. Practice the full CARS and MAVERICS registration workflow.”),
+h(“div”,{className:“sim-card”,style:{textAlign:“left”}},
+h(“div”,{style:{fontSize:“13px”,fontWeight:600,color:”#fff”,marginBottom:“12px”}},“Enter your name to begin:”),
+h(“div”,{style:{display:“flex”,gap:“8px”,marginBottom:“12px”}},
+h(“div”,{style:{flex:1}},h(“label”,{className:“sim-label”},“First Name”),h(“input”,{className:“sim-input”,placeholder:“First name”,value:fn,onChange:function(e){p.setTn({first:e.target.value,last:ln});}})),
+h(“div”,{style:{flex:1}},h(“label”,{className:“sim-label”},“Last Name”),h(“input”,{className:“sim-input”,placeholder:“Last name”,value:ln,onChange:function(e){p.setTn({first:fn,last:e.target.value});}}))
 ),
-React.createElement(“div”, { style: Object.assign({}, S.card, { textAlign: “left” }) },
-React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 600, color: “#fff”, marginBottom: “15px” } }, “Enter your name to begin:”),
-React.createElement(“div”, { style: { display: “flex”, gap: “10px”, marginBottom: “15px” } },
-React.createElement(“div”, { style: { flex: 1 } },
-React.createElement(“label”, { style: S.label }, “First Name”),
-React.createElement(“input”, {
-style: S.input, placeholder: “First name”,
-value: firstName,
-onChange: function(e) { setTraineeName({ first: e.target.value, last: lastName }); }
-})
-),
-React.createElement(“div”, { style: { flex: 1 } },
-React.createElement(“label”, { style: S.label }, “Last Name”),
-React.createElement(“input”, {
-style: S.input, placeholder: “Last name”,
-value: lastName,
-onChange: function(e) { setTraineeName({ first: firstName, last: e.target.value }); }
-})
-)
-),
-React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%” }, !canProceed ? { opacity: 0.4, cursor: “not-allowed” } : {}),
-onClick: canProceed ? onNext : undefined,
-disabled: !canProceed
-}, “Begin Training”)
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”},onClick:ok?p.onNext:undefined,disabled:!ok},“Begin Training”)
 )
 )
 );
 }
 
-function DisclaimerScreen({ onNext }) {
-var agreed = useState(false);
-var isAgreed = agreed[0];
-var setAgreed = agreed[1];
-
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
-React.createElement(“div”, { style: { maxWidth: “520px”, width: “100%” }, className: “fade-in” },
-React.createElement(“div”, { style: Object.assign({}, S.card, { borderColor: “#C5A55A” }) },
-React.createElement(“div”, { style: { display: “flex”, alignItems: “center”, gap: “10px”, marginBottom: “12px” } },
-React.createElement(“span”, { style: { fontSize: “20px” } }, “\u26A0”),
-React.createElement(“span”, { style: { fontSize: “15px”, fontWeight: 700, color: “#C5A55A” } }, “LEGAL DISCLAIMER”)
-),
-React.createElement(“p”, { style: { fontSize: “12px”, lineHeight: “1.7”, color: “#a0b0c0”, marginBottom: “15px” } },
-“This training simulator is developed exclusively for the Mississippi Department of Human Services (MDHS) for internal training purposes. All screen layouts, system names, and workflows are simulated representations of MDHS systems and do not contain real applicant data. Any resemblance to actual persons is coincidental. This tool is not connected to any live MDHS system. Unauthorized use, reproduction, or distribution is prohibited.”
-),
-React.createElement(“label”, { style: { display: “flex”, alignItems: “center”, gap: “8px”, cursor: “pointer”, fontSize: “13px”, color: “#e0e8f0” } },
-React.createElement(“input”, { type: “checkbox”, checked: isAgreed, onChange: function() { setAgreed(!isAgreed); }, style: { width: “16px”, height: “16px”, accentColor: “#007A8C” } }),
+function DisclaimerScreen(p){
+var s=useState(false);var agreed=s[0];var setAgreed=s[1];
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“480px”,width:“100%”}},
+h(“div”,{className:“sim-card”,style:{borderColor:”#ca8a04”}},
+h(“div”,{style:{display:“flex”,alignItems:“center”,gap:“8px”,marginBottom:“10px”}},h(“span”,{style:{fontSize:“18px”}},”\u26A0”),h(“span”,{style:{fontSize:“14px”,fontWeight:700,color:”#ca8a04”}},“LEGAL DISCLAIMER”)),
+h(“p”,{style:{fontSize:“11px”,color:”#94a3b8”,lineHeight:“1.7”,marginBottom:“12px”}},“This training simulator is developed exclusively for MDHS for internal training purposes. All screen layouts, system names, and workflows are simulated. No real applicant data is used. This tool is not connected to any live system. Unauthorized use is prohibited.”),
+h(“label”,{style:{display:“flex”,alignItems:“center”,gap:“8px”,cursor:“pointer”,fontSize:“12px”,color:”#e2e8f0”}},
+h(“input”,{type:“checkbox”,checked:agreed,onChange:function(){setAgreed(!agreed);},style:{width:“16px”,height:“16px”,accentColor:”#0f766e”}}),
 “I understand this is a training simulation only”
 ),
-React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%”, marginTop: “15px” }, !isAgreed ? { opacity: 0.4, cursor: “not-allowed” } : {}),
-onClick: isAgreed ? onNext : undefined,
-disabled: !isAgreed
-}, “Proceed”)
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”,marginTop:“12px”},onClick:agreed?p.onNext:undefined,disabled:!agreed},“Proceed”)
 )
 )
 );
 }
 
-function LoginScreen({ onNext }) {
-var st = useState({ user: “”, pass: “”, error: “” });
-var state = st[0]; var setState = st[1];
-
-function handleLogin() {
-if (state.user === “jmitchell” && state.pass === “MDHS2026!”) {
-onNext();
-} else {
-setState(Object.assign({}, state, { error: “Invalid credentials. Use jmitchell / MDHS2026!” }));
-}
-}
-
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
-React.createElement(“div”, { style: { maxWidth: “380px”, width: “100%” }, className: “fade-in” },
-React.createElement(“div”, { style: Object.assign({}, S.card) },
-React.createElement(“div”, { style: { textAlign: “center”, marginBottom: “20px” } },
-React.createElement(“div”, { style: { fontSize: “18px”, fontWeight: 700, color: “#fff” } }, “C.A.R.S.”),
-React.createElement(“div”, { style: { fontSize: “11px”, color: “#7888a0” } }, “Client Application & Registration System”)
-),
-state.error && React.createElement(“div”, { style: { background: “#2a0000”, border: “1px solid #5a0000”, borderRadius: “3px”, padding: “8px”, fontSize: “12px”, color: “#ff6666”, marginBottom: “12px” } }, state.error),
-React.createElement(“div”, { style: { marginBottom: “12px” } },
-React.createElement(“label”, { style: S.label }, “Username”),
-React.createElement(“input”, {
-style: S.input, placeholder: “Enter username”,
-value: state.user,
-onChange: function(e) { setState(Object.assign({}, state, { user: e.target.value, error: “” })); },
-onKeyDown: function(e) { if (e.key === “Enter”) handleLogin(); }
-})
-),
-React.createElement(“div”, { style: { marginBottom: “15px” } },
-React.createElement(“label”, { style: S.label }, “Password”),
-React.createElement(“input”, {
-style: S.input, type: “password”, placeholder: “Enter password”,
-value: state.pass,
-onChange: function(e) { setState(Object.assign({}, state, { pass: e.target.value, error: “” })); },
-onKeyDown: function(e) { if (e.key === “Enter”) handleLogin(); }
-})
-),
-React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%” }),
-onClick: handleLogin
-}, “Log In”)
+function LoginScreen(p){
+var s=useState({u:””,pw:””,err:””});var st=s[0];var set=s[1];
+function login(){if(st.u===“jmitchell”&&st.pw===“MDHS2026!”)p.onNext();else set({u:st.u,pw:st.pw,err:“Invalid credentials. Use jmitchell / MDHS2026!”});}
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“360px”,width:“100%”}},
+h(“div”,{className:“sim-card”},
+h(“div”,{style:{textAlign:“center”,marginBottom:“16px”}},h(“div”,{style:{fontSize:“18px”,fontWeight:700,color:”#fff”}},“C.A.R.S.”),h(“div”,{style:{fontSize:“10px”,color:”#64748b”}},“Client Application & Registration System”)),
+st.err?h(“div”,{style:{background:“rgba(127,29,29,.4)”,border:“1px solid #7f1d1d”,borderRadius:“3px”,padding:“6px”,fontSize:“11px”,color:”#fca5a5”,marginBottom:“10px”}},st.err):null,
+h(“div”,{style:{marginBottom:“10px”}},h(“label”,{className:“sim-label”},“Username”),h(“input”,{className:“sim-input”,value:st.u,onChange:function(e){set({u:e.target.value,pw:st.pw,err:””});},onKeyDown:function(e){if(e.key===“Enter”)login();}})),
+h(“div”,{style:{marginBottom:“12px”}},h(“label”,{className:“sim-label”},“Password”),h(“input”,{className:“sim-input”,type:“password”,value:st.pw,onChange:function(e){set({u:st.u,pw:e.target.value,err:””});},onKeyDown:function(e){if(e.key===“Enter”)login();}})),
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”},onClick:login},“Log In”)
 )
 )
 );
 }
 
-function CARSDashboard({ onSelectScenario }) {
-var hover = useState(null);
-var hovered = hover[0]; var setHovered = hover[1];
-
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“div”, null,
-React.createElement(“span”, { style: { fontWeight: 700, fontSize: “16px” } }, “C.A.R.S. Dashboard”),
-React.createElement(“span”, { style: { fontSize: “11px”, marginLeft: “15px”, opacity: 0.7 } }, “Clerical Dashboard”)
-),
-React.createElement(“div”, { style: { fontSize: “11px”, opacity: 0.7 } }, “User: jmitchell | Forrest County”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { display: “flex”, flexDirection: “column”, alignItems: “center”, justifyContent: “center”, gap: “15px” }) },
-React.createElement(“div”, { style: { textAlign: “center”, marginBottom: “10px” } },
-React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, color: “#333”, marginBottom: “5px” } }, “Online Registration”),
-React.createElement(“div”, { style: { fontSize: “12px”, color: “#666” } }, “Select an application type to process”)
-),
-React.createElement(“div”, { style: { display: “flex”, gap: “20px”, flexWrap: “wrap”, justifyContent: “center” } },
-[
-{ key: “expedited”, label: “Next Application”, sub: “EXPEDITED”, color: “#C62828”, desc: “Expenses exceed income. Household qualifies for expedited processing.” },
-{ key: “nonExpedited”, label: “Next Application”, sub: “NON-EXPEDITED”, color: “#1565C0”, desc: “Income exceeds expenses. Standard processing timeline applies.” }
-].map(function(item) {
-return React.createElement(“div”, {
-key: item.key,
-style: {
-background: “#fff”, border: hovered === item.key ? “2px solid “ + item.color : “2px solid #ddd”,
-borderRadius: “8px”, padding: “20px”, width: “220px”, cursor: “pointer”,
-transition: “all .2s”, transform: hovered === item.key ? “translateY(-2px)” : “none”,
-boxShadow: hovered === item.key ? “0 4px 12px rgba(0,0,0,0.15)” : “0 1px 3px rgba(0,0,0,0.1)”
-},
-onClick: function() { onSelectScenario(item.key); },
-onMouseEnter: function() { setHovered(item.key); },
-onMouseLeave: function() { setHovered(null); }
-},
-React.createElement(“div”, { style: { fontSize: “10px”, fontWeight: 700, color: item.color, marginBottom: “6px”, letterSpacing: “1px” } }, item.sub),
-React.createElement(“div”, { style: { fontSize: “15px”, fontWeight: 700, color: “#333”, marginBottom: “8px” } }, item.label),
-React.createElement(“div”, { style: { fontSize: “11px”, color: “#777”, lineHeight: “1.4” } }, item.desc)
+function Dashboard(p){
+var s=useState(null);var hov=s[0];var setHov=s[1];
+var items=[{key:“expedited”,sub:“EXPEDITED”,c:”#b91c1c”,desc:“Expenses exceed income. Qualifies for expedited processing.”},{key:“nonExpedited”,sub:“NON-EXPEDITED”,c:”#1e40af”,desc:“Income exceeds expenses. Standard processing timeline.”}];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(“div”,{className:“cars-hdr”},h(“span”,{style:{fontWeight:700,fontSize:“13px”}},“C.A.R.S. Dashboard”),h(“span”,{style:{fontSize:“10px”,opacity:.7}},“User: jmitchell”)),
+h(“div”,{className:“cars-body”,style:{display:“flex”,flexDirection:“column”,alignItems:“center”,justifyContent:“center”,gap:“12px”}},
+h(“div”,{style:{textAlign:“center”,marginBottom:“8px”}},h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“14px”,marginBottom:“4px”}},“Online Registration”),h(“div”,{style:{fontSize:“11px”,color:”#666”}},“Select an application type to process”)),
+h(“div”,{style:{display:“flex”,gap:“16px”,flexWrap:“wrap”,justifyContent:“center”}},
+items.map(function(it){
+return h(“div”,{key:it.key,
+style:{background:”#fff”,border:hov===it.key?“2px solid “+it.c:“2px solid #ddd”,borderRadius:“8px”,padding:“16px”,width:“200px”,cursor:“pointer”,transition:“all .15s”,transform:hov===it.key?“translateY(-2px)”:“none”,boxShadow:hov===it.key?“0 4px 12px rgba(0,0,0,.12)”:“0 1px 3px rgba(0,0,0,.08)”},
+onClick:function(){p.onSelect(it.key);},onMouseEnter:function(){setHov(it.key);},onMouseLeave:function(){setHov(null);}},
+h(“div”,{style:{fontSize:“9px”,fontWeight:700,color:it.c,letterSpacing:“1px”,marginBottom:“4px”}},it.sub),
+h(“div”,{style:{fontSize:“14px”,fontWeight:700,color:”#333”,marginBottom:“6px”}},“Next Application”),
+h(“div”,{style:{fontSize:“10px”,color:”#777”,lineHeight:“1.4”}},it.desc)
 );
 })
 )
@@ -481,638 +279,190 @@ React.createElement(“div”, { style: { fontSize: “11px”, color: “#777�
 );
 }
 
-/* ––––– CARS SCREENS ––––– */
-
-function CARSApplicantInfo({ scenario, onNext, onBack, onViewApp }) {
-var data = scenario.applicant;
-var isExp = data.isExpedited;
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Applicant Information”),
-React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
-React.createElement(“div”, { style: Object.assign({}, S.banner, isExp ? S.bannerExp : {}) },
-React.createElement(“span”, { style: { fontSize: “12px” } },
-React.createElement(“strong”, null, “Business Date: “), new Date().toLocaleDateString(), “  |  “,
-React.createElement(“strong”, null, “Expedited: “),
-React.createElement(“span”, { style: { color: isExp ? “#C62828” : “#2E7D32”, fontWeight: 700 } }, isExp ? “YES” : “NO”),
-“  |  “,
-React.createElement(“strong”, null, “Client Documents: “), “YES”
-)
-),
-React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, marginBottom: “15px” } },
-[
-[“First Name”, data.firstName], [“Last Name”, data.lastName], [“Middle Initial”, data.mi],
-[“Date of Birth”, data.dob], [“SSN”, data.ssn], [“Sex”, data.sex],
-[“Address”, data.address], [“Phone”, data.phone], [“Email”, data.email],
-[“County”, data.county]
-].map(function(pair) {
-return React.createElement(“div”, { key: pair[0] },
-React.createElement(“div”, { style: S.carsLabel }, pair[0]),
-React.createElement(“div”, { style: Object.assign({}, S.carsInput, { background: “#f9f9f9” }) }, pair[1])
-);
-})
-),
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+function CarsApplicantInfo(p){
+var d=p.sc.applicant;var isE=d.isExpedited;
+var fields=[[“First Name”,d.firstName],[“Last Name”,d.lastName],[“Middle Initial”,d.mi],[“Date of Birth”,d.dob],[“SSN”,d.ssn],[“Sex”,d.sex],[“Address”,d.address],[“Phone”,d.phone],[“Email”,d.email],[“County”,d.county]];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - Applicant Information”,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{className:“banner “+(isE?“banner-exp”:“banner-reg”)},h(“strong”,null,“Business Date:”),” “+todayDisp+” | “,h(“strong”,null,“Expedited:”),” “,h(“span”,{style:{color:isE?”#b91c1c”:”#166534”,fontWeight:700}},isE?“YES”:“NO”),” | “,h(“strong”,null,“Client Docs:”),” YES”),
+h(“div”,{className:“grid-2”},fields.map(function(f){return h(CarsField,{key:f[0],label:f[0],value:f[1]});})),
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
 )
 );
 }
 
-function CARSDataScreen({ title, fields, onNext, onBack, onViewApp }) {
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - “ + title),
-onViewApp && React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
-React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, marginBottom: “15px” } },
-fields.map(function(pair) {
-return React.createElement(“div”, { key: pair[0], style: pair[2] ? { gridColumn: “span 2” } : {} },
-React.createElement(“div”, { style: S.carsLabel }, pair[0]),
-React.createElement(“div”, { style: Object.assign({}, S.carsInput, { background: “#f9f9f9” }) }, pair[1])
-);
-})
-),
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+function CarsDataScreen(p){
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - “+p.title,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{className:“grid-2”},p.fields.map(function(f,i){return h(CarsField,{key:i,label:f[0],value:f[1]});})),
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
 )
 );
 }
 
-function CARSHouseholdScreen({ scenario, onNext, onBack, onViewApp }) {
-var members = scenario.applicant.householdMembers;
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Household Information”),
-React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
+function CarsHousehold(p){
+var m=p.sc.applicant.householdMembers;
+var hdrs=[“Name”,“Relation”,“DOB”,“SSN”,“Sex”];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - Household Information”,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“13px”,marginBottom:“8px”}},“Household Members (”+m.length+”)”),
+h(“table”,{style:{width:“100%”,background:”#fff”,borderCollapse:“collapse”,border:“1px solid #ddd”,fontSize:“11px”}},
+h(“thead”,null,h(“tr”,{style:{background:”#eff6ff”}},hdrs.map(function(x){return h(“th”,{key:x,style:{padding:“6px 8px”,textAlign:“left”,borderBottom:“2px solid #93c5fd”,fontWeight:700}},x);}))),
+h(“tbody”,null,m.map(function(r,i){return h(“tr”,{key:i,style:{borderBottom:“1px solid #eee”}},[r.name,r.relation,r.dob,r.ssn,r.sex].map(function(v,j){return h(“td”,{key:j,style:{padding:“5px 8px”}},v);}));}))
 ),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
-React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: “#333”, marginBottom: “10px” } }, “Household Members (” + members.length + “)”),
-React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, background: “#fff”, border: “1px solid #ddd”, fontSize: “12px” } },
-React.createElement(“thead”, null,
-React.createElement(“tr”, { style: { background: “#e3f2fd” } },
-[“Name”, “Relationship”, “DOB”, “SSN”, “Sex”].map(function(h) {
-return React.createElement(“th”, { key: h, style: { padding: “8px 10px”, textAlign: “left”, borderBottom: “2px solid #90CAF9”, fontWeight: 700 } }, h);
-})
-)
-),
-React.createElement(“tbody”, null,
-members.map(function(m, i) {
-return React.createElement(“tr”, { key: i, style: { borderBottom: “1px solid #eee” } },
-React.createElement(“td”, { style: { padding: “7px 10px” } }, m.name),
-React.createElement(“td”, { style: { padding: “7px 10px” } }, m.relation),
-React.createElement(“td”, { style: { padding: “7px 10px” } }, m.dob),
-React.createElement(“td”, { style: { padding: “7px 10px” } }, m.ssn),
-React.createElement(“td”, { style: { padding: “7px 10px” } }, m.sex)
-);
-})
-)
-),
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
 )
 );
 }
 
-/* ––––– MAVERICS TERMINAL SCREENS ––––– */
+function FUSC(p){return h(MavsShell,{sn:“FUSC”,sub:“Full Service Office Clerical Menu”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Select Option 2 \u2192”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“FULL SERVICE OFFICE CLERICAL MENU”),h(“div”,{style:{lineHeight:“2.2”}},h(“div”,null,”  1  GENERAL INQUIRIES & HISTORY”),h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  2  APPLICATION REGISTRATION  \u25C0”),h(“div”,null,”  3  NOTICE REQUEST”),h(“div”,null,”  4  ADD PROGRAM TO CASE”),h(“div”,null,”  5  CASE DESTRUCTION”)),h(“div”,{style:{marginTop:“16px”,color:”#6b7280”,fontSize:“10px”,fontStyle:“italic”}},“Select option 2 to begin application registration”));}
 
-function MavsScreen({ screenName, subtitle, children, onBack, onNext, nextLabel }) {
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.termHeader },
-React.createElement(“div”, null,
-React.createElement(“span”, { style: { fontWeight: 700 } }, “MDHS    MAVERICS”),
-React.createElement(“span”, { style: { marginLeft: “30px”, background: “#fff”, color: “#003366”, padding: “1px 10px”, fontWeight: 700, fontSize: “12px” } }, screenName)
-),
-React.createElement(“span”, { style: { fontSize: “11px”, opacity: 0.7 } }, subtitle || “”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.terminal, { flex: 1, overflow: “auto” }) },
-children,
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: nextLabel || “ENTER \u2192”,
-backLabel: “Back”,
-backDisabled: false
-})
-)
-);
-}
+function CLIR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLIR”,sub:“Client Inquiry/Registration”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY/REGISTRATION MENU”),h(“div”,{style:{lineHeight:“2”,marginBottom:“12px”}},h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  1  INQUIRE ON PERSON  \u25C0”),h(“div”,null,”  2  SAVE NEW CLIENT FOR REGISTRATION”),h(“div”,null,”  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),h(“div”,null,”  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),h(“div”,null,”  5  DELETE PREVIOUSLY SAVED PERSONS”),h(“div”,null,”  6  INQUIRE ON DRS INFORMATION”)),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“10px”}},h(“div”,{style:{color:”#6b7280”,marginBottom:“6px”,fontSize:“11px”}},“Function 1 selected - Enter client search criteria:”),h(“div”,{style:{display:“flex”,flexWrap:“wrap”,gap:“12px”}},h(TL,{l:“SURNAME:”,v:d.lastName.toUpperCase()}),h(TL,{l:“GIVEN:”,v:d.firstName.toUpperCase()}),h(TL,{l:“DOB:”,v:d.dob.replace(///g,””)})),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”}},”\u26A0 Always search by name and birthdate, NOT SSN”)));}
 
-function FUSC({ onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “FUSC”, subtitle: “Full Service Office Clerical Menu”, onBack: onBack, onNext: onNext, nextLabel: “Select Option 2 \u2192” },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “FULL SERVICE OFFICE CLERICAL MENU”),
-React.createElement(“div”, { style: { lineHeight: “2.2”, fontSize: “13px” } },
-React.createElement(“div”, null, “  1  GENERAL INQUIRIES & HISTORY”),
-React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  2  APPLICATION REGISTRATION  \u25C0”),
-React.createElement(“div”, null, “  3  NOTICE REQUEST”),
-React.createElement(“div”, null, “  4  ADD PROGRAM TO CASE”),
-React.createElement(“div”, null, “  5  CASE DESTRUCTION”)
-),
-React.createElement(“div”, { style: { marginTop: “20px”, color: “#888”, fontSize: “11px”, fontStyle: “italic” } }, “Select option 2 to begin application registration”)
-);
-}
+function CLIS(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLIS”,sub:“Client Inquiry Short List”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY SHORT LIST”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”,marginBottom:“8px”}},“Matching clients:”),h(“table”,{style:{width:“100%”,fontFamily:“inherit”,fontSize:“11px”,borderCollapse:“collapse”}},h(“thead”,null,h(“tr”,{style:{borderBottom:“1px solid #4ade80”}},[”#”,“NAME”,“DOB”,“SSN”,“SEX”,“RACE”].map(function(x){return h(“th”,{key:x,style:{textAlign:“left”,padding:“3px 6px”,color:”#4ade80”}},x);}))),h(“tbody”,null,h(“tr”,{style:{color:”#fde047”,fontWeight:700}},h(“td”,{style:{padding:“3px 6px”}},“1 \u25C0”),h(“td”,{style:{padding:“3px 6px”}},d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()),h(“td”,{style:{padding:“3px 6px”}},d.dob),h(“td”,{style:{padding:“3px 6px”}},d.ssn),h(“td”,{style:{padding:“3px 6px”}},d.sex),h(“td”,{style:{padding:“3px 6px”}},d.race)))));}
 
-function CLIR({ scenario, onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “CLIR”, subtitle: “Client Inquiry/Registration”, onBack: onBack, onNext: onNext, nextLabel: “ENTER \u2192” },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY/REGISTRATION MENU”),
-React.createElement(“div”, { style: { marginBottom: “15px”, lineHeight: “2”, fontSize: “13px” } },
-React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  1  INQUIRE ON PERSON  \u25C0”),
-React.createElement(“div”, null, “  2  SAVE NEW CLIENT FOR REGISTRATION”),
-React.createElement(“div”, null, “  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),
-React.createElement(“div”, null, “  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),
-React.createElement(“div”, null, “  5  DELETE PREVIOUSLY SAVED PERSONS”),
-React.createElement(“div”, null, “  6  INQUIRE ON DRS INFORMATION”)
-),
-React.createElement(“div”, { style: { borderTop: “1px solid #1a3a1a”, paddingTop: “12px”, fontSize: “13px” } },
-React.createElement(“div”, { style: { color: “#888”, marginBottom: “8px” } }, “Function 1 selected - Enter client search criteria:”),
-React.createElement(“div”, { style: { display: “flex”, flexWrap: “wrap”, gap: “15px” } },
-React.createElement(TerminalField, { label: “SURNAME:”, value: scenario.applicant.lastName.toUpperCase() }),
-React.createElement(TerminalField, { label: “GIVEN:”, value: scenario.applicant.firstName.toUpperCase() }),
-React.createElement(TerminalField, { label: “DOB:”, value: scenario.applicant.dob.replace(///g, “”) })
-),
-React.createElement(“div”, { style: { marginTop: “10px”, color: “#ffff00”, fontSize: “11px” } }, “\u26A0 Always search by name and birthdate, NOT SSN”)
-)
-);
-}
+function CLRE(p){return h(MavsShell,{sn:“CLRE”,sub:“Claim Responsibility Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“CLAIM RESPONSIBILITY”),h(“div”,{style:{textAlign:“center”,padding:“20px 0”}},h(“div”,{style:{color:”#fde047”,fontSize:“13px”,marginBottom:“6px”}},“NO CLAIMS FOR THIS CLIENT”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”}},“Press ENTER to continue to Client Profile”)));}
 
-function CLIS({ scenario, onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “CLIS”, subtitle: “Client Inquiry Short List”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY SHORT LIST”),
-React.createElement(“div”, { style: { fontSize: “12px”, marginBottom: “10px”, color: “#888” } }, “The following clients match your search criteria:”),
-React.createElement(“table”, { style: { width: “100%”, fontFamily: “inherit”, fontSize: “12px”, borderCollapse: “collapse” } },
-React.createElement(“thead”, null,
-React.createElement(“tr”, { style: { borderBottom: “1px solid #00ff41” } },
-[”#”, “NAME”, “DOB”, “SSN”, “SEX”, “RACE”].map(function(h) {
-return React.createElement(“th”, { key: h, style: { textAlign: “left”, padding: “4px 8px”, color: “#00cc33” } }, h);
-})
-)
-),
-React.createElement(“tbody”, null,
-React.createElement(“tr”, { style: { color: “#ffff00”, fontWeight: 700 } },
-React.createElement(“td”, { style: { padding: “4px 8px” } }, “1 \u25C0”),
-React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.lastName.toUpperCase() + “, “ + scenario.applicant.firstName.toUpperCase()),
-React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.dob),
-React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.ssn),
-React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.sex),
-React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.race)
-)
-)
-),
-React.createElement(“div”, { style: { marginTop: “15px”, color: “#888”, fontSize: “11px” } }, “Enter number by client name to view full record”)
-);
-}
+function CLPR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLPR”,sub:“Client Profile”,onBack:p.onBack,onNext:p.onNext,nextLabel:“SAVE & SELECT \u2192”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT PROFILE”),h(“div”,{style:{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“2px 16px”,lineHeight:“2”,fontSize:“12px”}},h(TL,{l:“NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()+” “+d.mi}),h(TL,{l:“SSN:”,v:d.ssn}),h(TL,{l:“DOB:”,v:d.dob}),h(TL,{l:“SEX:”,v:d.sex}),h(TL,{l:“RACE:”,v:d.race}),h(TL,{l:“COUNTY:”,v:d.county.toUpperCase()})),h(“div”,{style:{marginTop:“16px”,border:“1px solid #fde047”,borderRadius:“3px”,padding:“10px”}},h(“div”,{style:{color:”#fde047”,fontSize:“11px”,fontWeight:700,marginBottom:“4px”}},”\u2611 SELECT THIS CLIENT FOR REGISTRATION”),h(“div”,{style:{color:”#6b7280”,fontSize:“10px”}},“Confirm identity, then save for registration”)));}
 
-function CLRE({ onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “CLRE”, subtitle: “Claim Responsibility Screen”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLAIM RESPONSIBILITY”),
-React.createElement(“div”, { style: { fontSize: “13px”, padding: “20px 0”, textAlign: “center” } },
-React.createElement(“div”, { style: { color: “#ffff00”, fontSize: “14px”, marginBottom: “10px” } }, “NO CLAIMS FOR THIS CLIENT”),
-React.createElement(“div”, { style: { color: “#888”, fontSize: “12px” } }, “Press ENTER to continue to Client Profile”)
-)
-);
-}
+function CLIR_DRS(p){return h(MavsShell,{sn:“CLIR”,sub:“DRS Inquiry - Function 6”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY/REGISTRATION MENU”),h(“div”,{style:{lineHeight:“2”,marginBottom:“10px”}},h(“div”,null,”  1  INQUIRE ON PERSON”),h(“div”,null,”  2  SAVE NEW CLIENT FOR REGISTRATION”),h(“div”,null,”  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),h(“div”,null,”  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),h(“div”,null,”  5  DELETE PREVIOUSLY SAVED PERSONS”),h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  6  INQUIRE ON DRS INFORMATION  \u25C0”)),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”}},“DRS inquiry must be completed before registration. Press ENTER.”));}
 
-function CLPR({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-return React.createElement(MavsScreen, { screenName: “CLPR”, subtitle: “Client Profile”, onBack: onBack, onNext: onNext, nextLabel: “SAVE & SELECT FOR REGISTRATION \u2192” },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT PROFILE”),
-React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “8px 20px”, fontSize: “13px”, lineHeight: “1.8” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase() + “ “ + d.mi)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SSN: “), React.createElement(“span”, { style: { color: “#fff” } }, d.ssn)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DOB: “), React.createElement(“span”, { style: { color: “#fff” } }, d.dob)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SEX: “), React.createElement(“span”, { style: { color: “#fff” } }, d.sex)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RACE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.race)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “COUNTY: “), React.createElement(“span”, { style: { color: “#fff” } }, d.county.toUpperCase()))
-),
-React.createElement(“div”, { style: { marginTop: “20px”, padding: “10px”, border: “1px solid #ffff00”, borderRadius: “3px” } },
-React.createElement(“div”, { style: { color: “#ffff00”, fontSize: “12px”, fontWeight: 700, marginBottom: “5px” } }, “\u2611 SELECT THIS CLIENT FOR REGISTRATION”),
-React.createElement(“div”, { style: { color: “#888”, fontSize: “11px” } }, “Confirm client identity matches application, then save for registration”)
-)
-);
-}
+function DRPR(p){return h(MavsShell,{sn:“DRPR”,sub:“DRS Profile”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Continue \u2192”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“DRS PROFILE”),h(“div”,{style:{textAlign:“center”,padding:“20px 0”}},h(“div”,{style:{color:”#4ade80”,fontSize:“13px”}},“NO DISQUALIFICATIONS FOUND”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”,marginTop:“6px”}},“Client is clear. Press ENTER to continue.”)));}
 
-function CLIR_DRS({ onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “CLIR”, subtitle: “DRS Inquiry - Function 6”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY/REGISTRATION MENU”),
-React.createElement(“div”, { style: { marginBottom: “15px”, lineHeight: “2”, fontSize: “13px” } },
-React.createElement(“div”, null, “  1  INQUIRE ON PERSON”),
-React.createElement(“div”, null, “  2  SAVE NEW CLIENT FOR REGISTRATION”),
-React.createElement(“div”, null, “  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),
-React.createElement(“div”, null, “  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),
-React.createElement(“div”, null, “  5  DELETE PREVIOUSLY SAVED PERSONS”),
-React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  6  INQUIRE ON DRS INFORMATION  \u25C0”)
-),
-React.createElement(“div”, { style: { color: “#888”, fontSize: “12px”, marginTop: “10px” } }, “DRS inquiry must be completed before registration. Press ENTER.”)
-);
-}
+function REAP(p){var d=p.sc.applicant;var sc=p.sc;return h(MavsShell,{sn:“REAP”,sub:“Registration Entry Application Processing”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“12px”,marginBottom:“10px”}},“REGISTRATION ENTRY APPLICATION PROCESSING”),h(“div”,{style:{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“1px 20px”,fontSize:“11px”,lineHeight:“2”}},h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber,hi:true}),h(TL,{l:“CASELOAD:”,v:sc.caseload+” “+sc.workerName}),h(TL,{l:“FULL SERVICE OFFICE:”,v:sc.fso,hi:true}),h(TL,{l:“UNIT:”,v:sc.unit}),h(TL,{l:“REGISTRATION BY PCN:”,v:“JMITCHELL”}),h(TL,{l:“OPEN REASON:”,v:“I”}),h(TL,{l:“APP SOURCE:”,v:d.appSource}),h(TL,{l:“HOMELESS:”,v:“N”}),h(TL,{l:“EXPEDITED FS:”,v:d.isExpedited?“Y”:“N”,hi:d.isExpedited})),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“8px”,marginTop:“8px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“PROGRAMS APPLIED FOR:”),h(“div”,{style:{display:“flex”,gap:“16px”,fontSize:“11px”,flexWrap:“wrap”}},h(TL,{l:“PGM:”,v:d.programsApplied}),h(TL,{l:“APP RECEIVED DATE:”,v:todayStr}),h(TL,{l:“BENEFIT START DATE:”,v:todayStr}))),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“8px”,marginTop:“8px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“CLIENT:”),h(“div”,{style:{display:“flex”,flexWrap:“wrap”,gap:“12px”,fontSize:“11px”}},h(TL,{l:“NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“DOB:”,v:d.dob.replace(///g,””)}),h(TL,{l:“SSN:”,v:d.ssn.replace(/-/g,” “)}),h(TL,{l:“SEX:”,v:d.sex}),h(TL,{l:“RELATION:”,v:“PI”}),h(TL,{l:“POS ON APP:”,v:“01”}))),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”,fontStyle:“italic”}},“NOTE: Write down the case # at top. Always verify client information.”));}
 
-function DRPR({ scenario, onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “DRPR”, subtitle: “DRS Profile”, onBack: onBack, onNext: onNext, nextLabel: “Continue \u2192” },
-React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “DRS PROFILE”),
-React.createElement(“div”, { style: { fontSize: “13px”, padding: “20px 0”, textAlign: “center” } },
-React.createElement(“div”, { style: { color: “#00ff41”, fontSize: “14px” } }, “NO DISQUALIFICATIONS FOUND”),
-React.createElement(“div”, { style: { color: “#888”, fontSize: “12px”, marginTop: “8px” } }, “Client is clear to proceed with registration. Press ENTER to continue.”)
-)
-);
-}
+function EXSW(p){var d=p.sc.applicant;return h(MavsShell,{sn:“EXSW”,sub:“Expedited Screening Worksheet”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“EXPEDITED SCREENING WORKSHEET”),h(“div”,{style:{lineHeight:“2”,fontSize:“12px”,marginBottom:“8px”}},h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“CASE NUMBER:”,v:p.sc.caseNumber}),h(TL,{l:“APP RECEIVED DATE:”,v:todayDisp})),h(“div”,{style:{border:“1px solid “+(d.isExpedited?”#ef4444”:”#4ade80”),borderRadius:“3px”,padding:“10px”}},h(“div”,{style:{fontWeight:700,fontSize:“12px”,marginBottom:“6px”,color:d.isExpedited?”#f87171”:”#4ade80”}},“EXPEDITED STATUS: “+(d.isExpedited?“YES - QUALIFIES”:“NO - DOES NOT QUALIFY”)),h(“div”,{style:{color:”#9ca3af”,fontSize:“10px”,lineHeight:“1.5”}},d.expeditedReason)));}
 
-function REAP({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-var today = new Date();
-var dateStr = String(today.getMonth() + 1).padStart(2, “0”) + String(today.getDate()).padStart(2, “0”) + today.getFullYear();
-return React.createElement(MavsScreen, { screenName: “REAP”, subtitle: “Registration Entry Application Processing”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “REGISTRATION ENTRY APPLICATION PROCESSING”),
-React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “6px 30px”, fontSize: “12px”, lineHeight: “2” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.caseNumber)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASELOAD: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseload + “ “ + scenario.workerName)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “FULL SERVICE OFFICE: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.fso)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “UNIT: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.unit)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “REGISTRATION BY PCN: “), React.createElement(“span”, { style: { color: “#fff” } }, “JMITCHELL”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “OPEN REASON: “), React.createElement(“span”, { style: { color: “#fff” } }, “I”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP SOURCE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.appSource)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “HOMELESS: “), React.createElement(“span”, { style: { color: “#fff” } }, “N”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “EXPEDITED FS: “), React.createElement(“span”, { style: { color: d.isExpedited ? “#ff4444” : “#fff”, fontWeight: d.isExpedited ? 700 : 400 } }, d.isExpedited ? “Y” : “N”))
-),
-React.createElement(“div”, { style: { marginTop: “12px”, borderTop: “1px solid #1a3a1a”, paddingTop: “10px” } },
-React.createElement(“div”, { style: { fontSize: “12px”, color: “#00cc33”, fontWeight: 700, marginBottom: “6px” } }, “PROGRAMS APPLIED FOR:”),
-React.createElement(“div”, { style: { display: “flex”, gap: “30px”, fontSize: “12px” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PGM: “), React.createElement(“span”, { style: { color: “#fff” } }, d.programsApplied)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP RECEIVED DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, dateStr)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “BENEFIT START DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, dateStr))
-)
-),
-React.createElement(“div”, { style: { marginTop: “12px”, borderTop: “1px solid #1a3a1a”, paddingTop: “10px” } },
-React.createElement(“div”, { style: { fontSize: “12px”, color: “#00cc33”, fontWeight: 700, marginBottom: “6px” } }, “CLIENT:”),
-React.createElement(“div”, { style: { display: “flex”, gap: “20px”, fontSize: “12px”, flexWrap: “wrap” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DOB: “), React.createElement(“span”, { style: { color: “#fff” } }, d.dob.replace(///g, “”))),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SSN: “), React.createElement(“span”, { style: { color: “#fff” } }, d.ssn.replace(/-/g, “ “))),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SEX: “), React.createElement(“span”, { style: { color: “#fff” } }, d.sex)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RELATION: “), React.createElement(“span”, { style: { color: “#fff” } }, “PI”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “POSITION ON APP: “), React.createElement(“span”, { style: { color: “#fff” } }, “01”))
-)
-),
-React.createElement(“div”, { style: { marginTop: “12px”, color: “#ffff00”, fontSize: “11px”, fontStyle: “italic” } }, “NOTE: For NEW case numbers, write down the case # at top of page. Always verify client information is correct.”)
-);
-}
+function ADDR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“ADDR”,sub:“Address Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“ADDRESS”),h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“RESIDENCE ADDRESS:”,v:d.address}),h(TL,{l:“MAILING ADDRESS:”,v:d.mailingAddress||d.address}),h(TL,{l:“PHONE:”,v:d.phone}),h(TL,{l:“EMAIL:”,v:d.email}),h(TL,{l:“ENOTICE:”,v:“Y”}),h(TL,{l:“SNAP AUTHORIZED REP:”,v:“NONE”})));}
 
-function EXSW({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-return React.createElement(MavsScreen, { screenName: “EXSW”, subtitle: “Expedited Screening Worksheet”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “EXPEDITED SCREENING WORKSHEET”),
-React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2”, marginBottom: “10px” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseNumber)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP RECEIVED DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, new Date().toLocaleDateString()))
-),
-React.createElement(“div”, { style: { border: “1px solid #00ff41”, padding: “12px”, marginTop: “10px”, borderRadius: “3px” } },
-React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: d.isExpedited ? “#ff4444” : “#00ff41”, marginBottom: “8px” } },
-“EXPEDITED STATUS: “ + (d.isExpedited ? “YES - QUALIFIES” : “NO - DOES NOT QUALIFY”)
-),
-React.createElement(“div”, { style: { fontSize: “11px”, color: “#ccc”, lineHeight: “1.6” } }, d.expeditedReason)
-)
-);
-}
+function CAP1(p){var sc=p.sc;var d=sc.applicant;return h(MavsShell,{sn:“CAP1”,sub:“Case Information”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Go to NORE \u2192”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CASE ACTIVITY PROFILE”),h(“div”,{style:{lineHeight:“2”,fontSize:“12px”}},h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber,hi:true}),h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“FSO:”,v:sc.fso}),h(TL,{l:“UNIT:”,v:sc.unit}),h(TL,{l:“CASELOAD:”,v:sc.caseload})),h(“div”,{style:{border:“1px solid #4ade80”,borderRadius:“3px”,padding:“8px”,marginTop:“12px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“PROGRAM STATUS:”),h(“div”,{style:{color:”#fff”,fontSize:“12px”}},“PRG: “,h(“strong”,null,d.programsApplied),”    STATUS: “,h(“span”,{style:{color:”#fde047”,fontWeight:700}},“REC’D”),”    DATE: “+todayDisp)),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”}},“Write down case number. Type NORE in NEXT field.”));}
 
-function ADDR({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-return React.createElement(MavsScreen, { screenName: “ADDR”, subtitle: “Address Screen”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “ADDRESS”),
-React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RESIDENCE ADDRESS: “), React.createElement(“span”, { style: { color: “#fff” } }, d.address)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “MAILING ADDRESS: “), React.createElement(“span”, { style: { color: “#fff” } }, d.mailingAddress || d.address)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PHONE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.phone)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “EMAIL: “), React.createElement(“span”, { style: { color: “#fff” } }, d.email)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “ENOTICE: “), React.createElement(“span”, { style: { color: “#fff” } }, “Y”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SNAP AUTHORIZED REP: “), React.createElement(“span”, { style: { color: “#fff” } }, “NONE”))
-)
-);
-}
+function NORE(p){var sc=p.sc;return h(MavsShell,{sn:“NORE”,sub:“Notice Request Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“NOTICE REQUEST”),h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber}),h(TL,{l:“NOTICE TYPE:”,v:“A925”}),h(TL,{l:“BENEFIT MONTH:”,v:benMonth}),h(TL,{l:“PGM:”,v:sc.applicant.programsApplied})),h(“div”,{style:{color:”#6b7280”,fontSize:“10px”,marginTop:“8px”}},“Press ENTER to proceed to Notice screen”));}
 
-function CAP1({ scenario, onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “CAP1”, subtitle: “Case Information”, onBack: onBack, onNext: onNext, nextLabel: “Go to NORE \u2192” },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “CASE ACTIVITY PROFILE”),
-React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.caseNumber)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.applicant.lastName.toUpperCase() + “, “ + scenario.applicant.firstName.toUpperCase())),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “FSO: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.fso)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “UNIT: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.unit)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASELOAD: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseload))
-),
-React.createElement(“div”, { style: { marginTop: “15px”, border: “1px solid #00ff41”, padding: “10px”, borderRadius: “3px” } },
-React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, color: “#00cc33”, marginBottom: “5px” } }, “PROGRAM STATUS:”),
-React.createElement(“div”, { style: { fontSize: “12px”, color: “#fff” } },
-“PRG: “, React.createElement(“span”, { style: { fontWeight: 700 } }, scenario.applicant.programsApplied),
-“    STATUS: “, React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, “REC’D”),
-“    DATE: “, new Date().toLocaleDateString()
-)
-),
-React.createElement(“div”, { style: { marginTop: “12px”, color: “#ffff00”, fontSize: “11px” } }, “Write down the case number. Type NORE in NEXT field to access Notice Request Screen.”)
-);
-}
+function NOTI(p){var d=p.sc.applicant;var isE=d.isExpedited;var apt=getApptDate(isE);return h(MavsShell,{sn:“NOTI”,sub:“Notice Screen”,onBack:p.onBack,onNext:p.onNext,nextLabel:“MAIL & CONTINUE \u2192”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“NOTICE - A925 TELEPHONE APPOINTMENT”),isE?h(“div”,{style:{background:”#450a0a”,border:“1px solid #7f1d1d”,borderRadius:“3px”,padding:“6px”,fontSize:“10px”,color:”#fca5a5”,marginBottom:“8px”}},”\u26A0 EXPEDITED: Must be same day or next business day. Max 3 business days.”):null,h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“TELEPHONE:”,v:d.phone}),h(TL,{l:“DAY:”,v:DAYS[apt.getDay()]}),h(TL,{l:“DATE:”,v:apt.toLocaleDateString()}),h(TL,{l:“TIME:”,v:isE?“09:00 AM”:“10:30 AM”}),h(TL,{l:“PROGRAM:”,v:d.programsApplied===“FS”?”\u2611 SNAP”:d.programsApplied}),h(TL,{l:“WORKER:”,v:p.sc.workerName}),h(TL,{l:“MAIL?:”,v:“Y”,hi:true})));}
 
-function NORE({ scenario, onNext, onBack }) {
-return React.createElement(MavsScreen, { screenName: “NORE”, subtitle: “Notice Request Screen”, onBack: onBack, onNext: onNext },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “NOTICE REQUEST”),
-React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseNumber)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NOTICE TYPE: “), React.createElement(“span”, { style: { color: “#fff” } }, “A925”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “BENEFIT MONTH: “), React.createElement(“span”, { style: { color: “#fff” } }, String(new Date().getMonth() + 1).padStart(2, “0”) + String(new Date().getFullYear()).slice(-2))),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PGM: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.applicant.programsApplied))
-),
-React.createElement(“div”, { style: { marginTop: “10px”, color: “#888”, fontSize: “11px” } }, “Press ENTER to proceed to Notice screen”)
-);
-}
+function CarsCase(p){var sc=p.sc;return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},h(CarsHdr,{title:“C.A.R.S. - MAVS Case Number”}),h(“div”,{className:“cars-body”,style:{display:“flex”,flexDirection:“column”,alignItems:“center”,justifyContent:“center”}},h(“div”,{style:{maxWidth:“360px”,width:“100%”,textAlign:“center”}},h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“13px”,marginBottom:“16px”}},“Enter MAVERICS Case Number”),h(CarsField,{label:“Case Number”,value:sc.caseNumber}),h(“div”,{style:{background:”#f0fdf4”,border:“1px solid #86efac”,borderRadius:“4px”,padding:“8px”,fontSize:“11px”,color:”#166534”,marginTop:“10px”}},”\u2713 Case Details saved! HOH: “+sc.applicant.lastName+”, “+sc.applicant.firstName)),h(NavBar,{onBack:p.onBack,onNext:p.onNext})));}
 
-function NOTI({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-var isExp = d.isExpedited;
-var apptDate = new Date();
-if (isExp) {
-apptDate.setDate(apptDate.getDate() + 1);
-if (apptDate.getDay() === 0) apptDate.setDate(apptDate.getDate() + 1);
-if (apptDate.getDay() === 6) apptDate.setDate(apptDate.getDate() + 2);
-} else {
-apptDate.setDate(apptDate.getDate() + 7);
-while (apptDate.getDay() === 0 || apptDate.getDay() === 6) {
-apptDate.setDate(apptDate.getDate() + 1);
-}
-}
-var dayNames = [“SUNDAY”,“MONDAY”,“TUESDAY”,“WEDNESDAY”,“THURSDAY”,“FRIDAY”,“SATURDAY”];
-return React.createElement(MavsScreen, { screenName: “NOTI”, subtitle: “Notice Screen”, onBack: onBack, onNext: onNext, nextLabel: “MAIL & CONTINUE \u2192” },
-React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “NOTICE - A925 TELEPHONE APPOINTMENT”),
-isExp && React.createElement(“div”, { style: { background: “#330000”, border: “1px solid #660000”, padding: “8px”, borderRadius: “3px”, marginBottom: “10px”, fontSize: “11px”, color: “#ff6666” } },
-“\u26A0 EXPEDITED: Appointment must be scheduled same day or next business day. No later than 3 business days.”
-),
-React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “TELEPHONE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.phone)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DAY: “), React.createElement(“span”, { style: { color: “#fff” } }, dayNames[apptDate.getDay()])),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, String(apptDate.getMonth()+1).padStart(2,“0”) + “/” + String(apptDate.getDate()).padStart(2,“0”) + “/” + apptDate.getFullYear())),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “TIME: “), React.createElement(“span”, { style: { color: “#fff” } }, isExp ? “09:00 AM” : “10:30 AM”)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PROGRAM: “), React.createElement(“span”, { style: { color: “#fff” } }, d.programsApplied === “FS” ? “\u2611 SNAP” : d.programsApplied)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “WORKER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.workerName)),
-React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “MAIL?: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, “Y”))
-)
-);
-}
+function CarsAppt(p){var d=p.sc.applicant;var isE=d.isExpedited;var apt=getApptDate(isE);return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},h(CarsHdr,{title:“C.A.R.S. - Appointment Screen”}),h(“div”,{className:“cars-body”},isE?h(“div”,{style:{background:”#fef2f2”,border:“1px solid #fca5a5”,borderRadius:“4px”,padding:“8px”,fontSize:“11px”,color:”#b91c1c”,fontWeight:600,marginBottom:“12px”}},”\u26A0 EXPEDITED: Within 3 business days. Weekdays only. Correct FSO and worker.”):null,h(“div”,{className:“grid-2”,style:{maxWidth:“460px”}},h(CarsField,{label:“Case Worker”,value:p.sc.workerName}),h(CarsField,{label:“FSO”,value:p.sc.fso}),h(CarsField,{label:“Appointment Date”,value:apt.toLocaleDateString()}),h(CarsField,{label:“Appointment Time”,value:isE?“9:00 AM”:“10:30 AM”}),h(“div”,{style:{gridColumn:“span 2”}},h(CarsField,{label:“Place”,value:d.county+” County DHS Office”}))),h(NavBar,{onBack:p.onBack,onNext:p.onNext,nextLabel:”\u2713 Submit”})));}
 
-function CARSCaseScreen({ scenario, onNext, onBack }) {
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - MAVS Case Number”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
-React.createElement(“div”, { style: { maxWidth: “400px”, margin: “30px auto”, textAlign: “center” } },
-React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, color: “#333”, marginBottom: “20px” } }, “Enter MAVERICS Case Number”),
-React.createElement(“div”, { style: { marginBottom: “15px” } },
-React.createElement(“div”, { style: S.carsLabel }, “Case Number”),
-React.createElement(“div”, { style: Object.assign({}, S.carsInput, { textAlign: “center”, fontSize: “18px”, fontWeight: 700, color: “#1565C0” }) }, scenario.caseNumber)
-),
-React.createElement(“div”, { style: { background: “#E8F5E9”, border: “1px solid #A5D6A7”, borderRadius: “4px”, padding: “10px”, fontSize: “12px”, color: “#2E7D32”, marginBottom: “15px” } },
-“\u2713 Case Details saved in CARS! Head of Household: “ + scenario.applicant.lastName + “, “ + scenario.applicant.firstName
-)
-),
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
-)
-);
-}
-
-function CARSAppointment({ scenario, onNext, onBack }) {
-var d = scenario.applicant;
-var isExp = d.isExpedited;
-var apptDate = new Date();
-if (isExp) {
-apptDate.setDate(apptDate.getDate() + 1);
-if (apptDate.getDay() === 0) apptDate.setDate(apptDate.getDate() + 1);
-if (apptDate.getDay() === 6) apptDate.setDate(apptDate.getDate() + 2);
-} else {
-apptDate.setDate(apptDate.getDate() + 7);
-while (apptDate.getDay() === 0 || apptDate.getDay() === 6) { apptDate.setDate(apptDate.getDate() + 1); }
-}
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
-React.createElement(“div”, { style: S.carsHeader },
-React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Appointment Screen”)
-),
-React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
-isExp && React.createElement(“div”, { style: { background: “#FFEBEE”, border: “1px solid #EF9A9A”, borderRadius: “4px”, padding: “10px”, fontSize: “12px”, color: “#C62828”, marginBottom: “15px”, fontWeight: 600 } },
-“\u26A0 EXPEDITED CASE: Appointment must be within 3 business days. Weekdays only (Mon-Fri). Assign correct FSO and case worker.”
-),
-React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, maxWidth: “500px” } },
-React.createElement(“div”, null,
-React.createElement(“div”, { style: S.carsLabel }, “Case Worker”),
-React.createElement(“div”, { style: S.carsInput }, scenario.workerName)
-),
-React.createElement(“div”, null,
-React.createElement(“div”, { style: S.carsLabel }, “FSO”),
-React.createElement(“div”, { style: S.carsInput }, scenario.fso)
-),
-React.createElement(“div”, null,
-React.createElement(“div”, { style: S.carsLabel }, “Appointment Date”),
-React.createElement(“div”, { style: S.carsInput }, apptDate.toLocaleDateString())
-),
-React.createElement(“div”, null,
-React.createElement(“div”, { style: S.carsLabel }, “Appointment Time”),
-React.createElement(“div”, { style: S.carsInput }, isExp ? “9:00 AM” : “10:30 AM”)
-),
-React.createElement(“div”, { style: { gridColumn: “span 2” } },
-React.createElement(“div”, { style: S.carsLabel }, “Place”),
-React.createElement(“div”, { style: S.carsInput }, d.county + “ County DHS Office”)
-)
-),
-React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “\u2713 Submit” })
-)
-);
-}
-
-function CompleteScreen({ traineeName, scenario, onRestart }) {
-return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
-React.createElement(“div”, { style: { maxWidth: “500px”, width: “100%”, textAlign: “center” }, className: “fade-in” },
-React.createElement(“div”, { style: { fontSize: “48px”, marginBottom: “10px” } }, “\u2705”),
-React.createElement(“h2”, { style: { color: “#fff”, fontSize: “22px”, marginBottom: “8px” } }, “Registration Complete!”),
-React.createElement(“p”, { style: { color: “#7888a0”, fontSize: “13px”, marginBottom: “20px”, lineHeight: “1.5” } },
-“Congratulations, “ + traineeName.first + “! You have successfully completed the “ +
-(scenario.applicant.isExpedited ? “expedited” : “non-expedited”) + “ application registration workflow for “ +
-scenario.applicant.firstName + “ “ + scenario.applicant.lastName + “.”
-),
-React.createElement(“div”, { style: Object.assign({}, S.card, { textAlign: “left”, marginBottom: “15px” }) },
-React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: “#C5A55A”, marginBottom: “10px” } }, “Session Summary”),
-React.createElement(“div”, { style: { fontSize: “12px”, color: “#a0b0c0”, lineHeight: “1.8” } },
-React.createElement(“div”, null, “Scenario: “ + (scenario.applicant.isExpedited ? “Expedited” : “Non-Expedited”)),
-React.createElement(“div”, null, “Applicant: “ + scenario.applicant.firstName + “ “ + scenario.applicant.lastName),
-React.createElement(“div”, null, “Case Number: “ + scenario.caseNumber),
-React.createElement(“div”, null, “County: “ + scenario.applicant.county)
-)
-),
-React.createElement(“div”, { style: { display: “flex”, gap: “10px”, justifyContent: “center”, flexWrap: “wrap” } },
-React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnGold),
-onClick: function() {
-var w = window.open(””, “_blank”);
-if (w) {
-w.document.write(”<html><head><title>Certificate</title></head><body style='margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B1D3A'>”);
-w.document.write(”<div style='background:#0B1D3A;color:#fff;padding:40px;max-width:800px;width:100%;text-align:center;border:3px solid #C5A55A;border-radius:8px'>”);
-w.document.write(”<div style='font-size:11px;color:#007A8C;letter-spacing:2px'>MISSISSIPPI DEPARTMENT OF HUMAN SERVICES</div>”);
-w.document.write(”<div style='font-size:9px;color:#007A8C;margin-bottom:15px'>ECONOMIC PROGRAMS TRAINING DIVISION</div>”);
-w.document.write(”<hr style='border-color:#C5A55A;margin:15px 100px'>”);
-w.document.write(”<div style='font-size:14px;color:#C5A55A;font-weight:700;letter-spacing:3px;margin:15px 0'>CERTIFICATE OF COMPLETION</div>”);
-w.document.write(”<div style='font-size:11px;color:#8899aa;margin:20px 0 5px'>This is to certify that</div>”);
-w.document.write(”<div style='font-size:28px;font-weight:700;margin:10px 0;border-bottom:1px solid #C5A55A;display:inline-block;padding:0 30px 5px'>” + traineeName.first + “ “ + traineeName.last + “</div>”);
-w.document.write(”<div style='font-size:11px;color:#8899aa;margin:15px 0 5px'>has successfully completed the</div>”);
-w.document.write(”<div style='font-size:18px;font-weight:700;margin:5px 0'>MDHS County Training Simulator</div>”);
-w.document.write(”<div style='font-size:12px;color:#007A8C;font-weight:600;margin:5px 0 20px'>Eligibility Clerk Application Registration Training</div>”);
-w.document.write(”<div style='font-size:9px;color:#666;margin:10px 0'>Date: “ + new Date().toLocaleDateString(“en-US”, { year: “numeric”, month: “long”, day: “numeric” }) + “ | Credential ID: MDHS-CTS-2026-” + String(Math.floor(Math.random() * 99999)).padStart(5, “0”) + “</div>”);
+function CompleteScreen(p){
+var tn=p.tn;var sc=p.sc;var d=sc.applicant;
+function openCert(){
+var w=window.open(””,”_blank”);if(!w)return;
+var name=tn.first+” “+tn.last;
+var dt=new Date().toLocaleDateString(“en-US”,{year:“numeric”,month:“long”,day:“numeric”});
+var id=“MDHS-CTS-2026-”+String(Math.floor(Math.random()*99999)).padStart(5,“0”);
+w.document.write(”<html><head><title>Certificate</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B1D3A;font-family:Georgia,serif">”);
+w.document.write(”<div style="background:#0B1D3A;color:#fff;padding:50px;max-width:750px;width:100%;text-align:center;border:3px solid #C5A55A;border-radius:8px">”);
+w.document.write(”<div style="font-size:11px;color:#007A8C;letter-spacing:3px;text-transform:uppercase">Mississippi Department of Human Services</div>”);
+w.document.write(”<div style="font-size:9px;color:#007A8C;margin-bottom:20px">Economic Programs Training Division</div>”);
+w.document.write(”<hr style="border:none;border-top:1px solid #C5A55A;margin:0 100px 20px">”);
+w.document.write(”<div style="font-size:15px;color:#C5A55A;font-weight:700;letter-spacing:4px;margin:20px 0">CERTIFICATE OF COMPLETION</div>”);
+w.document.write(”<div style="font-size:12px;color:#8899aa;margin:25px 0 8px">This is to certify that</div>”);
+w.document.write(”<div style="font-size:32px;font-weight:700;margin:8px 0;border-bottom:1px solid #C5A55A;display:inline-block;padding:0 40px 8px">”+name+”</div>”);
+w.document.write(”<div style="font-size:12px;color:#8899aa;margin:20px 0 8px">has successfully completed the</div>”);
+w.document.write(”<div style="font-size:20px;font-weight:700">MDHS County Training Simulator</div>”);
+w.document.write(”<div style="font-size:13px;color:#007A8C;font-weight:600;margin:8px 0 25px">Eligibility Clerk Application Registration Training</div>”);
+w.document.write(”<div style="font-size:9px;color:#667;margin:15px 0">Date: “+dt+”  |  Credential ID: “+id+”</div>”);
 w.document.write(”</div></body></html>”);
 w.document.close();
-setTimeout(function() { w.print(); }, 500);
+setTimeout(function(){w.print();},500);
 }
-}
-}, “\uD83D\uDCC4 Download Certificate”),
-React.createElement(“button”, {
-style: Object.assign({}, S.btn, S.btnPrimary),
-onClick: onRestart
-}, “Start New Session”)
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“460px”,width:“100%”,textAlign:“center”}},
+h(“div”,{style:{fontSize:“42px”,marginBottom:“8px”}},”\u2705”),
+h(“h2”,{style:{color:”#fff”,fontSize:“20px”,fontWeight:700,marginBottom:“6px”}},“Registration Complete!”),
+h(“p”,{style:{color:”#64748b”,fontSize:“12px”,marginBottom:“16px”,lineHeight:“1.5”}},“Congratulations, “+tn.first+”! You completed the “+(d.isExpedited?“expedited”:“non-expedited”)+” registration for “+d.firstName+” “+d.lastName+”.”),
+h(“div”,{className:“sim-card”,style:{textAlign:“left”,marginBottom:“12px”}},
+h(“div”,{style:{fontSize:“12px”,fontWeight:700,color:”#ca8a04”,marginBottom:“8px”}},“Session Summary”),
+h(“div”,{style:{fontSize:“11px”,color:”#94a3b8”,lineHeight:“1.8”}},
+h(“div”,null,“Scenario: “+(d.isExpedited?“Expedited”:“Non-Expedited”)),
+h(“div”,null,“Applicant: “+d.firstName+” “+d.lastName),
+h(“div”,null,“Case Number: “+sc.caseNumber),
+h(“div”,null,“County: “+d.county)
+)
+),
+h(“div”,{style:{display:“flex”,gap:“8px”,justifyContent:“center”,flexWrap:“wrap”}},
+h(“button”,{className:“sim-btn sim-btn-g”,onClick:openCert},”\uD83D\uDCC4 Download Certificate”),
+h(“button”,{className:“sim-btn sim-btn-p”,onClick:p.onRestart},“Start New Session”)
 )
 )
 );
 }
 
-/* ––––– MAIN APP ––––– */
+/* === MAIN APP === */
+function App(){
+var idxS=useState(0);var idx=idxS[0];var setIdx=idxS[1];
+var tnS=useState({first:””,last:””});var tn=tnS[0];var setTn=tnS[1];
+var skS=useState(null);var sk=skS[0];var setSk=skS[1];
+var eaS=useState(false);var showEA=eaS[0];var setShowEA=eaS[1];
 
-function App() {
-var screenState = useState(0);
-var screenIdx = screenState[0];
-var setScreenIdx = screenState[1];
+var sc=sk?SCENARIOS[sk]:null;
+var screen=SCREENS[idx];
+var pct=Math.round((idx/(SCREENS.length-1))*100);
+var showChrome=[“welcome”,“disclaimer”,“login”,“complete”].indexOf(screen)===-1;
 
-var nameState = useState({ first: “”, last: “” });
-var traineeName = nameState[0];
-var setTraineeName = nameState[1];
+function goNext(){setIdx(function(i){return Math.min(i+1,SCREENS.length-1);});}
+function goBack(){setIdx(function(i){return Math.max(i-1,0);});}
+function selectSc(key){setSk(key);goNext();}
+function handleComplete(){goNext();}
+function restart(){setIdx(0);setSk(null);setTn({first:””,last:””});}
+function openApp(){setShowEA(true);}
 
-var scenarioState = useState(null);
-var scenarioKey = scenarioState[0];
-var setScenarioKey = scenarioState[1];
-
-var modalState = useState(false);
-var showEA900 = modalState[0];
-var setShowEA900 = modalState[1];
-
-var trackerState = useState(createTracker);
-var tracker = trackerState[0];
-var setTracker = trackerState[1];
-
-var scenario = scenarioKey ? SCENARIOS[scenarioKey] : null;
-var currentScreen = SCREEN_FLOW[screenIdx];
-
-var progress = screenIdx / (SCREEN_FLOW.length - 1);
-
-useEffect(function() {
-if (currentScreen && tracker.screensVisited.indexOf(currentScreen) === -1) {
-setTracker(function(prev) {
-var visited = prev.screensVisited.slice();
-visited.push(currentScreen);
-return Object.assign({}, prev, { screensVisited: visited });
-});
-}
-}, [currentScreen]);
-
-function goNext() { setScreenIdx(function(i) { return Math.min(i + 1, SCREEN_FLOW.length - 1); }); }
-function goBack() { setScreenIdx(function(i) { return Math.max(i - 1, 0); }); }
-function goToScreen(name) {
-var idx = SCREEN_FLOW.indexOf(name);
-if (idx >= 0) setScreenIdx(idx);
-}
-
-function handleSelectScenario(key) {
-setScenarioKey(key);
-setTracker(function(prev) { return Object.assign({}, prev, { scenarioType: key, startTime: new Date().toISOString() }); });
-goNext();
-}
-
-function handleRestart() {
-setScreenIdx(0);
-setScenarioKey(null);
-setTraineeName({ first: “”, last: “” });
-setTracker(createTracker());
-}
-
-function handleComplete() {
-setTracker(function(prev) { return Object.assign({}, prev, { completed: true, endTime: new Date().toISOString() }); });
-goNext();
-}
-
-function openViewApp() { setShowEA900(true); }
-
-function renderScreen() {
-switch (currentScreen) {
-case “welcome”: return React.createElement(WelcomeScreen, { traineeName: traineeName, setTraineeName: setTraineeName, onNext: goNext });
-case “disclaimer”: return React.createElement(DisclaimerScreen, { onNext: goNext });
-case “login”: return React.createElement(LoginScreen, { onNext: goNext });
-case “carsDashboard”: return React.createElement(CARSDashboard, { onSelectScenario: handleSelectScenario });
-case “carsApplicantInfo”: return React.createElement(CARSApplicantInfo, { scenario: scenario, onNext: goNext, onBack: goBack, onViewApp: openViewApp });
-case “carsIncome”: return React.createElement(CARSDataScreen, {
-title: “Income”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
-fields: Object.entries(scenario.applicant.income).map(function(p) {
-return [p[0].replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){return s.toUpperCase();}), p[1]];
-})
-});
-case “carsResources”: return React.createElement(CARSDataScreen, {
-title: “Resources/Expenses”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
-fields: Object.entries(scenario.applicant.resources).concat(Object.entries(scenario.applicant.expenses)).map(function(p) {
-return [p[0].replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){return s.toUpperCase();}), p[1]];
-})
-});
-case “carsAdditionalQuestions”: return React.createElement(CARSDataScreen, {
-title: “Additional Questions”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
-fields: [[“Receiving SNAP benefits in another state?”, “No”], [“Any household member a fleeing felon?”, “No”], [“Any household member in violation of parole?”, “No”], [“Any household member a convicted drug felon?”, “No”], [“Is anyone a migrant/seasonal farm worker?”, “No”]]
-});
-case “carsHousehold”: return React.createElement(CARSHouseholdScreen, { scenario: scenario, onNext: goNext, onBack: goBack, onViewApp: openViewApp });
-case “carsAdditionalAppInfo”: return React.createElement(CARSDataScreen, {
-title: “Additional Application Info (Optional)”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
-fields: [[“SNAP Authorized Representative”, “None”], [“SNAP Benefit Representative”, “None”], [“Additional Household Members”, “None”]]
-});
-case “mavsFUSC”: return React.createElement(FUSC, { onNext: goNext, onBack: goBack });
-case “mavsCLIR”: return React.createElement(CLIR, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsCLIS”: return React.createElement(CLIS, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsCLRE”: return React.createElement(CLRE, { onNext: goNext, onBack: goBack });
-case “mavsCLPR”: return React.createElement(CLPR, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsCLIR_DRS”: return React.createElement(CLIR_DRS, { onNext: goNext, onBack: goBack });
-case “mavsDRPR”: return React.createElement(DRPR, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsREAP”: return React.createElement(REAP, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsEXSW”: return React.createElement(EXSW, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsADDR”: return React.createElement(ADDR, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsCAP1”: return React.createElement(CAP1, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsNORE”: return React.createElement(NORE, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “mavsNOTI”: return React.createElement(NOTI, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “carsCase”: return React.createElement(CARSCaseScreen, { scenario: scenario, onNext: goNext, onBack: goBack });
-case “carsAppointment”: return React.createElement(CARSAppointment, { scenario: scenario, onNext: handleComplete, onBack: goBack });
-case “complete”: return React.createElement(CompleteScreen, { traineeName: traineeName, scenario: scenario, onRestart: handleRestart });
-default: return React.createElement(“div”, null, “Unknown screen”);
+function renderScreen(){
+switch(screen){
+case “welcome”:return h(WelcomeScreen,{tn:tn,setTn:setTn,onNext:goNext});
+case “disclaimer”:return h(DisclaimerScreen,{onNext:goNext});
+case “login”:return h(LoginScreen,{onNext:goNext});
+case “dashboard”:return h(Dashboard,{onSelect:selectSc});
+case “carsApplicant”:return h(CarsApplicantInfo,{sc:sc,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsIncome”:return h(CarsDataScreen,{title:“Income”,fields:Object.entries(sc.applicant.income),onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsResources”:var rf=Object.entries(sc.applicant.resources).concat(Object.entries(sc.applicant.expenses));return h(CarsDataScreen,{title:“Resources/Expenses”,fields:rf,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsQuestions”:return h(CarsDataScreen,{title:“Additional Questions”,fields:[[“Receiving SNAP in another state?”,“No”],[“Fleeing felon?”,“No”],[“Parole violation?”,“No”],[“Convicted drug felon?”,“No”],[“Migrant farm worker?”,“No”]],onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsHousehold”:return h(CarsHousehold,{sc:sc,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsAddlInfo”:return h(CarsDataScreen,{title:“Additional Application Info”,fields:[[“SNAP Authorized Rep”,“None”],[“SNAP Benefit Rep”,“None”],[“Additional Members”,“None”]],onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “mavsFUSC”:return h(FUSC,{onNext:goNext,onBack:goBack});
+case “mavsCLIR”:return h(CLIR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLIS”:return h(CLIS,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLRE”:return h(CLRE,{onNext:goNext,onBack:goBack});
+case “mavsCLPR”:return h(CLPR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLIR_DRS”:return h(CLIR_DRS,{onNext:goNext,onBack:goBack});
+case “mavsDRPR”:return h(DRPR,{onNext:goNext,onBack:goBack});
+case “mavsREAP”:return h(REAP,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsEXSW”:return h(EXSW,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsADDR”:return h(ADDR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCAP1”:return h(CAP1,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsNORE”:return h(NORE,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsNOTI”:return h(NOTI,{sc:sc,onNext:goNext,onBack:goBack});
+case “carsCase”:return h(CarsCase,{sc:sc,onNext:goNext,onBack:goBack});
+case “carsAppt”:return h(CarsAppt,{sc:sc,onNext:handleComplete,onBack:goBack});
+case “complete”:return h(CompleteScreen,{tn:tn,sc:sc,onRestart:restart});
+default:return h(“div”,null,“Unknown screen”);
 }
 }
 
-var showHeader = NON_NAV_SCREENS.indexOf(currentScreen) === -1;
-
-return React.createElement(“div”, { style: S.app },
-showHeader && React.createElement(“div”, { style: S.header },
-React.createElement(“div”, null,
-React.createElement(“div”, { style: S.headerTitle }, “MDHS County Training Simulator”),
-React.createElement(“div”, { style: S.headerSub }, traineeName.first + “ “ + traineeName.last + (scenarioKey ? “ | “ + SCENARIOS[scenarioKey].label + “ Application” : “”))
+return h(“div”,{className:“sim-app”},
+showChrome?h(“div”,{className:“sim-header”},
+h(“div”,null,
+h(“div”,{style:{color:”#fff”,fontSize:“13px”,fontWeight:700}},“MDHS County Training Simulator”),
+h(“div”,{style:{color:”#0f766e”,fontSize:“10px”}},tn.first+” “+tn.last+(sk?” | “+SCENARIOS[sk].label+” Application”:””))
 ),
-React.createElement(“div”, { style: { display: “flex”, alignItems: “center”, gap: “12px” } },
-React.createElement(“span”, { style: { fontSize: “11px”, color: “#556” } }, “Screen “ + (screenIdx + 1) + “/” + SCREEN_FLOW.length),
-React.createElement(“div”, { style: { width: “100px” } }, React.createElement(ProgressBar, { current: screenIdx, total: SCREEN_FLOW.length - 1 }))
+h(“div”,{style:{display:“flex”,alignItems:“center”,gap:“10px”}},
+h(“span”,{style:{fontSize:“10px”,color:”#475569”}},“Screen “+(idx+1)+”/”+SCREENS.length),
+h(“div”,{className:“pbar”},h(“div”,{className:“pfill”,style:{width:pct+”%”}}))
 )
-),
-React.createElement(“div”, { style: S.body }, renderScreen()),
-showHeader && React.createElement(“div”, { style: S.footer },
-React.createElement(“span”, null, “\u00A9 2026 MDHS Economic Programs Training Division”),
-React.createElement(“span”, null, “Training Simulation Only - Not Connected to Live Systems”)
-),
-showEA900 && scenario && React.createElement(EA900Modal, { applicant: scenario.applicant, onClose: function() { setShowEA900(false); } })
+):null,
+h(“div”,{className:“sim-body”},renderScreen()),
+showChrome?h(“div”,{className:“sim-footer”},h(“span”,null,”\u00A9 2026 MDHS Economic Programs Training Division”),h(“span”,null,“Training Simulation Only”)):null,
+showEA&&sc?h(EA900,{a:sc.applicant,onClose:function(){setShowEA(false);}}):null
 );
 }
 
-ReactDOM.createRoot(document.getElementById(“root”)).render(React.createElement(App));
+ReactDOM.createRoot(document.getElementById(“root”)).render(h(App));
 </script>
 
-</head>
-<body>
-<div id="root"></div>
 </body>
 </html>
