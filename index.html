@@ -1,753 +1,1118 @@
-import { useState, useEffect } from “react”;
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDHS County Training Simulator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;width:100%;overflow:hidden}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#0a0e17}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#1a1f2e}
+::-webkit-scrollbar-thumb{background:#3a4a6b;border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.fade-in{animation:fadeIn .4s ease both}
+.slide-in{animation:slideIn .35s ease both}
+</style>
+<script type="text/babel">
+
+/* ============================================================
+MDHS COUNTY TRAINING SIMULATOR v2.0
+Full eligibility clerk workflow training tool
+============================================================ */
+
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+/* ––––– CONSTANTS & DATA ––––– */
 
 const SCENARIOS = {
 expedited: {
-label: “Expedited”, applicant: {
-firstName: “Tameka”, lastName: “Holloway”, mi: “R”, dob: “03/15/1989”, ssn: “429-55-8173”, sex: “F”, race: “B”,
-address: “1247 Hardy St, Hattiesburg, MS 39401”, mailingAddress: “Same as Residence”,
-phone: “(601) 555-0147”, email: “tameka.holloway@email.com”, county: “Forrest”, householdSize: 3,
+label: “Expedited”,
+applicant: {
+firstName: “Tameka”, lastName: “Holloway”, mi: “R”,
+dob: “03/15/1989”, ssn: “429-55-8173”, sex: “F”, race: “B”,
+address: “1247 Hardy St, Hattiesburg, MS 39401”,
+mailingAddress: “Same as Residence”,
+phone: “(601) 555-0147”, email: “tameka.holloway@email.com”,
+county: “Forrest”,
+householdSize: 3,
 householdMembers: [
 { name: “Holloway, Tameka R”, relation: “PI”, dob: “03/15/1989”, ssn: “429-55-8173”, sex: “F” },
 { name: “Holloway, Jayden M”, relation: “Son”, dob: “09/22/2016”, ssn: “429-55-9201”, sex: “M” },
 { name: “Holloway, Amari D”, relation: “Daughter”, dob: “01/08/2020”, ssn: “429-55-9302”, sex: “F” }
 ],
-income: { “Employment”: “$780.00/mo”, “Self Employment”: “$0.00”, “Other Income”: “$0.00”, “Total Monthly”: “$780.00” },
-resources: { “Cash On Hand”: “$45.00”, “Checking”: “$112.00”, “Savings”: “$0.00”, “Vehicles”: “2009 Toyota Corolla”, “Total Liquid”: “$157.00” },
-expenses: { “Rent”: “$750.00”, “Utilities”: “$185.00”, “Phone”: “$55.00”, “Total Monthly”: “$990.00” },
-programsApplied: “FS”, appSource: “O”, isExpedited: true,
-expeditedReason: “Gross income ($780) + liquid resources ($157) = $937. Rent + utilities = $935. Expenses exceed income.”
+income: { employment: “$780.00/month”, selfEmployment: “$0.00”, otherIncome: “$0.00”, totalMonthly: “$780.00” },
+resources: { cashOnHand: “$45.00”, checkingAccount: “$112.00”, savingsAccount: “$0.00”, vehicles: “2009 Toyota Corolla”, totalLiquid: “$157.00” },
+expenses: { rent: “$750.00”, utilities: “$185.00”, phone: “$55.00”, totalMonthly: “$990.00” },
+programsApplied: “FS”,
+appSource: “O”,
+isExpedited: true,
+expeditedReason: “Gross monthly income ($780) + liquid resources ($157) = $937 < Rent + utilities ($935). Expenses exceed income and resources.”
 },
-caseNumber: “414008623”, fso: “740”, caseload: “01”, unit: “1”, workerName: “REDDING, DOMINIQUE”
+caseNumber: “414008623”,
+fso: “740”,
+caseload: “01”,
+unit: “1”,
+workerName: “REDDING, DOMINIQUE”
 },
 nonExpedited: {
-label: “Non-Expedited”, applicant: {
-firstName: “Marcus”, lastName: “Henderson”, mi: “J”, dob: “07/22/1985”, ssn: “428-61-7234”, sex: “M”, race: “B”,
-address: “832 Main St, Laurel, MS 39440”, mailingAddress: “PO Box 214, Laurel, MS 39441”,
-phone: “(601) 555-0283”, email: “marcus.henderson@email.com”, county: “Jones”, householdSize: 2,
+label: “Non-Expedited”,
+applicant: {
+firstName: “Marcus”, lastName: “Henderson”, mi: “J”,
+dob: “07/22/1985”, ssn: “428-61-7234”, sex: “M”, race: “B”,
+address: “832 Main St, Laurel, MS 39440”,
+mailingAddress: “PO Box 214, Laurel, MS 39441”,
+phone: “(601) 555-0283”, email: “marcus.henderson@email.com”,
+county: “Jones”,
+householdSize: 2,
 householdMembers: [
 { name: “Henderson, Marcus J”, relation: “PI”, dob: “07/22/1985”, ssn: “428-61-7234”, sex: “M” },
 { name: “Henderson, Keisha L”, relation: “Spouse”, dob: “11/03/1987”, ssn: “428-61-8456”, sex: “F” }
 ],
-income: { “Employment”: “$2,450.00/mo”, “Self Employment”: “$0.00”, “Other Income”: “$320.00/mo”, “Total Monthly”: “$2,770.00” },
-resources: { “Cash On Hand”: “$200.00”, “Checking”: “$1,340.00”, “Savings”: “$500.00”, “Vehicles”: “2017 Honda Civic”, “Total Liquid”: “$2,040.00” },
-expenses: { “Rent”: “$850.00”, “Utilities”: “$210.00”, “Phone”: “$120.00”, “Total Monthly”: “$1,180.00” },
-programsApplied: “FS”, appSource: “O”, isExpedited: false,
-expeditedReason: “Gross income ($2,770) + liquid resources ($2,040) = $4,810. Rent + utilities = $1,060. Income exceeds shelter costs.”
+income: { employment: “$2,450.00/month”, selfEmployment: “$0.00”, otherIncome: “$320.00/month (Child Support)”, totalMonthly: “$2,770.00” },
+resources: { cashOnHand: “$200.00”, checkingAccount: “$1,340.00”, savingsAccount: “$500.00”, vehicles: “2017 Honda Civic”, totalLiquid: “$2,040.00” },
+expenses: { rent: “$850.00”, utilities: “$210.00”, phone: “$120.00”, totalMonthly: “$1,180.00” },
+programsApplied: “FS”,
+appSource: “O”,
+isExpedited: false,
+expeditedReason: “Gross monthly income ($2,770) + liquid resources ($2,040) = $4,810 > Rent + utilities ($1,060). Income and resources exceed shelter costs.”
 },
-caseNumber: “307224189”, fso: “741”, caseload: “03”, unit: “2”, workerName: “JOHNSON, PATRICIA”
+caseNumber: “307224189”,
+fso: “741”,
+caseload: “03”,
+unit: “2”,
+workerName: “JOHNSON, PATRICIA”
 }
 };
 
-const SCREENS = [
-“welcome”,“disclaimer”,“login”,“dashboard”,“carsApplicant”,“carsIncome”,“carsResources”,
-“carsQuestions”,“carsHousehold”,“carsAddlInfo”,“mavsFUSC”,“mavsCLIR”,“mavsCLIS”,“mavsCLRE”,
-“mavsCLPR”,“mavsCLIR_DRS”,“mavsDRPR”,“mavsREAP”,“mavsEXSW”,“mavsADDR”,“mavsCAP1”,
-“mavsNORE”,“mavsNOTI”,“carsCase”,“carsAppt”,“complete”
+const SCREEN_FLOW = [
+“welcome”,“disclaimer”,“login”,“carsDashboard”,“carsApplicantInfo”,
+“carsIncome”,“carsResources”,“carsAdditionalQuestions”,“carsHousehold”,
+“carsAdditionalAppInfo”,“mavsFUSC”,“mavsCLIR”,“mavsCLIS”,“mavsCLRE”,
+“mavsCLPR”,“mavsCLIR_DRS”,“mavsDRPR”,“mavsREAP”,“mavsEXSW”,“mavsADDR”,
+“mavsCAP1”,“mavsNORE”,“mavsNOTI”,“carsCase”,“carsAppointment”,“complete”
 ];
 
-function getApptDate(isExp) {
-const d = new Date();
-if (isExp) { d.setDate(d.getDate() + 1); while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1); }
-else { d.setDate(d.getDate() + 7); while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1); }
-return d;
-}
-const DAYS = [“SUNDAY”,“MONDAY”,“TUESDAY”,“WEDNESDAY”,“THURSDAY”,“FRIDAY”,“SATURDAY”];
-const today = new Date();
-const todayStr = String(today.getMonth()+1).padStart(2,“0”) + String(today.getDate()).padStart(2,“0”) + today.getFullYear();
-const todayDisp = today.toLocaleDateString();
-const benMonth = String(today.getMonth()+1).padStart(2,“0”) + String(today.getFullYear()).slice(-2);
+const NON_NAV_SCREENS = [“welcome”,“disclaimer”,“login”,“complete”];
 
-// — Shared tiny components —
-function Btn({ children, onClick, disabled, variant = “primary”, full }) {
-const base = “px-5 py-2.5 rounded font-semibold text-sm transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed”;
-const vars = {
-primary: “bg-teal-700 hover:bg-teal-600 text-white”,
-secondary: “bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-600”,
-gold: “bg-gradient-to-r from-yellow-600 to-yellow-700 text-slate-900 font-bold”,
-danger: “bg-red-900 text-white”,
-cars: “bg-blue-800 hover:bg-blue-700 text-white”
+/* ––––– TRACKER STORE ––––– */
+function createTracker() {
+return {
+startTime: null,
+endTime: null,
+screensVisited: [],
+errors: [],
+scenarioType: null,
+completed: false
 };
-return <button className={`${base} ${vars[variant]} ${full ? "w-full" : ""}`} onClick={disabled ? undefined : onClick} disabled={disabled}>{children}</button>;
 }
 
-function NavBar({ onBack, onNext, nextLabel = “Next →”, backLabel = “← Back”, noBack }) {
-return (
-<div className="flex justify-between items-center pt-4 mt-4 border-t border-slate-700">
-<div>{!noBack && onBack && <Btn variant="secondary" onClick={onBack}>{backLabel}</Btn>}</div>
-<div>{onNext && <Btn onClick={onNext}>{nextLabel}</Btn>}</div>
-</div>
+/* ––––– STYLES ––––– */
+const S = {
+app: { width: “100%”, height: “100%”, display: “flex”, flexDirection: “column”, background: “#0B1D3A”, color: “#e0e8f0”, overflow: “hidden” },
+header: { background: “linear-gradient(135deg, #0B1D3A 0%, #142744 100%)”, borderBottom: “2px solid #007A8C”, padding: “10px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, minHeight: “50px”, flexShrink: 0 },
+headerTitle: { color: “#fff”, fontSize: “15px”, fontWeight: 700, letterSpacing: “0.5px” },
+headerSub: { color: “#007A8C”, fontSize: “11px”, fontWeight: 400 },
+body: { flex: 1, overflow: “auto”, display: “flex”, flexDirection: “column” },
+footer: { background: “#060a12”, borderTop: “1px solid #1a2a44”, padding: “8px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, fontSize: “11px”, color: “#556”, flexShrink: 0 },
+btn: { padding: “9px 22px”, border: “none”, borderRadius: “4px”, cursor: “pointer”, fontSize: “13px”, fontWeight: 600, transition: “all .2s” },
+btnPrimary: { background: “#007A8C”, color: “#fff” },
+btnSecondary: { background: “#1a2a44”, color: “#8899aa”, border: “1px solid #2a3a54” },
+btnDanger: { background: “#8B0000”, color: “#fff” },
+btnGold: { background: “linear-gradient(135deg, #C5A55A, #A8893A)”, color: “#0B1D3A” },
+card: { background: “#111827”, border: “1px solid #1e293b”, borderRadius: “6px”, padding: “20px”, margin: “10px 0” },
+input: { background: “#0a0e17”, border: “1px solid #2a3a54”, borderRadius: “3px”, padding: “8px 12px”, color: “#e0e8f0”, fontSize: “13px”, width: “100%”, outline: “none” },
+select: { background: “#0a0e17”, border: “1px solid #2a3a54”, borderRadius: “3px”, padding: “8px 12px”, color: “#e0e8f0”, fontSize: “13px”, outline: “none” },
+label: { display: “block”, fontSize: “11px”, color: “#8899aa”, marginBottom: “4px”, fontWeight: 600, textTransform: “uppercase”, letterSpacing: “0.5px” },
+terminal: { background: “#000”, fontFamily: “‘Courier New’, Courier, monospace”, color: “#00ff41”, padding: “20px”, borderRadius: “4px”, border: “1px solid #1a3a1a”, minHeight: “300px” },
+termHeader: { background: “#003366”, color: “#fff”, fontFamily: “‘Courier New’, Courier, monospace”, padding: “8px 15px”, fontSize: “13px”, display: “flex”, justifyContent: “space-between”, borderBottom: “2px solid #0099cc” },
+carsHeader: { background: “linear-gradient(135deg, #1565C0, #0D47A1)”, color: “#fff”, padding: “12px 20px”, display: “flex”, alignItems: “center”, justifyContent: “space-between”, borderBottom: “3px solid #42A5F5” },
+carsBody: { background: “#f5f5f5”, color: “#333”, padding: “20px”, flex: 1 },
+carsLabel: { fontSize: “11px”, fontWeight: 700, color: “#555”, marginBottom: “3px”, textTransform: “uppercase” },
+carsInput: { background: “#fff”, border: “1px solid #ccc”, borderRadius: “3px”, padding: “7px 10px”, color: “#333”, fontSize: “13px”, width: “100%” },
+carsBtn: { background: “#1565C0”, color: “#fff”, border: “none”, borderRadius: “3px”, padding: “8px 20px”, fontSize: “13px”, fontWeight: 600, cursor: “pointer” },
+banner: { background: “#E3F2FD”, border: “1px solid #90CAF9”, borderRadius: “4px”, padding: “10px 15px”, marginBottom: “15px”, display: “flex”, alignItems: “center”, gap: “10px” },
+bannerExp: { background: “#FFEBEE”, border: “1px solid #EF9A9A” },
+progressBar: { height: “3px”, background: “#1a2a44”, borderRadius: “2px”, overflow: “hidden” },
+progressFill: { height: “100%”, background: “linear-gradient(90deg, #007A8C, #00BCD4)”, transition: “width .5s ease”, borderRadius: “2px” },
+eaForm: { background: “#fff”, color: “#000”, fontFamily: “Times New Roman, serif”, padding: “30px”, maxWidth: “700px”, margin: “0 auto”, border: “1px solid #999”, maxHeight: “70vh”, overflow: “auto” }
+};
+
+/* ––––– UTILITY COMPONENTS ––––– */
+
+function ProgressBar({ current, total }) {
+var pct = Math.round((current / total) * 100);
+return React.createElement(“div”, { style: S.progressBar },
+React.createElement(“div”, { style: Object.assign({}, S.progressFill, { width: pct + “%” }) })
 );
 }
 
-function CarsHeader({ title, onViewApp }) {
-return (
-<div className="bg-gradient-to-r from-blue-800 to-blue-900 text-white px-5 py-3 flex justify-between items-center border-b-4 border-blue-400">
-<span className="font-bold text-sm">{title}</span>
-{onViewApp && <button onClick={onViewApp} className="text-xs bg-white/20 border border-white/30 rounded px-3 py-1.5 text-white cursor-pointer hover:bg-white/30 font-semibold">View Full Application</button>}
-</div>
+function NavButtons({ onBack, onNext, backLabel, nextLabel, backDisabled, nextDisabled, extraButtons }) {
+return React.createElement(“div”, { style: { display: “flex”, gap: “10px”, justifyContent: “space-between”, padding: “15px 0”, borderTop: “1px solid #1e293b”, marginTop: “15px” } },
+React.createElement(“div”, { style: { display: “flex”, gap: “8px” } },
+onBack && React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnSecondary, backDisabled ? { opacity: 0.4, cursor: “not-allowed” } : {}),
+onClick: backDisabled ? undefined : onBack,
+disabled: backDisabled
+}, backLabel || “Back”),
+extraButtons
+),
+onNext && React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnPrimary, nextDisabled ? { opacity: 0.4, cursor: “not-allowed” } : {}),
+onClick: nextDisabled ? undefined : onNext,
+disabled: nextDisabled
+}, nextLabel || “Next”)
 );
 }
 
-function CarsField({ label, value }) {
-return (
-<div>
-<div className="text-[11px] font-bold text-gray-500 uppercase mb-1">{label}</div>
-<div className="bg-gray-50 border border-gray-300 rounded px-3 py-2 text-sm text-gray-800">{value}</div>
-</div>
+function TerminalField({ label, value, editable, onChange, width }) {
+var w = width || “auto”;
+return React.createElement(“span”, { style: { display: “inline-block”, marginRight: “15px” } },
+React.createElement(“span”, { style: { color: “#00cc33”, fontSize: “12px” } }, label + “ “),
+editable
+? React.createElement(“input”, {
+style: { background: “#001a00”, border: “1px solid #00ff41”, color: “#00ff41”, fontFamily: “inherit”, fontSize: “13px”, padding: “2px 6px”, width: w },
+value: value || “”,
+onChange: function(e) { onChange(e.target.value); }
+})
+: React.createElement(“span”, { style: { color: “#fff”, fontSize: “13px”, textDecoration: “underline” } }, value)
 );
 }
 
-function TermLine({ label, value, highlight }) {
-return <div><span className="text-green-400">{label} </span><span className={highlight ? “text-yellow-300 font-bold” : “text-white”}>{value}</span></div>;
-}
-
-function MavsShell({ screenName, subtitle, children, onBack, onNext, nextLabel = “ENTER →” }) {
-return (
-<div className="flex flex-col flex-1">
-<div className="bg-blue-900 text-white font-mono px-4 py-2 text-sm flex justify-between border-b-2 border-cyan-500">
-<div><span className="font-bold">MDHS    MAVERICS</span><span className="ml-6 bg-white text-blue-900 px-2.5 py-0.5 font-bold text-xs">{screenName}</span></div>
-<span className="text-xs opacity-70">{subtitle}</span>
-</div>
-<div className="bg-black font-mono text-green-400 p-5 flex-1 overflow-auto text-sm leading-relaxed">
-{children}
-<NavBar onBack={onBack} onNext={onNext} nextLabel={nextLabel} />
-</div>
-</div>
-);
-}
-
-// — EA-900 Modal —
 function EA900Modal({ applicant, onClose }) {
 if (!applicant) return null;
-const a = applicant;
-const Cell = ({ children, bold, wide }) => <td className={`border border-black px-1.5 py-1 text-[11px] ${bold ? "font-bold" : ""} ${wide ? "w-[30%]" : ""}`}>{children}</td>;
-return (
-<div className=“fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4” onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-<div className="bg-white text-black font-serif p-6 max-w-[700px] w-full rounded max-h-[80vh] overflow-auto animate-in">
-<div className="text-center border-b-2 border-black pb-3 mb-4">
-<div className="text-[11px] font-bold">STATE OF MISSISSIPPI</div>
-<div className="text-[11px]">DEPARTMENT OF HUMAN SERVICES</div>
-<div className="text-sm font-bold mt-2">MDHS-EA-900</div>
-<div className="text-xs font-bold">APPLICATION FOR SNAP & TANF BENEFITS</div>
-</div>
-
-```
-    <div className="text-[11px] font-bold mb-1">FOR OFFICE USE ONLY</div>
-    <table className="w-full border-collapse border border-black text-[11px] mb-3">
-      <tbody>
-        <tr><Cell bold wide>Date Received:</Cell><Cell>{todayDisp}</Cell><Cell bold>Case Number:</Cell><Cell>Pending</Cell></tr>
-        <tr><Cell bold wide>County:</Cell><Cell>{a.county}</Cell><Cell bold>Expedited:</Cell><Cell><span className={a.isExpedited ? "text-red-700 font-bold" : ""}>{a.isExpedited ? "YES" : "NO"}</span></Cell></tr>
-      </tbody>
-    </table>
-
-    <div className="text-xs font-bold border-b border-black mb-2 pb-1">SECTION 1: APPLICANT INFORMATION</div>
-    <table className="w-full border-collapse border border-black text-[11px] mb-3">
-      <tbody>
-        {[["Name", `${a.lastName}, ${a.firstName} ${a.mi}`],["DOB", a.dob],["SSN", a.ssn],["Address", a.address],["Phone", a.phone],["Programs", a.programsApplied === "FS" ? "SNAP (Food Stamps)" : a.programsApplied]].map(([l,v]) => (
-          <tr key={l}><Cell bold wide>{l}:</Cell><Cell>{v}</Cell></tr>
-        ))}
-      </tbody>
-    </table>
-
-    <div className="text-xs font-bold border-b border-black mb-2 pb-1">SECTION 2: HOUSEHOLD MEMBERS</div>
-    <table className="w-full border-collapse border border-black text-[10px] mb-3">
-      <thead><tr className="bg-gray-100">{["Name","Relation","DOB","SSN","Sex"].map(h => <th key={h} className="border border-black px-1 py-1 font-bold text-left">{h}</th>)}</tr></thead>
-      <tbody>{a.householdMembers.map((m,i) => <tr key={i}>{[m.name,m.relation,m.dob,m.ssn,m.sex].map((v,j) => <td key={j} className="border border-black px-1 py-0.5">{v}</td>)}</tr>)}</tbody>
-    </table>
-
-    {[["SECTION 3: INCOME", a.income], ["SECTION 4: RESOURCES", a.resources], ["SECTION 5: EXPENSES", a.expenses]].map(([title, data]) => (
-      <div key={title}>
-        <div className="text-xs font-bold border-b border-black mb-2 pb-1">{title}</div>
-        <table className="w-full border-collapse border border-black text-[11px] mb-3">
-          <tbody>{Object.entries(data).map(([k,v]) => <tr key={k}><Cell bold wide>{k}:</Cell><Cell>{v}</Cell></tr>)}</tbody>
-        </table>
-      </div>
-    ))}
-
-    <div className="border-t-2 border-black pt-3 text-[11px] text-center italic">
-      Applicant Signature: <span className="underline">{a.firstName} {a.lastName}</span> | Date: {todayDisp}
-    </div>
-    <div className="text-center mt-4">
-      <button onClick={onClose} className="bg-gray-800 text-white border-none px-6 py-2 rounded cursor-pointer text-sm">Close Application</button>
-    </div>
-  </div>
-</div>
-```
-
+var members = applicant.householdMembers || [];
+return React.createElement(“div”, {
+style: { position: “fixed”, top: 0, left: 0, right: 0, bottom: 0, background: “rgba(0,0,0,0.85)”, zIndex: 9999, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “20px” },
+onClick: function(e) { if (e.target === e.currentTarget) onClose(); }
+},
+React.createElement(“div”, { style: S.eaForm, className: “fade-in” },
+React.createElement(“div”, { style: { textAlign: “center”, borderBottom: “2px solid #000”, paddingBottom: “12px”, marginBottom: “15px” } },
+React.createElement(“div”, { style: { fontSize: “11px”, fontWeight: 700 } }, “STATE OF MISSISSIPPI”),
+React.createElement(“div”, { style: { fontSize: “11px” } }, “DEPARTMENT OF HUMAN SERVICES”),
+React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, marginTop: “8px” } }, “MDHS-EA-900”),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700 } }, “APPLICATION FOR SNAP & TANF BENEFITS”)
+),
+React.createElement(“div”, { style: { fontSize: “11px”, marginBottom: “6px”, fontWeight: 700 } }, “FOR OFFICE USE ONLY”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “15px”, border: “1px solid #000” } },
+React.createElement(“tbody”, null,
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “30%” } }, “Date Received:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, new Date().toLocaleDateString()),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “25%” } }, “Case Number:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, “Pending”)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “County:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.county),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Expedited:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, color: applicant.isExpedited ? “#c00” : “#000”, fontWeight: applicant.isExpedited ? 700 : 400 } }, applicant.isExpedited ? “YES” : “NO”)
+)
+)
+),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 1: APPLICANT INFORMATION”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
+React.createElement(“tbody”, null,
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700, width: “25%” } }, “Name:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.lastName + “, “ + applicant.firstName + “ “ + applicant.mi)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Date of Birth:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.dob)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “SSN:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.ssn)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Address:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.address)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Phone:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.phone)
+),
+React.createElement(“tr”, null,
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px”, fontWeight: 700 } }, “Programs Applied For:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “4px 6px” } }, applicant.programsApplied === “FS” ? “SNAP (Food Stamps)” : applicant.programsApplied)
+)
+)
+),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 2: HOUSEHOLD MEMBERS”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “10px”, marginBottom: “12px”, border: “1px solid #000” } },
+React.createElement(“thead”, null,
+React.createElement(“tr”, null,
+[“Name”, “Relationship”, “DOB”, “SSN”, “Sex”].map(function(h) {
+return React.createElement(“th”, { key: h, style: { border: “1px solid #000”, padding: “4px”, background: “#eee”, fontWeight: 700 } }, h);
+})
+)
+),
+React.createElement(“tbody”, null,
+members.map(function(m, i) {
+return React.createElement(“tr”, { key: i },
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.name),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.relation),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.dob),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.ssn),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 5px” } }, m.sex)
+);
+})
+)
+),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 3: INCOME”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
+React.createElement(“tbody”, null,
+Object.entries(applicant.income).map(function(pair) {
+var key = pair[0]; var val = pair[1];
+var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
+return React.createElement(“tr”, { key: key },
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
+);
+})
+)
+),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 4: RESOURCES”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “12px”, border: “1px solid #000” } },
+React.createElement(“tbody”, null,
+Object.entries(applicant.resources).map(function(pair) {
+var key = pair[0]; var val = pair[1];
+var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
+return React.createElement(“tr”, { key: key },
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
+);
+})
+)
+),
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, borderBottom: “1px solid #000”, marginBottom: “8px”, paddingBottom: “3px” } }, “SECTION 5: EXPENSES”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, fontSize: “11px”, marginBottom: “15px”, border: “1px solid #000” } },
+React.createElement(“tbody”, null,
+Object.entries(applicant.expenses).map(function(pair) {
+var key = pair[0]; var val = pair[1];
+var lbl = key.replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){ return s.toUpperCase(); });
+return React.createElement(“tr”, { key: key },
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px”, fontWeight: 700, width: “40%” } }, lbl + “:”),
+React.createElement(“td”, { style: { border: “1px solid #000”, padding: “3px 6px” } }, val)
+);
+})
+)
+),
+React.createElement(“div”, { style: { borderTop: “2px solid #000”, paddingTop: “10px”, fontSize: “11px”, textAlign: “center”, fontStyle: “italic” } },
+“Applicant Signature: “, React.createElement(“span”, { style: { textDecoration: “underline” } }, applicant.firstName + “ “ + applicant.lastName),
+“  |  Date: “, new Date().toLocaleDateString()
+),
+React.createElement(“div”, { style: { textAlign: “center”, marginTop: “15px” } },
+React.createElement(“button”, { onClick: onClose, style: { background: “#333”, color: “#fff”, border: “none”, padding: “8px 30px”, borderRadius: “3px”, cursor: “pointer”, fontSize: “13px” } }, “Close Application”)
+)
+)
 );
 }
 
-// — Screen Components —
+/* ––––– SCREEN COMPONENTS ––––– */
+
 function WelcomeScreen({ traineeName, setTraineeName, onNext }) {
-const ok = traineeName.first.trim() && traineeName.last.trim();
-return (
-<div className="flex-1 flex items-center justify-center p-6">
-<div className="max-w-md w-full text-center">
-<div className="text-teal-400 text-[11px] font-bold tracking-widest uppercase mb-2">Mississippi Department of Human Services</div>
-<h1 className="text-2xl font-bold text-white mb-1">MDHS County Training Simulator</h1>
-<p className="text-slate-400 text-sm mb-8 leading-relaxed">Immersive training for eligibility clerks. Practice the full CARS and MAVERICS registration workflow.</p>
-<div className="bg-slate-800 border border-slate-700 rounded-lg p-5 text-left">
-<div className="text-sm font-semibold text-white mb-4">Enter your name to begin:</div>
-<div className="flex gap-3 mb-4">
-<div className="flex-1">
-<label className="block text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-1">First Name</label>
-<input className=“w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white outline-none focus:border-teal-500” placeholder=“First name” value={traineeName.first} onChange={e => setTraineeName({…traineeName, first: e.target.value})} />
-</div>
-<div className="flex-1">
-<label className="block text-[11px] text-slate-400 font-semibold uppercase tracking-wide mb-1">Last Name</label>
-<input className=“w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white outline-none focus:border-teal-500” placeholder=“Last name” value={traineeName.last} onChange={e => setTraineeName({…traineeName, last: e.target.value})} />
-</div>
-</div>
-<Btn full onClick={ok ? onNext : undefined} disabled={!ok}>Begin Training</Btn>
-</div>
-</div>
-</div>
+var firstName = traineeName.first || “”;
+var lastName = traineeName.last || “”;
+var canProceed = firstName.trim().length > 0 && lastName.trim().length > 0;
+
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
+React.createElement(“div”, { style: { maxWidth: “480px”, width: “100%”, textAlign: “center” }, className: “fade-in” },
+React.createElement(“div”, { style: { fontSize: “11px”, color: “#007A8C”, fontWeight: 700, letterSpacing: “2px”, marginBottom: “8px”, textTransform: “uppercase” } }, “Mississippi Department of Human Services”),
+React.createElement(“h1”, { style: { fontSize: “26px”, fontWeight: 700, color: “#fff”, marginBottom: “6px” } }, “MDHS County Training Simulator”),
+React.createElement(“p”, { style: { color: “#7888a0”, fontSize: “13px”, marginBottom: “30px”, lineHeight: “1.5” } },
+“Immersive training experience for eligibility clerks. Practice the full application registration workflow in CARS and MAVERICS.”
+),
+React.createElement(“div”, { style: Object.assign({}, S.card, { textAlign: “left” }) },
+React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 600, color: “#fff”, marginBottom: “15px” } }, “Enter your name to begin:”),
+React.createElement(“div”, { style: { display: “flex”, gap: “10px”, marginBottom: “15px” } },
+React.createElement(“div”, { style: { flex: 1 } },
+React.createElement(“label”, { style: S.label }, “First Name”),
+React.createElement(“input”, {
+style: S.input, placeholder: “First name”,
+value: firstName,
+onChange: function(e) { setTraineeName({ first: e.target.value, last: lastName }); }
+})
+),
+React.createElement(“div”, { style: { flex: 1 } },
+React.createElement(“label”, { style: S.label }, “Last Name”),
+React.createElement(“input”, {
+style: S.input, placeholder: “Last name”,
+value: lastName,
+onChange: function(e) { setTraineeName({ first: firstName, last: e.target.value }); }
+})
+)
+),
+React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%” }, !canProceed ? { opacity: 0.4, cursor: “not-allowed” } : {}),
+onClick: canProceed ? onNext : undefined,
+disabled: !canProceed
+}, “Begin Training”)
+)
+)
 );
 }
 
 function DisclaimerScreen({ onNext }) {
-const [agreed, setAgreed] = useState(false);
-return (
-<div className="flex-1 flex items-center justify-center p-6">
-<div className="max-w-lg w-full">
-<div className="bg-slate-800 border border-yellow-600 rounded-lg p-5">
-<div className="flex items-center gap-2 mb-3">
-<span className="text-xl">⚠</span>
-<span className="text-yellow-500 font-bold text-base">LEGAL DISCLAIMER</span>
-</div>
-<p className="text-xs text-slate-400 leading-relaxed mb-4">This training simulator is developed exclusively for MDHS for internal training purposes. All screen layouts, system names, and workflows are simulated representations. No real applicant data is used. This tool is not connected to any live MDHS system. Unauthorized use, reproduction, or distribution is prohibited.</p>
-<label className="flex items-center gap-2 cursor-pointer text-sm text-white">
-<input type=“checkbox” checked={agreed} onChange={() => setAgreed(!agreed)} className=“w-4 h-4 accent-teal-600” />
-I understand this is a training simulation only
-</label>
-<div className="mt-4"><Btn full onClick={agreed ? onNext : undefined} disabled={!agreed}>Proceed</Btn></div>
-</div>
-</div>
-</div>
+var agreed = useState(false);
+var isAgreed = agreed[0];
+var setAgreed = agreed[1];
+
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
+React.createElement(“div”, { style: { maxWidth: “520px”, width: “100%” }, className: “fade-in” },
+React.createElement(“div”, { style: Object.assign({}, S.card, { borderColor: “#C5A55A” }) },
+React.createElement(“div”, { style: { display: “flex”, alignItems: “center”, gap: “10px”, marginBottom: “12px” } },
+React.createElement(“span”, { style: { fontSize: “20px” } }, “\u26A0”),
+React.createElement(“span”, { style: { fontSize: “15px”, fontWeight: 700, color: “#C5A55A” } }, “LEGAL DISCLAIMER”)
+),
+React.createElement(“p”, { style: { fontSize: “12px”, lineHeight: “1.7”, color: “#a0b0c0”, marginBottom: “15px” } },
+“This training simulator is developed exclusively for the Mississippi Department of Human Services (MDHS) for internal training purposes. All screen layouts, system names, and workflows are simulated representations of MDHS systems and do not contain real applicant data. Any resemblance to actual persons is coincidental. This tool is not connected to any live MDHS system. Unauthorized use, reproduction, or distribution is prohibited.”
+),
+React.createElement(“label”, { style: { display: “flex”, alignItems: “center”, gap: “8px”, cursor: “pointer”, fontSize: “13px”, color: “#e0e8f0” } },
+React.createElement(“input”, { type: “checkbox”, checked: isAgreed, onChange: function() { setAgreed(!isAgreed); }, style: { width: “16px”, height: “16px”, accentColor: “#007A8C” } }),
+“I understand this is a training simulation only”
+),
+React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%”, marginTop: “15px” }, !isAgreed ? { opacity: 0.4, cursor: “not-allowed” } : {}),
+onClick: isAgreed ? onNext : undefined,
+disabled: !isAgreed
+}, “Proceed”)
+)
+)
 );
 }
 
 function LoginScreen({ onNext }) {
-const [user, setUser] = useState(””);
-const [pass, setPass] = useState(””);
-const [err, setErr] = useState(””);
-const login = () => { if (user === “jmitchell” && pass === “MDHS2026!”) onNext(); else setErr(“Invalid credentials. Use jmitchell / MDHS2026!”); };
-return (
-<div className="flex-1 flex items-center justify-center p-6">
-<div className="max-w-sm w-full bg-slate-800 border border-slate-700 rounded-lg p-5">
-<div className="text-center mb-5">
-<div className="text-lg font-bold text-white">C.A.R.S.</div>
-<div className="text-[11px] text-slate-400">Client Application & Registration System</div>
-</div>
-{err && <div className="bg-red-900/50 border border-red-800 rounded px-3 py-2 text-xs text-red-300 mb-3">{err}</div>}
-<div className="mb-3">
-<label className="block text-[11px] text-slate-400 font-semibold uppercase mb-1">Username</label>
-<input className=“w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white outline-none” value={user} onChange={e => { setUser(e.target.value); setErr(””); }} onKeyDown={e => e.key === “Enter” && login()} />
-</div>
-<div className="mb-4">
-<label className="block text-[11px] text-slate-400 font-semibold uppercase mb-1">Password</label>
-<input type=“password” className=“w-full bg-slate-900 border border-slate-600 rounded px-3 py-2 text-sm text-white outline-none” value={pass} onChange={e => { setPass(e.target.value); setErr(””); }} onKeyDown={e => e.key === “Enter” && login()} />
-</div>
-<Btn full onClick={login}>Log In</Btn>
-</div>
-</div>
+var st = useState({ user: “”, pass: “”, error: “” });
+var state = st[0]; var setState = st[1];
+
+function handleLogin() {
+if (state.user === “jmitchell” && state.pass === “MDHS2026!”) {
+onNext();
+} else {
+setState(Object.assign({}, state, { error: “Invalid credentials. Use jmitchell / MDHS2026!” }));
+}
+}
+
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
+React.createElement(“div”, { style: { maxWidth: “380px”, width: “100%” }, className: “fade-in” },
+React.createElement(“div”, { style: Object.assign({}, S.card) },
+React.createElement(“div”, { style: { textAlign: “center”, marginBottom: “20px” } },
+React.createElement(“div”, { style: { fontSize: “18px”, fontWeight: 700, color: “#fff” } }, “C.A.R.S.”),
+React.createElement(“div”, { style: { fontSize: “11px”, color: “#7888a0” } }, “Client Application & Registration System”)
+),
+state.error && React.createElement(“div”, { style: { background: “#2a0000”, border: “1px solid #5a0000”, borderRadius: “3px”, padding: “8px”, fontSize: “12px”, color: “#ff6666”, marginBottom: “12px” } }, state.error),
+React.createElement(“div”, { style: { marginBottom: “12px” } },
+React.createElement(“label”, { style: S.label }, “Username”),
+React.createElement(“input”, {
+style: S.input, placeholder: “Enter username”,
+value: state.user,
+onChange: function(e) { setState(Object.assign({}, state, { user: e.target.value, error: “” })); },
+onKeyDown: function(e) { if (e.key === “Enter”) handleLogin(); }
+})
+),
+React.createElement(“div”, { style: { marginBottom: “15px” } },
+React.createElement(“label”, { style: S.label }, “Password”),
+React.createElement(“input”, {
+style: S.input, type: “password”, placeholder: “Enter password”,
+value: state.pass,
+onChange: function(e) { setState(Object.assign({}, state, { pass: e.target.value, error: “” })); },
+onKeyDown: function(e) { if (e.key === “Enter”) handleLogin(); }
+})
+),
+React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnPrimary, { width: “100%” }),
+onClick: handleLogin
+}, “Log In”)
+)
+)
 );
 }
 
-function Dashboard({ onSelect }) {
-const [hov, setHov] = useState(null);
-const items = [
-{ key: “expedited”, sub: “EXPEDITED”, color: “red”, desc: “Expenses exceed income. Qualifies for expedited processing.” },
-{ key: “nonExpedited”, sub: “NON-EXPEDITED”, color: “blue”, desc: “Income exceeds expenses. Standard processing timeline.” }
-];
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title="C.A.R.S. Dashboard - Clerical Dashboard" />
-<div className="bg-gray-100 flex-1 flex flex-col items-center justify-center p-6">
-<div className="text-center mb-4">
-<div className="font-bold text-gray-800 text-sm mb-1">Online Registration</div>
-<div className="text-xs text-gray-500">Select an application type to process</div>
-</div>
-<div className="flex gap-4 flex-wrap justify-center">
-{items.map(it => (
-<div key={it.key} onClick={() => onSelect(it.key)} onMouseEnter={() => setHov(it.key)} onMouseLeave={() => setHov(null)}
-className={`bg-white rounded-lg p-5 w-52 cursor-pointer transition-all border-2 ${hov === it.key ? (it.color === "red" ? "border-red-600 -translate-y-0.5 shadow-lg" : "border-blue-600 -translate-y-0.5 shadow-lg") : "border-gray-200"}`}>
-<div className={`text-[10px] font-bold tracking-wider mb-1 ${it.color === "red" ? "text-red-700" : "text-blue-700"}`}>{it.sub}</div>
-<div className="text-sm font-bold text-gray-800 mb-2">Next Application</div>
-<div className="text-[11px] text-gray-500 leading-snug">{it.desc}</div>
-</div>
-))}
-</div>
-</div>
-</div>
+function CARSDashboard({ onSelectScenario }) {
+var hover = useState(null);
+var hovered = hover[0]; var setHovered = hover[1];
+
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“div”, null,
+React.createElement(“span”, { style: { fontWeight: 700, fontSize: “16px” } }, “C.A.R.S. Dashboard”),
+React.createElement(“span”, { style: { fontSize: “11px”, marginLeft: “15px”, opacity: 0.7 } }, “Clerical Dashboard”)
+),
+React.createElement(“div”, { style: { fontSize: “11px”, opacity: 0.7 } }, “User: jmitchell | Forrest County”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { display: “flex”, flexDirection: “column”, alignItems: “center”, justifyContent: “center”, gap: “15px” }) },
+React.createElement(“div”, { style: { textAlign: “center”, marginBottom: “10px” } },
+React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, color: “#333”, marginBottom: “5px” } }, “Online Registration”),
+React.createElement(“div”, { style: { fontSize: “12px”, color: “#666” } }, “Select an application type to process”)
+),
+React.createElement(“div”, { style: { display: “flex”, gap: “20px”, flexWrap: “wrap”, justifyContent: “center” } },
+[
+{ key: “expedited”, label: “Next Application”, sub: “EXPEDITED”, color: “#C62828”, desc: “Expenses exceed income. Household qualifies for expedited processing.” },
+{ key: “nonExpedited”, label: “Next Application”, sub: “NON-EXPEDITED”, color: “#1565C0”, desc: “Income exceeds expenses. Standard processing timeline applies.” }
+].map(function(item) {
+return React.createElement(“div”, {
+key: item.key,
+style: {
+background: “#fff”, border: hovered === item.key ? “2px solid “ + item.color : “2px solid #ddd”,
+borderRadius: “8px”, padding: “20px”, width: “220px”, cursor: “pointer”,
+transition: “all .2s”, transform: hovered === item.key ? “translateY(-2px)” : “none”,
+boxShadow: hovered === item.key ? “0 4px 12px rgba(0,0,0,0.15)” : “0 1px 3px rgba(0,0,0,0.1)”
+},
+onClick: function() { onSelectScenario(item.key); },
+onMouseEnter: function() { setHovered(item.key); },
+onMouseLeave: function() { setHovered(null); }
+},
+React.createElement(“div”, { style: { fontSize: “10px”, fontWeight: 700, color: item.color, marginBottom: “6px”, letterSpacing: “1px” } }, item.sub),
+React.createElement(“div”, { style: { fontSize: “15px”, fontWeight: 700, color: “#333”, marginBottom: “8px” } }, item.label),
+React.createElement(“div”, { style: { fontSize: “11px”, color: “#777”, lineHeight: “1.4” } }, item.desc)
+);
+})
+)
+)
 );
 }
 
-function CarsDataScreen({ title, fields, onNext, onBack, onViewApp }) {
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title={`C.A.R.S. - ${title}`} onViewApp={onViewApp} />
-<div className="bg-gray-100 flex-1 overflow-auto p-5">
-<div className="grid grid-cols-2 gap-3">{fields.map(([l,v], i) => <CarsField key={i} label={l} value={v} />)}</div>
-<NavBar onBack={onBack} onNext={onNext} />
-</div>
-</div>
+/* ––––– CARS SCREENS ––––– */
+
+function CARSApplicantInfo({ scenario, onNext, onBack, onViewApp }) {
+var data = scenario.applicant;
+var isExp = data.isExpedited;
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Applicant Information”),
+React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
+React.createElement(“div”, { style: Object.assign({}, S.banner, isExp ? S.bannerExp : {}) },
+React.createElement(“span”, { style: { fontSize: “12px” } },
+React.createElement(“strong”, null, “Business Date: “), new Date().toLocaleDateString(), “  |  “,
+React.createElement(“strong”, null, “Expedited: “),
+React.createElement(“span”, { style: { color: isExp ? “#C62828” : “#2E7D32”, fontWeight: 700 } }, isExp ? “YES” : “NO”),
+“  |  “,
+React.createElement(“strong”, null, “Client Documents: “), “YES”
+)
+),
+React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, marginBottom: “15px” } },
+[
+[“First Name”, data.firstName], [“Last Name”, data.lastName], [“Middle Initial”, data.mi],
+[“Date of Birth”, data.dob], [“SSN”, data.ssn], [“Sex”, data.sex],
+[“Address”, data.address], [“Phone”, data.phone], [“Email”, data.email],
+[“County”, data.county]
+].map(function(pair) {
+return React.createElement(“div”, { key: pair[0] },
+React.createElement(“div”, { style: S.carsLabel }, pair[0]),
+React.createElement(“div”, { style: Object.assign({}, S.carsInput, { background: “#f9f9f9” }) }, pair[1])
+);
+})
+),
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+)
 );
 }
 
-function CarsApplicantInfo({ scenario, onNext, onBack, onViewApp }) {
-const d = scenario.applicant;
-const isExp = d.isExpedited;
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title="C.A.R.S. - Applicant Information" onViewApp={onViewApp} />
-<div className="bg-gray-100 flex-1 overflow-auto p-5">
-<div className={`rounded px-4 py-2.5 mb-4 text-xs flex items-center gap-2 ${isExp ? "bg-red-50 border border-red-300" : "bg-blue-50 border border-blue-300"}`}>
-<strong>Business Date:</strong> {todayDisp} | <strong>Expedited:</strong> <span className={isExp ? “text-red-700 font-bold” : “text-green-700 font-bold”}>{isExp ? “YES” : “NO”}</span> | <strong>Client Documents:</strong> YES
-</div>
-<div className="grid grid-cols-2 gap-3">
-{[[“First Name”, d.firstName],[“Last Name”, d.lastName],[“Middle Initial”, d.mi],[“Date of Birth”, d.dob],[“SSN”, d.ssn],[“Sex”, d.sex],[“Address”, d.address],[“Phone”, d.phone],[“Email”, d.email],[“County”, d.county]].map(([l,v]) => <CarsField key={l} label={l} value={v} />)}
-</div>
-<NavBar onBack={onBack} onNext={onNext} />
-</div>
-</div>
+function CARSDataScreen({ title, fields, onNext, onBack, onViewApp }) {
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - “ + title),
+onViewApp && React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
+React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, marginBottom: “15px” } },
+fields.map(function(pair) {
+return React.createElement(“div”, { key: pair[0], style: pair[2] ? { gridColumn: “span 2” } : {} },
+React.createElement(“div”, { style: S.carsLabel }, pair[0]),
+React.createElement(“div”, { style: Object.assign({}, S.carsInput, { background: “#f9f9f9” }) }, pair[1])
+);
+})
+),
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+)
 );
 }
 
-function CarsHousehold({ scenario, onNext, onBack, onViewApp }) {
-const m = scenario.applicant.householdMembers;
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title="C.A.R.S. - Household Information" onViewApp={onViewApp} />
-<div className="bg-gray-100 flex-1 overflow-auto p-5">
-<div className="font-bold text-gray-800 text-sm mb-3">Household Members ({m.length})</div>
-<table className="w-full bg-white border border-gray-300 text-xs border-collapse">
-<thead><tr className="bg-blue-50">{[“Name”,“Relation”,“DOB”,“SSN”,“Sex”].map(h => <th key={h} className="text-left p-2 border-b-2 border-blue-200 font-bold">{h}</th>)}</tr></thead>
-<tbody>{m.map((p,i) => <tr key={i} className="border-b border-gray-100">{[p.name,p.relation,p.dob,p.ssn,p.sex].map((v,j) => <td key={j} className="p-2">{v}</td>)}</tr>)}</tbody>
-</table>
-<NavBar onBack={onBack} onNext={onNext} />
-</div>
-</div>
+function CARSHouseholdScreen({ scenario, onNext, onBack, onViewApp }) {
+var members = scenario.applicant.householdMembers;
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Household Information”),
+React.createElement(“button”, { onClick: onViewApp, style: { background: “rgba(255,255,255,0.2)”, color: “#fff”, border: “1px solid rgba(255,255,255,0.3)”, borderRadius: “3px”, padding: “5px 12px”, cursor: “pointer”, fontSize: “11px”, fontWeight: 600 } }, “View Full Application”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
+React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: “#333”, marginBottom: “10px” } }, “Household Members (” + members.length + “)”),
+React.createElement(“table”, { style: { width: “100%”, borderCollapse: “collapse”, background: “#fff”, border: “1px solid #ddd”, fontSize: “12px” } },
+React.createElement(“thead”, null,
+React.createElement(“tr”, { style: { background: “#e3f2fd” } },
+[“Name”, “Relationship”, “DOB”, “SSN”, “Sex”].map(function(h) {
+return React.createElement(“th”, { key: h, style: { padding: “8px 10px”, textAlign: “left”, borderBottom: “2px solid #90CAF9”, fontWeight: 700 } }, h);
+})
+)
+),
+React.createElement(“tbody”, null,
+members.map(function(m, i) {
+return React.createElement(“tr”, { key: i, style: { borderBottom: “1px solid #eee” } },
+React.createElement(“td”, { style: { padding: “7px 10px” } }, m.name),
+React.createElement(“td”, { style: { padding: “7px 10px” } }, m.relation),
+React.createElement(“td”, { style: { padding: “7px 10px” } }, m.dob),
+React.createElement(“td”, { style: { padding: “7px 10px” } }, m.ssn),
+React.createElement(“td”, { style: { padding: “7px 10px” } }, m.sex)
+);
+})
+)
+),
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+)
+);
+}
+
+/* ––––– MAVERICS TERMINAL SCREENS ––––– */
+
+function MavsScreen({ screenName, subtitle, children, onBack, onNext, nextLabel }) {
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.termHeader },
+React.createElement(“div”, null,
+React.createElement(“span”, { style: { fontWeight: 700 } }, “MDHS    MAVERICS”),
+React.createElement(“span”, { style: { marginLeft: “30px”, background: “#fff”, color: “#003366”, padding: “1px 10px”, fontWeight: 700, fontSize: “12px” } }, screenName)
+),
+React.createElement(“span”, { style: { fontSize: “11px”, opacity: 0.7 } }, subtitle || “”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.terminal, { flex: 1, overflow: “auto” }) },
+children,
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: nextLabel || “ENTER \u2192”,
+backLabel: “Back”,
+backDisabled: false
+})
+)
 );
 }
 
 function FUSC({ onNext, onBack }) {
-return (
-<MavsShell screenName="FUSC" subtitle="Full Service Office Clerical Menu" onBack={onBack} onNext={onNext} nextLabel="Select Option 2 →">
-<div className="text-green-300 font-bold text-sm mb-4">FULL SERVICE OFFICE CLERICAL MENU</div>
-<div className="leading-[2.2]">
-<div>  1  GENERAL INQUIRIES & HISTORY</div>
-<div className="text-yellow-300 font-bold">  2  APPLICATION REGISTRATION  ◀</div>
-<div>  3  NOTICE REQUEST</div>
-<div>  4  ADD PROGRAM TO CASE</div>
-<div>  5  CASE DESTRUCTION</div>
-</div>
-<div className="mt-5 text-gray-500 text-[11px] italic">Select option 2 to begin application registration</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “FUSC”, subtitle: “Full Service Office Clerical Menu”, onBack: onBack, onNext: onNext, nextLabel: “Select Option 2 \u2192” },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “FULL SERVICE OFFICE CLERICAL MENU”),
+React.createElement(“div”, { style: { lineHeight: “2.2”, fontSize: “13px” } },
+React.createElement(“div”, null, “  1  GENERAL INQUIRIES & HISTORY”),
+React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  2  APPLICATION REGISTRATION  \u25C0”),
+React.createElement(“div”, null, “  3  NOTICE REQUEST”),
+React.createElement(“div”, null, “  4  ADD PROGRAM TO CASE”),
+React.createElement(“div”, null, “  5  CASE DESTRUCTION”)
+),
+React.createElement(“div”, { style: { marginTop: “20px”, color: “#888”, fontSize: “11px”, fontStyle: “italic” } }, “Select option 2 to begin application registration”)
 );
 }
 
 function CLIR({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="CLIR" subtitle="Client Inquiry/Registration" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">CLIENT INQUIRY/REGISTRATION MENU</div>
-<div className="leading-[2] mb-4">
-<div className="text-yellow-300 font-bold">  1  INQUIRE ON PERSON  ◀</div>
-<div>  2  SAVE NEW CLIENT FOR REGISTRATION</div>
-<div>  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER</div>
-<div>  4  REGISTER APPLICATION WITH NEW CASE NUMBER</div>
-<div>  5  DELETE PREVIOUSLY SAVED PERSONS</div>
-<div>  6  INQUIRE ON DRS INFORMATION</div>
-</div>
-<div className="border-t border-green-900 pt-3">
-<div className="text-gray-500 mb-2 text-xs">Function 1 selected - Enter client search criteria:</div>
-<div className="flex flex-wrap gap-4">
-<TermLine label="SURNAME:" value={d.lastName.toUpperCase()} />
-<TermLine label="GIVEN:" value={d.firstName.toUpperCase()} />
-<TermLine label=“DOB:” value={d.dob.replace(///g, “”)} />
-</div>
-<div className="text-yellow-300 text-[11px] mt-2">⚠ Always search by name and birthdate, NOT SSN</div>
-</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “CLIR”, subtitle: “Client Inquiry/Registration”, onBack: onBack, onNext: onNext, nextLabel: “ENTER \u2192” },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY/REGISTRATION MENU”),
+React.createElement(“div”, { style: { marginBottom: “15px”, lineHeight: “2”, fontSize: “13px” } },
+React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  1  INQUIRE ON PERSON  \u25C0”),
+React.createElement(“div”, null, “  2  SAVE NEW CLIENT FOR REGISTRATION”),
+React.createElement(“div”, null, “  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),
+React.createElement(“div”, null, “  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),
+React.createElement(“div”, null, “  5  DELETE PREVIOUSLY SAVED PERSONS”),
+React.createElement(“div”, null, “  6  INQUIRE ON DRS INFORMATION”)
+),
+React.createElement(“div”, { style: { borderTop: “1px solid #1a3a1a”, paddingTop: “12px”, fontSize: “13px” } },
+React.createElement(“div”, { style: { color: “#888”, marginBottom: “8px” } }, “Function 1 selected - Enter client search criteria:”),
+React.createElement(“div”, { style: { display: “flex”, flexWrap: “wrap”, gap: “15px” } },
+React.createElement(TerminalField, { label: “SURNAME:”, value: scenario.applicant.lastName.toUpperCase() }),
+React.createElement(TerminalField, { label: “GIVEN:”, value: scenario.applicant.firstName.toUpperCase() }),
+React.createElement(TerminalField, { label: “DOB:”, value: scenario.applicant.dob.replace(///g, “”) })
+),
+React.createElement(“div”, { style: { marginTop: “10px”, color: “#ffff00”, fontSize: “11px” } }, “\u26A0 Always search by name and birthdate, NOT SSN”)
+)
 );
 }
 
 function CLIS({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="CLIS" subtitle="Client Inquiry Short List" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">CLIENT INQUIRY SHORT LIST</div>
-<div className="text-gray-500 text-xs mb-2">The following clients match your search criteria:</div>
-<table className="w-full text-xs font-mono">
-<thead><tr className="border-b border-green-500">{[”#”,“NAME”,“DOB”,“SSN”,“SEX”,“RACE”].map(h => <th key={h} className="text-left p-1 text-green-400">{h}</th>)}</tr></thead>
-<tbody><tr className="text-yellow-300 font-bold">
-<td className="p-1">1 ◀</td>
-<td className="p-1">{d.lastName.toUpperCase()}, {d.firstName.toUpperCase()}</td>
-<td className="p-1">{d.dob}</td><td className="p-1">{d.ssn}</td><td className="p-1">{d.sex}</td><td className="p-1">{d.race}</td>
-</tr></tbody>
-</table>
-<div className="mt-4 text-gray-500 text-[11px]">Enter number by client name to view full record</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “CLIS”, subtitle: “Client Inquiry Short List”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY SHORT LIST”),
+React.createElement(“div”, { style: { fontSize: “12px”, marginBottom: “10px”, color: “#888” } }, “The following clients match your search criteria:”),
+React.createElement(“table”, { style: { width: “100%”, fontFamily: “inherit”, fontSize: “12px”, borderCollapse: “collapse” } },
+React.createElement(“thead”, null,
+React.createElement(“tr”, { style: { borderBottom: “1px solid #00ff41” } },
+[”#”, “NAME”, “DOB”, “SSN”, “SEX”, “RACE”].map(function(h) {
+return React.createElement(“th”, { key: h, style: { textAlign: “left”, padding: “4px 8px”, color: “#00cc33” } }, h);
+})
+)
+),
+React.createElement(“tbody”, null,
+React.createElement(“tr”, { style: { color: “#ffff00”, fontWeight: 700 } },
+React.createElement(“td”, { style: { padding: “4px 8px” } }, “1 \u25C0”),
+React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.lastName.toUpperCase() + “, “ + scenario.applicant.firstName.toUpperCase()),
+React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.dob),
+React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.ssn),
+React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.sex),
+React.createElement(“td”, { style: { padding: “4px 8px” } }, scenario.applicant.race)
+)
+)
+),
+React.createElement(“div”, { style: { marginTop: “15px”, color: “#888”, fontSize: “11px” } }, “Enter number by client name to view full record”)
 );
 }
 
 function CLRE({ onNext, onBack }) {
-return (
-<MavsShell screenName="CLRE" subtitle="Claim Responsibility Screen" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-4">CLAIM RESPONSIBILITY</div>
-<div className="text-center py-6"><div className="text-yellow-300 text-sm mb-2">NO CLAIMS FOR THIS CLIENT</div><div className="text-gray-500 text-xs">Press ENTER to continue to Client Profile</div></div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “CLRE”, subtitle: “Claim Responsibility Screen”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLAIM RESPONSIBILITY”),
+React.createElement(“div”, { style: { fontSize: “13px”, padding: “20px 0”, textAlign: “center” } },
+React.createElement(“div”, { style: { color: “#ffff00”, fontSize: “14px”, marginBottom: “10px” } }, “NO CLAIMS FOR THIS CLIENT”),
+React.createElement(“div”, { style: { color: “#888”, fontSize: “12px” } }, “Press ENTER to continue to Client Profile”)
+)
 );
 }
 
 function CLPR({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="CLPR" subtitle="Client Profile" onBack={onBack} onNext={onNext} nextLabel="SAVE & SELECT →">
-<div className="text-green-300 font-bold text-sm mb-3">CLIENT PROFILE</div>
-<div className="grid grid-cols-2 gap-1 leading-[2]">
-<TermLine label=“NAME:” value={`${d.lastName.toUpperCase()}, ${d.firstName.toUpperCase()} ${d.mi}`} />
-<TermLine label="SSN:" value={d.ssn} />
-<TermLine label="DOB:" value={d.dob} />
-<TermLine label="SEX:" value={d.sex} />
-<TermLine label="RACE:" value={d.race} />
-<TermLine label="COUNTY:" value={d.county.toUpperCase()} />
-</div>
-<div className="mt-5 border border-yellow-400 rounded p-3">
-<div className="text-yellow-300 text-xs font-bold mb-1">☑ SELECT THIS CLIENT FOR REGISTRATION</div>
-<div className="text-gray-500 text-[11px]">Confirm client identity matches application, then save for registration</div>
-</div>
-</MavsShell>
+var d = scenario.applicant;
+return React.createElement(MavsScreen, { screenName: “CLPR”, subtitle: “Client Profile”, onBack: onBack, onNext: onNext, nextLabel: “SAVE & SELECT FOR REGISTRATION \u2192” },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT PROFILE”),
+React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “8px 20px”, fontSize: “13px”, lineHeight: “1.8” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase() + “ “ + d.mi)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SSN: “), React.createElement(“span”, { style: { color: “#fff” } }, d.ssn)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DOB: “), React.createElement(“span”, { style: { color: “#fff” } }, d.dob)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SEX: “), React.createElement(“span”, { style: { color: “#fff” } }, d.sex)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RACE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.race)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “COUNTY: “), React.createElement(“span”, { style: { color: “#fff” } }, d.county.toUpperCase()))
+),
+React.createElement(“div”, { style: { marginTop: “20px”, padding: “10px”, border: “1px solid #ffff00”, borderRadius: “3px” } },
+React.createElement(“div”, { style: { color: “#ffff00”, fontSize: “12px”, fontWeight: 700, marginBottom: “5px” } }, “\u2611 SELECT THIS CLIENT FOR REGISTRATION”),
+React.createElement(“div”, { style: { color: “#888”, fontSize: “11px” } }, “Confirm client identity matches application, then save for registration”)
+)
 );
 }
 
 function CLIR_DRS({ onNext, onBack }) {
-return (
-<MavsShell screenName="CLIR" subtitle="DRS Inquiry - Function 6" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">CLIENT INQUIRY/REGISTRATION MENU</div>
-<div className="leading-[2] mb-3">
-<div>  1  INQUIRE ON PERSON</div><div>  2  SAVE NEW CLIENT FOR REGISTRATION</div>
-<div>  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER</div><div>  4  REGISTER APPLICATION WITH NEW CASE NUMBER</div>
-<div>  5  DELETE PREVIOUSLY SAVED PERSONS</div><div className="text-yellow-300 font-bold">  6  INQUIRE ON DRS INFORMATION  ◀</div>
-</div>
-<div className="text-gray-500 text-xs">DRS inquiry must be completed before registration. Press ENTER.</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “CLIR”, subtitle: “DRS Inquiry - Function 6”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “CLIENT INQUIRY/REGISTRATION MENU”),
+React.createElement(“div”, { style: { marginBottom: “15px”, lineHeight: “2”, fontSize: “13px” } },
+React.createElement(“div”, null, “  1  INQUIRE ON PERSON”),
+React.createElement(“div”, null, “  2  SAVE NEW CLIENT FOR REGISTRATION”),
+React.createElement(“div”, null, “  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),
+React.createElement(“div”, null, “  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),
+React.createElement(“div”, null, “  5  DELETE PREVIOUSLY SAVED PERSONS”),
+React.createElement(“div”, { style: { color: “#ffff00”, fontWeight: 700 } }, “  6  INQUIRE ON DRS INFORMATION  \u25C0”)
+),
+React.createElement(“div”, { style: { color: “#888”, fontSize: “12px”, marginTop: “10px” } }, “DRS inquiry must be completed before registration. Press ENTER.”)
 );
 }
 
-function DRPR({ onNext, onBack }) {
-return (
-<MavsShell screenName="DRPR" subtitle="DRS Profile" onBack={onBack} onNext={onNext} nextLabel="Continue →">
-<div className="text-green-300 font-bold text-sm mb-4">DRS PROFILE</div>
-<div className="text-center py-6"><div className="text-green-300 text-sm">NO DISQUALIFICATIONS FOUND</div><div className="text-gray-500 text-xs mt-2">Client is clear. Press ENTER to continue.</div></div>
-</MavsShell>
+function DRPR({ scenario, onNext, onBack }) {
+return React.createElement(MavsScreen, { screenName: “DRPR”, subtitle: “DRS Profile”, onBack: onBack, onNext: onNext, nextLabel: “Continue \u2192” },
+React.createElement(“div”, { style: { marginBottom: “15px”, color: “#00cc33”, fontSize: “14px”, fontWeight: 700 } }, “DRS PROFILE”),
+React.createElement(“div”, { style: { fontSize: “13px”, padding: “20px 0”, textAlign: “center” } },
+React.createElement(“div”, { style: { color: “#00ff41”, fontSize: “14px” } }, “NO DISQUALIFICATIONS FOUND”),
+React.createElement(“div”, { style: { color: “#888”, fontSize: “12px”, marginTop: “8px” } }, “Client is clear to proceed with registration. Press ENTER to continue.”)
+)
 );
 }
 
 function REAP({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="REAP" subtitle="Registration Entry Application Processing" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-xs mb-3">REGISTRATION ENTRY APPLICATION PROCESSING</div>
-<div className="grid grid-cols-2 gap-x-6 gap-y-0.5 text-xs leading-[2]">
-<TermLine label=“CASE NAME:” value={`${d.lastName.toUpperCase()}, ${d.firstName.toUpperCase()}`} />
-<TermLine label="CASE NUMBER:" value={scenario.caseNumber} highlight />
-<TermLine label=“CASELOAD:” value={`${scenario.caseload} ${scenario.workerName}`} />
-<TermLine label="FULL SERVICE OFFICE:" value={scenario.fso} highlight />
-<TermLine label="UNIT:" value={scenario.unit} />
-<TermLine label="REGISTRATION BY PCN:" value="JMITCHELL" />
-<TermLine label="OPEN REASON:" value="I" />
-<TermLine label="APP SOURCE:" value={d.appSource} />
-<TermLine label="HOMELESS:" value="N" />
-<TermLine label=“EXPEDITED FS:” value={d.isExpedited ? “Y” : “N”} highlight={d.isExpedited} />
-</div>
-<div className="border-t border-green-900 pt-2 mt-3">
-<div className="text-green-400 font-bold text-xs mb-1">PROGRAMS APPLIED FOR:</div>
-<div className="flex gap-6 text-xs">
-<TermLine label="PGM:" value={d.programsApplied} />
-<TermLine label="APP RECEIVED DATE:" value={todayStr} />
-<TermLine label="BENEFIT START DATE:" value={todayStr} />
-</div>
-</div>
-<div className="border-t border-green-900 pt-2 mt-3">
-<div className="text-green-400 font-bold text-xs mb-1">CLIENT:</div>
-<div className="flex flex-wrap gap-4 text-xs">
-<TermLine label=“NAME:” value={`${d.lastName.toUpperCase()}, ${d.firstName.toUpperCase()}`} />
-<TermLine label=“DOB:” value={d.dob.replace(///g,””)} />
-<TermLine label=“SSN:” value={d.ssn.replace(/-/g,” “)} />
-<TermLine label="SEX:" value={d.sex} />
-<TermLine label="RELATION:" value="PI" />
-<TermLine label="POS ON APP:" value="01" />
-</div>
-</div>
-<div className="text-yellow-300 text-[11px] mt-3 italic">NOTE: Write down the case # at top. Always verify client information.</div>
-</MavsShell>
+var d = scenario.applicant;
+var today = new Date();
+var dateStr = String(today.getMonth() + 1).padStart(2, “0”) + String(today.getDate()).padStart(2, “0”) + today.getFullYear();
+return React.createElement(MavsScreen, { screenName: “REAP”, subtitle: “Registration Entry Application Processing”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “REGISTRATION ENTRY APPLICATION PROCESSING”),
+React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “6px 30px”, fontSize: “12px”, lineHeight: “2” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.caseNumber)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASELOAD: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseload + “ “ + scenario.workerName)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “FULL SERVICE OFFICE: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.fso)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “UNIT: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.unit)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “REGISTRATION BY PCN: “), React.createElement(“span”, { style: { color: “#fff” } }, “JMITCHELL”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “OPEN REASON: “), React.createElement(“span”, { style: { color: “#fff” } }, “I”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP SOURCE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.appSource)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “HOMELESS: “), React.createElement(“span”, { style: { color: “#fff” } }, “N”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “EXPEDITED FS: “), React.createElement(“span”, { style: { color: d.isExpedited ? “#ff4444” : “#fff”, fontWeight: d.isExpedited ? 700 : 400 } }, d.isExpedited ? “Y” : “N”))
+),
+React.createElement(“div”, { style: { marginTop: “12px”, borderTop: “1px solid #1a3a1a”, paddingTop: “10px” } },
+React.createElement(“div”, { style: { fontSize: “12px”, color: “#00cc33”, fontWeight: 700, marginBottom: “6px” } }, “PROGRAMS APPLIED FOR:”),
+React.createElement(“div”, { style: { display: “flex”, gap: “30px”, fontSize: “12px” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PGM: “), React.createElement(“span”, { style: { color: “#fff” } }, d.programsApplied)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP RECEIVED DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, dateStr)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “BENEFIT START DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, dateStr))
+)
+),
+React.createElement(“div”, { style: { marginTop: “12px”, borderTop: “1px solid #1a3a1a”, paddingTop: “10px” } },
+React.createElement(“div”, { style: { fontSize: “12px”, color: “#00cc33”, fontWeight: 700, marginBottom: “6px” } }, “CLIENT:”),
+React.createElement(“div”, { style: { display: “flex”, gap: “20px”, fontSize: “12px”, flexWrap: “wrap” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DOB: “), React.createElement(“span”, { style: { color: “#fff” } }, d.dob.replace(///g, “”))),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SSN: “), React.createElement(“span”, { style: { color: “#fff” } }, d.ssn.replace(/-/g, “ “))),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SEX: “), React.createElement(“span”, { style: { color: “#fff” } }, d.sex)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RELATION: “), React.createElement(“span”, { style: { color: “#fff” } }, “PI”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “POSITION ON APP: “), React.createElement(“span”, { style: { color: “#fff” } }, “01”))
+)
+),
+React.createElement(“div”, { style: { marginTop: “12px”, color: “#ffff00”, fontSize: “11px”, fontStyle: “italic” } }, “NOTE: For NEW case numbers, write down the case # at top of page. Always verify client information is correct.”)
 );
 }
 
 function EXSW({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="EXSW" subtitle="Expedited Screening Worksheet" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">EXPEDITED SCREENING WORKSHEET</div>
-<div className="leading-[2] text-xs mb-3">
-<TermLine label=“CASE NAME:” value={`${d.lastName.toUpperCase()}, ${d.firstName.toUpperCase()}`} />
-<TermLine label="CASE NUMBER:" value={scenario.caseNumber} />
-<TermLine label="APP RECEIVED DATE:" value={todayDisp} />
-</div>
-<div className={`border rounded p-3 ${d.isExpedited ? "border-red-500" : "border-green-500"}`}>
-<div className={`font-bold text-sm mb-2 ${d.isExpedited ? "text-red-400" : "text-green-300"}`}>EXPEDITED STATUS: {d.isExpedited ? “YES - QUALIFIES” : “NO - DOES NOT QUALIFY”}</div>
-<div className="text-gray-400 text-[11px] leading-relaxed">{d.expeditedReason}</div>
-</div>
-</MavsShell>
+var d = scenario.applicant;
+return React.createElement(MavsScreen, { screenName: “EXSW”, subtitle: “Expedited Screening Worksheet”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “EXPEDITED SCREENING WORKSHEET”),
+React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2”, marginBottom: “10px” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, d.lastName.toUpperCase() + “, “ + d.firstName.toUpperCase())),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseNumber)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “APP RECEIVED DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, new Date().toLocaleDateString()))
+),
+React.createElement(“div”, { style: { border: “1px solid #00ff41”, padding: “12px”, marginTop: “10px”, borderRadius: “3px” } },
+React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: d.isExpedited ? “#ff4444” : “#00ff41”, marginBottom: “8px” } },
+“EXPEDITED STATUS: “ + (d.isExpedited ? “YES - QUALIFIES” : “NO - DOES NOT QUALIFY”)
+),
+React.createElement(“div”, { style: { fontSize: “11px”, color: “#ccc”, lineHeight: “1.6” } }, d.expeditedReason)
+)
 );
 }
 
 function ADDR({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-return (
-<MavsShell screenName="ADDR" subtitle="Address Screen" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">ADDRESS</div>
-<div className="leading-[2.2] text-xs">
-<TermLine label="RESIDENCE ADDRESS:" value={d.address} />
-<TermLine label=“MAILING ADDRESS:” value={d.mailingAddress || d.address} />
-<TermLine label="PHONE:" value={d.phone} />
-<TermLine label="EMAIL:" value={d.email} />
-<TermLine label="ENOTICE:" value="Y" />
-<TermLine label="SNAP AUTHORIZED REP:" value="NONE" />
-</div>
-</MavsShell>
+var d = scenario.applicant;
+return React.createElement(MavsScreen, { screenName: “ADDR”, subtitle: “Address Screen”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “ADDRESS”),
+React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “RESIDENCE ADDRESS: “), React.createElement(“span”, { style: { color: “#fff” } }, d.address)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “MAILING ADDRESS: “), React.createElement(“span”, { style: { color: “#fff” } }, d.mailingAddress || d.address)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PHONE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.phone)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “EMAIL: “), React.createElement(“span”, { style: { color: “#fff” } }, d.email)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “ENOTICE: “), React.createElement(“span”, { style: { color: “#fff” } }, “Y”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “SNAP AUTHORIZED REP: “), React.createElement(“span”, { style: { color: “#fff” } }, “NONE”))
+)
 );
 }
 
 function CAP1({ scenario, onNext, onBack }) {
-return (
-<MavsShell screenName="CAP1" subtitle="Case Information" onBack={onBack} onNext={onNext} nextLabel="Go to NORE →">
-<div className="text-green-300 font-bold text-sm mb-3">CASE ACTIVITY PROFILE</div>
-<div className="leading-[2] text-xs">
-<TermLine label="CASE NUMBER:" value={scenario.caseNumber} highlight />
-<TermLine label=“CASE NAME:” value={`${scenario.applicant.lastName.toUpperCase()}, ${scenario.applicant.firstName.toUpperCase()}`} />
-<TermLine label="FSO:" value={scenario.fso} />
-<TermLine label="UNIT:" value={scenario.unit} />
-<TermLine label="CASELOAD:" value={scenario.caseload} />
-</div>
-<div className="border border-green-500 rounded p-3 mt-4">
-<div className="text-green-400 font-bold text-xs mb-1">PROGRAM STATUS:</div>
-<div className="text-xs text-white">PRG: <strong>{scenario.applicant.programsApplied}</strong>    STATUS: <span className="text-yellow-300 font-bold">REC’D</span>    DATE: {todayDisp}</div>
-</div>
-<div className="text-yellow-300 text-[11px] mt-3">Write down case number. Type NORE in NEXT field for Notice Request.</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “CAP1”, subtitle: “Case Information”, onBack: onBack, onNext: onNext, nextLabel: “Go to NORE \u2192” },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “CASE ACTIVITY PROFILE”),
+React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, scenario.caseNumber)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NAME: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.applicant.lastName.toUpperCase() + “, “ + scenario.applicant.firstName.toUpperCase())),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “FSO: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.fso)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “UNIT: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.unit)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASELOAD: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseload))
+),
+React.createElement(“div”, { style: { marginTop: “15px”, border: “1px solid #00ff41”, padding: “10px”, borderRadius: “3px” } },
+React.createElement(“div”, { style: { fontSize: “12px”, fontWeight: 700, color: “#00cc33”, marginBottom: “5px” } }, “PROGRAM STATUS:”),
+React.createElement(“div”, { style: { fontSize: “12px”, color: “#fff” } },
+“PRG: “, React.createElement(“span”, { style: { fontWeight: 700 } }, scenario.applicant.programsApplied),
+“    STATUS: “, React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, “REC’D”),
+“    DATE: “, new Date().toLocaleDateString()
+)
+),
+React.createElement(“div”, { style: { marginTop: “12px”, color: “#ffff00”, fontSize: “11px” } }, “Write down the case number. Type NORE in NEXT field to access Notice Request Screen.”)
 );
 }
 
 function NORE({ scenario, onNext, onBack }) {
-return (
-<MavsShell screenName="NORE" subtitle="Notice Request Screen" onBack={onBack} onNext={onNext}>
-<div className="text-green-300 font-bold text-sm mb-3">NOTICE REQUEST</div>
-<div className="leading-[2.2] text-xs">
-<TermLine label="CASE NUMBER:" value={scenario.caseNumber} />
-<TermLine label="NOTICE TYPE:" value="A925" />
-<TermLine label="BENEFIT MONTH:" value={benMonth} />
-<TermLine label="PGM:" value={scenario.applicant.programsApplied} />
-</div>
-<div className="text-gray-500 text-[11px] mt-3">Press ENTER to proceed to Notice screen</div>
-</MavsShell>
+return React.createElement(MavsScreen, { screenName: “NORE”, subtitle: “Notice Request Screen”, onBack: onBack, onNext: onNext },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “NOTICE REQUEST”),
+React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “CASE NUMBER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.caseNumber)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “NOTICE TYPE: “), React.createElement(“span”, { style: { color: “#fff” } }, “A925”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “BENEFIT MONTH: “), React.createElement(“span”, { style: { color: “#fff” } }, String(new Date().getMonth() + 1).padStart(2, “0”) + String(new Date().getFullYear()).slice(-2))),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PGM: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.applicant.programsApplied))
+),
+React.createElement(“div”, { style: { marginTop: “10px”, color: “#888”, fontSize: “11px” } }, “Press ENTER to proceed to Notice screen”)
 );
 }
 
 function NOTI({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-const isExp = d.isExpedited;
-const apt = getApptDate(isExp);
-return (
-<MavsShell screenName="NOTI" subtitle="Notice Screen" onBack={onBack} onNext={onNext} nextLabel="MAIL & CONTINUE →">
-<div className="text-green-300 font-bold text-sm mb-3">NOTICE - A925 TELEPHONE APPOINTMENT</div>
-{isExp && <div className="bg-red-950 border border-red-800 rounded px-3 py-2 text-[11px] text-red-300 mb-3">⚠ EXPEDITED: Must be scheduled same day or next business day. Max 3 business days.</div>}
-<div className="leading-[2.2] text-xs">
-<TermLine label="TELEPHONE:" value={d.phone} />
-<TermLine label="DAY:" value={DAYS[apt.getDay()]} />
-<TermLine label="DATE:" value={apt.toLocaleDateString()} />
-<TermLine label=“TIME:” value={isExp ? “09:00 AM” : “10:30 AM”} />
-<TermLine label=“PROGRAM:” value={d.programsApplied === “FS” ? “☑ SNAP” : d.programsApplied} />
-<TermLine label="WORKER:" value={scenario.workerName} />
-<TermLine label="MAIL?:" value="Y" highlight />
-</div>
-</MavsShell>
+var d = scenario.applicant;
+var isExp = d.isExpedited;
+var apptDate = new Date();
+if (isExp) {
+apptDate.setDate(apptDate.getDate() + 1);
+if (apptDate.getDay() === 0) apptDate.setDate(apptDate.getDate() + 1);
+if (apptDate.getDay() === 6) apptDate.setDate(apptDate.getDate() + 2);
+} else {
+apptDate.setDate(apptDate.getDate() + 7);
+while (apptDate.getDay() === 0 || apptDate.getDay() === 6) {
+apptDate.setDate(apptDate.getDate() + 1);
+}
+}
+var dayNames = [“SUNDAY”,“MONDAY”,“TUESDAY”,“WEDNESDAY”,“THURSDAY”,“FRIDAY”,“SATURDAY”];
+return React.createElement(MavsScreen, { screenName: “NOTI”, subtitle: “Notice Screen”, onBack: onBack, onNext: onNext, nextLabel: “MAIL & CONTINUE \u2192” },
+React.createElement(“div”, { style: { marginBottom: “12px”, color: “#00cc33”, fontSize: “13px”, fontWeight: 700 } }, “NOTICE - A925 TELEPHONE APPOINTMENT”),
+isExp && React.createElement(“div”, { style: { background: “#330000”, border: “1px solid #660000”, padding: “8px”, borderRadius: “3px”, marginBottom: “10px”, fontSize: “11px”, color: “#ff6666” } },
+“\u26A0 EXPEDITED: Appointment must be scheduled same day or next business day. No later than 3 business days.”
+),
+React.createElement(“div”, { style: { fontSize: “12px”, lineHeight: “2.2” } },
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “TELEPHONE: “), React.createElement(“span”, { style: { color: “#fff” } }, d.phone)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DAY: “), React.createElement(“span”, { style: { color: “#fff” } }, dayNames[apptDate.getDay()])),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “DATE: “), React.createElement(“span”, { style: { color: “#fff” } }, String(apptDate.getMonth()+1).padStart(2,“0”) + “/” + String(apptDate.getDate()).padStart(2,“0”) + “/” + apptDate.getFullYear())),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “TIME: “), React.createElement(“span”, { style: { color: “#fff” } }, isExp ? “09:00 AM” : “10:30 AM”)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “PROGRAM: “), React.createElement(“span”, { style: { color: “#fff” } }, d.programsApplied === “FS” ? “\u2611 SNAP” : d.programsApplied)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “WORKER: “), React.createElement(“span”, { style: { color: “#fff” } }, scenario.workerName)),
+React.createElement(“div”, null, React.createElement(“span”, { style: { color: “#00cc33” } }, “MAIL?: “), React.createElement(“span”, { style: { color: “#ffff00”, fontWeight: 700 } }, “Y”))
+)
 );
 }
 
-function CarsCase({ scenario, onNext, onBack }) {
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title="C.A.R.S. - MAVS Case Number" />
-<div className="bg-gray-100 flex-1 overflow-auto p-5 flex flex-col items-center justify-center">
-<div className="max-w-sm w-full text-center">
-<div className="font-bold text-gray-800 text-sm mb-5">Enter MAVERICS Case Number</div>
-<CarsField label="Case Number" value={scenario.caseNumber} />
-<div className="bg-green-50 border border-green-300 rounded px-3 py-2 text-xs text-green-800 mt-3">✓ Case Details saved in CARS! Head of Household: {scenario.applicant.lastName}, {scenario.applicant.firstName}</div>
-</div>
-<NavBar onBack={onBack} onNext={onNext} />
-</div>
-</div>
+function CARSCaseScreen({ scenario, onNext, onBack }) {
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - MAVS Case Number”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
+React.createElement(“div”, { style: { maxWidth: “400px”, margin: “30px auto”, textAlign: “center” } },
+React.createElement(“div”, { style: { fontSize: “14px”, fontWeight: 700, color: “#333”, marginBottom: “20px” } }, “Enter MAVERICS Case Number”),
+React.createElement(“div”, { style: { marginBottom: “15px” } },
+React.createElement(“div”, { style: S.carsLabel }, “Case Number”),
+React.createElement(“div”, { style: Object.assign({}, S.carsInput, { textAlign: “center”, fontSize: “18px”, fontWeight: 700, color: “#1565C0” }) }, scenario.caseNumber)
+),
+React.createElement(“div”, { style: { background: “#E8F5E9”, border: “1px solid #A5D6A7”, borderRadius: “4px”, padding: “10px”, fontSize: “12px”, color: “#2E7D32”, marginBottom: “15px” } },
+“\u2713 Case Details saved in CARS! Head of Household: “ + scenario.applicant.lastName + “, “ + scenario.applicant.firstName
+)
+),
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “Next \u2192” })
+)
 );
 }
 
-function CarsAppt({ scenario, onNext, onBack }) {
-const d = scenario.applicant;
-const isExp = d.isExpedited;
-const apt = getApptDate(isExp);
-return (
-<div className="flex flex-col flex-1">
-<CarsHeader title="C.A.R.S. - Appointment Screen" />
-<div className="bg-gray-100 flex-1 overflow-auto p-5">
-{isExp && <div className="bg-red-50 border border-red-300 rounded px-3 py-2 text-xs text-red-800 font-semibold mb-4">⚠ EXPEDITED CASE: Within 3 business days. Weekdays only. Correct FSO and worker.</div>}
-<div className="grid grid-cols-2 gap-3 max-w-lg">
-<CarsField label="Case Worker" value={scenario.workerName} />
-<CarsField label="FSO" value={scenario.fso} />
-<CarsField label="Appointment Date" value={apt.toLocaleDateString()} />
-<CarsField label=“Appointment Time” value={isExp ? “9:00 AM” : “10:30 AM”} />
-<div className="col-span-2"><CarsField label=“Place” value={`${d.county} County DHS Office`} /></div>
-</div>
-<NavBar onBack={onBack} onNext={onNext} nextLabel="✓ Submit" />
-</div>
-</div>
+function CARSAppointment({ scenario, onNext, onBack }) {
+var d = scenario.applicant;
+var isExp = d.isExpedited;
+var apptDate = new Date();
+if (isExp) {
+apptDate.setDate(apptDate.getDate() + 1);
+if (apptDate.getDay() === 0) apptDate.setDate(apptDate.getDate() + 1);
+if (apptDate.getDay() === 6) apptDate.setDate(apptDate.getDate() + 2);
+} else {
+apptDate.setDate(apptDate.getDate() + 7);
+while (apptDate.getDay() === 0 || apptDate.getDay() === 6) { apptDate.setDate(apptDate.getDate() + 1); }
+}
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, flexDirection: “column” } },
+React.createElement(“div”, { style: S.carsHeader },
+React.createElement(“span”, { style: { fontWeight: 700 } }, “C.A.R.S. - Appointment Screen”)
+),
+React.createElement(“div”, { style: Object.assign({}, S.carsBody, { overflow: “auto” }) },
+isExp && React.createElement(“div”, { style: { background: “#FFEBEE”, border: “1px solid #EF9A9A”, borderRadius: “4px”, padding: “10px”, fontSize: “12px”, color: “#C62828”, marginBottom: “15px”, fontWeight: 600 } },
+“\u26A0 EXPEDITED CASE: Appointment must be within 3 business days. Weekdays only (Mon-Fri). Assign correct FSO and case worker.”
+),
+React.createElement(“div”, { style: { display: “grid”, gridTemplateColumns: “1fr 1fr”, gap: “12px”, maxWidth: “500px” } },
+React.createElement(“div”, null,
+React.createElement(“div”, { style: S.carsLabel }, “Case Worker”),
+React.createElement(“div”, { style: S.carsInput }, scenario.workerName)
+),
+React.createElement(“div”, null,
+React.createElement(“div”, { style: S.carsLabel }, “FSO”),
+React.createElement(“div”, { style: S.carsInput }, scenario.fso)
+),
+React.createElement(“div”, null,
+React.createElement(“div”, { style: S.carsLabel }, “Appointment Date”),
+React.createElement(“div”, { style: S.carsInput }, apptDate.toLocaleDateString())
+),
+React.createElement(“div”, null,
+React.createElement(“div”, { style: S.carsLabel }, “Appointment Time”),
+React.createElement(“div”, { style: S.carsInput }, isExp ? “9:00 AM” : “10:30 AM”)
+),
+React.createElement(“div”, { style: { gridColumn: “span 2” } },
+React.createElement(“div”, { style: S.carsLabel }, “Place”),
+React.createElement(“div”, { style: S.carsInput }, d.county + “ County DHS Office”)
+)
+),
+React.createElement(NavButtons, { onBack: onBack, onNext: onNext, nextLabel: “\u2713 Submit” })
+)
 );
 }
 
 function CompleteScreen({ traineeName, scenario, onRestart }) {
-const openCert = () => {
-const w = window.open(””, “_blank”);
-if (!w) return;
-const name = `${traineeName.first} ${traineeName.last}`;
-const dt = new Date().toLocaleDateString(“en-US”, { year: “numeric”, month: “long”, day: “numeric” });
-const id = “MDHS-CTS-2026-” + String(Math.floor(Math.random()*99999)).padStart(5,“0”);
-w.document.write(`<html><head><title>Certificate</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B1D3A;font-family:Georgia,serif"> <div style="background:#0B1D3A;color:#fff;padding:50px;max-width:750px;width:100%;text-align:center;border:3px solid #C5A55A;border-radius:8px"> <div style="font-size:11px;color:#007A8C;letter-spacing:3px;text-transform:uppercase">Mississippi Department of Human Services</div> <div style="font-size:9px;color:#007A8C;margin-bottom:20px">Economic Programs Training Division</div> <hr style="border:none;border-top:1px solid #C5A55A;margin:0 100px 20px"> <div style="font-size:15px;color:#C5A55A;font-weight:700;letter-spacing:4px;margin:20px 0">CERTIFICATE OF COMPLETION</div> <div style="font-size:12px;color:#8899aa;margin:25px 0 8px">This is to certify that</div> <div style="font-size:32px;font-weight:700;margin:8px 0;border-bottom:1px solid #C5A55A;display:inline-block;padding:0 40px 8px">${name}</div> <div style="font-size:12px;color:#8899aa;margin:20px 0 8px">has successfully completed the</div> <div style="font-size:20px;font-weight:700">MDHS County Training Simulator</div> <div style="font-size:13px;color:#007A8C;font-weight:600;margin:8px 0 25px">Eligibility Clerk Application Registration Training</div> <div style="font-size:9px;color:#667;margin:15px 0">Date: ${dt}  |  Credential ID: ${id}</div> </div></body></html>`);
+return React.createElement(“div”, { style: { flex: 1, display: “flex”, alignItems: “center”, justifyContent: “center”, padding: “30px” } },
+React.createElement(“div”, { style: { maxWidth: “500px”, width: “100%”, textAlign: “center” }, className: “fade-in” },
+React.createElement(“div”, { style: { fontSize: “48px”, marginBottom: “10px” } }, “\u2705”),
+React.createElement(“h2”, { style: { color: “#fff”, fontSize: “22px”, marginBottom: “8px” } }, “Registration Complete!”),
+React.createElement(“p”, { style: { color: “#7888a0”, fontSize: “13px”, marginBottom: “20px”, lineHeight: “1.5” } },
+“Congratulations, “ + traineeName.first + “! You have successfully completed the “ +
+(scenario.applicant.isExpedited ? “expedited” : “non-expedited”) + “ application registration workflow for “ +
+scenario.applicant.firstName + “ “ + scenario.applicant.lastName + “.”
+),
+React.createElement(“div”, { style: Object.assign({}, S.card, { textAlign: “left”, marginBottom: “15px” }) },
+React.createElement(“div”, { style: { fontSize: “13px”, fontWeight: 700, color: “#C5A55A”, marginBottom: “10px” } }, “Session Summary”),
+React.createElement(“div”, { style: { fontSize: “12px”, color: “#a0b0c0”, lineHeight: “1.8” } },
+React.createElement(“div”, null, “Scenario: “ + (scenario.applicant.isExpedited ? “Expedited” : “Non-Expedited”)),
+React.createElement(“div”, null, “Applicant: “ + scenario.applicant.firstName + “ “ + scenario.applicant.lastName),
+React.createElement(“div”, null, “Case Number: “ + scenario.caseNumber),
+React.createElement(“div”, null, “County: “ + scenario.applicant.county)
+)
+),
+React.createElement(“div”, { style: { display: “flex”, gap: “10px”, justifyContent: “center”, flexWrap: “wrap” } },
+React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnGold),
+onClick: function() {
+var w = window.open(””, “_blank”);
+if (w) {
+w.document.write(”<html><head><title>Certificate</title></head><body style='margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B1D3A'>”);
+w.document.write(”<div style='background:#0B1D3A;color:#fff;padding:40px;max-width:800px;width:100%;text-align:center;border:3px solid #C5A55A;border-radius:8px'>”);
+w.document.write(”<div style='font-size:11px;color:#007A8C;letter-spacing:2px'>MISSISSIPPI DEPARTMENT OF HUMAN SERVICES</div>”);
+w.document.write(”<div style='font-size:9px;color:#007A8C;margin-bottom:15px'>ECONOMIC PROGRAMS TRAINING DIVISION</div>”);
+w.document.write(”<hr style='border-color:#C5A55A;margin:15px 100px'>”);
+w.document.write(”<div style='font-size:14px;color:#C5A55A;font-weight:700;letter-spacing:3px;margin:15px 0'>CERTIFICATE OF COMPLETION</div>”);
+w.document.write(”<div style='font-size:11px;color:#8899aa;margin:20px 0 5px'>This is to certify that</div>”);
+w.document.write(”<div style='font-size:28px;font-weight:700;margin:10px 0;border-bottom:1px solid #C5A55A;display:inline-block;padding:0 30px 5px'>” + traineeName.first + “ “ + traineeName.last + “</div>”);
+w.document.write(”<div style='font-size:11px;color:#8899aa;margin:15px 0 5px'>has successfully completed the</div>”);
+w.document.write(”<div style='font-size:18px;font-weight:700;margin:5px 0'>MDHS County Training Simulator</div>”);
+w.document.write(”<div style='font-size:12px;color:#007A8C;font-weight:600;margin:5px 0 20px'>Eligibility Clerk Application Registration Training</div>”);
+w.document.write(”<div style='font-size:9px;color:#666;margin:10px 0'>Date: “ + new Date().toLocaleDateString(“en-US”, { year: “numeric”, month: “long”, day: “numeric” }) + “ | Credential ID: MDHS-CTS-2026-” + String(Math.floor(Math.random() * 99999)).padStart(5, “0”) + “</div>”);
+w.document.write(”</div></body></html>”);
 w.document.close();
-setTimeout(() => w.print(), 500);
-};
-return (
-<div className="flex-1 flex items-center justify-center p-6">
-<div className="max-w-md w-full text-center">
-<div className="text-5xl mb-3">✅</div>
-<h2 className="text-xl font-bold text-white mb-2">Registration Complete!</h2>
-<p className="text-slate-400 text-sm mb-5 leading-relaxed">Congratulations, {traineeName.first}! You completed the {scenario.applicant.isExpedited ? “expedited” : “non-expedited”} registration for {scenario.applicant.firstName} {scenario.applicant.lastName}.</p>
-<div className="bg-slate-800 border border-slate-700 rounded-lg p-4 text-left mb-5">
-<div className="text-sm font-bold text-yellow-500 mb-2">Session Summary</div>
-<div className="text-xs text-slate-400 leading-[1.8]">
-<div>Scenario: {scenario.applicant.isExpedited ? “Expedited” : “Non-Expedited”}</div>
-<div>Applicant: {scenario.applicant.firstName} {scenario.applicant.lastName}</div>
-<div>Case Number: {scenario.caseNumber}</div>
-<div>County: {scenario.applicant.county}</div>
-</div>
-</div>
-<div className="flex gap-3 justify-center flex-wrap">
-<Btn variant="gold" onClick={openCert}>📄 Download Certificate</Btn>
-<Btn onClick={onRestart}>Start New Session</Btn>
-</div>
-</div>
-</div>
+setTimeout(function() { w.print(); }, 500);
+}
+}
+}, “\uD83D\uDCC4 Download Certificate”),
+React.createElement(“button”, {
+style: Object.assign({}, S.btn, S.btnPrimary),
+onClick: onRestart
+}, “Start New Session”)
+)
+)
 );
 }
 
-// — Main App —
-export default function App() {
-const [idx, setIdx] = useState(0);
-const [traineeName, setTraineeName] = useState({ first: “”, last: “” });
-const [scenarioKey, setScenarioKey] = useState(null);
-const [showEA900, setShowEA900] = useState(false);
-const [tracker, setTracker] = useState({ startTime: null, screensVisited: [], scenarioType: null, completed: false });
+/* ––––– MAIN APP ––––– */
 
-const scenario = scenarioKey ? SCENARIOS[scenarioKey] : null;
-const screen = SCREENS[idx];
+function App() {
+var screenState = useState(0);
+var screenIdx = screenState[0];
+var setScreenIdx = screenState[1];
 
-useEffect(() => {
-if (screen && !tracker.screensVisited.includes(screen)) {
-setTracker(p => ({ …p, screensVisited: […p.screensVisited, screen] }));
+var nameState = useState({ first: “”, last: “” });
+var traineeName = nameState[0];
+var setTraineeName = nameState[1];
+
+var scenarioState = useState(null);
+var scenarioKey = scenarioState[0];
+var setScenarioKey = scenarioState[1];
+
+var modalState = useState(false);
+var showEA900 = modalState[0];
+var setShowEA900 = modalState[1];
+
+var trackerState = useState(createTracker);
+var tracker = trackerState[0];
+var setTracker = trackerState[1];
+
+var scenario = scenarioKey ? SCENARIOS[scenarioKey] : null;
+var currentScreen = SCREEN_FLOW[screenIdx];
+
+var progress = screenIdx / (SCREEN_FLOW.length - 1);
+
+useEffect(function() {
+if (currentScreen && tracker.screensVisited.indexOf(currentScreen) === -1) {
+setTracker(function(prev) {
+var visited = prev.screensVisited.slice();
+visited.push(currentScreen);
+return Object.assign({}, prev, { screensVisited: visited });
+});
 }
-}, [screen]);
+}, [currentScreen]);
 
-const go = (n) => setIdx(i => Math.max(0, Math.min(SCREENS.length - 1, i + n)));
-const goNext = () => go(1);
-const goBack = () => go(-1);
-const openApp = () => setShowEA900(true);
+function goNext() { setScreenIdx(function(i) { return Math.min(i + 1, SCREEN_FLOW.length - 1); }); }
+function goBack() { setScreenIdx(function(i) { return Math.max(i - 1, 0); }); }
+function goToScreen(name) {
+var idx = SCREEN_FLOW.indexOf(name);
+if (idx >= 0) setScreenIdx(idx);
+}
 
-const selectScenario = (key) => {
+function handleSelectScenario(key) {
 setScenarioKey(key);
-setTracker(p => ({ …p, scenarioType: key, startTime: new Date().toISOString() }));
+setTracker(function(prev) { return Object.assign({}, prev, { scenarioType: key, startTime: new Date().toISOString() }); });
 goNext();
-};
+}
 
-const handleComplete = () => {
-setTracker(p => ({ …p, completed: true, endTime: new Date().toISOString() }));
-goNext();
-};
-
-const restart = () => {
-setIdx(0);
+function handleRestart() {
+setScreenIdx(0);
 setScenarioKey(null);
 setTraineeName({ first: “”, last: “” });
-setTracker({ startTime: null, screensVisited: [], scenarioType: null, completed: false });
-};
-
-const s = scenario;
-const showChrome = ![“welcome”,“disclaimer”,“login”,“complete”].includes(screen);
-const pct = Math.round((idx / (SCREENS.length - 1)) * 100);
-
-const renderScreen = () => {
-switch(screen) {
-case “welcome”: return <WelcomeScreen traineeName={traineeName} setTraineeName={setTraineeName} onNext={goNext} />;
-case “disclaimer”: return <DisclaimerScreen onNext={goNext} />;
-case “login”: return <LoginScreen onNext={goNext} />;
-case “dashboard”: return <Dashboard onSelect={selectScenario} />;
-case “carsApplicant”: return <CarsApplicantInfo scenario={s} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “carsIncome”: return <CarsDataScreen title="Income" fields={Object.entries(s.applicant.income)} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “carsResources”: return <CarsDataScreen title=“Resources/Expenses” fields={[…Object.entries(s.applicant.resources), …Object.entries(s.applicant.expenses)]} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “carsQuestions”: return <CarsDataScreen title=“Additional Questions” fields={[[“Receiving SNAP in another state?”,“No”],[“Fleeing felon?”,“No”],[“Parole violation?”,“No”],[“Convicted drug felon?”,“No”],[“Migrant farm worker?”,“No”]]} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “carsHousehold”: return <CarsHousehold scenario={s} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “carsAddlInfo”: return <CarsDataScreen title=“Additional Application Info” fields={[[“SNAP Authorized Rep”,“None”],[“SNAP Benefit Rep”,“None”],[“Additional Members”,“None”]]} onNext={goNext} onBack={goBack} onViewApp={openApp} />;
-case “mavsFUSC”: return <FUSC onNext={goNext} onBack={goBack} />;
-case “mavsCLIR”: return <CLIR scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsCLIS”: return <CLIS scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsCLRE”: return <CLRE onNext={goNext} onBack={goBack} />;
-case “mavsCLPR”: return <CLPR scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsCLIR_DRS”: return <CLIR_DRS onNext={goNext} onBack={goBack} />;
-case “mavsDRPR”: return <DRPR onNext={goNext} onBack={goBack} />;
-case “mavsREAP”: return <REAP scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsEXSW”: return <EXSW scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsADDR”: return <ADDR scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsCAP1”: return <CAP1 scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsNORE”: return <NORE scenario={s} onNext={goNext} onBack={goBack} />;
-case “mavsNOTI”: return <NOTI scenario={s} onNext={goNext} onBack={goBack} />;
-case “carsCase”: return <CarsCase scenario={s} onNext={goNext} onBack={goBack} />;
-case “carsAppt”: return <CarsAppt scenario={s} onNext={handleComplete} onBack={goBack} />;
-case “complete”: return <CompleteScreen traineeName={traineeName} scenario={s} onRestart={restart} />;
-default: return <div>Unknown</div>;
+setTracker(createTracker());
 }
-};
 
-return (
-<div className=“h-screen w-full flex flex-col bg-slate-950 text-slate-200 overflow-hidden” style={{fontFamily: “‘Segoe UI’, Tahoma, Geneva, Verdana, sans-serif”}}>
-{showChrome && (
-<div className="bg-gradient-to-r from-slate-900 to-slate-800 border-b-2 border-teal-700 px-5 py-2.5 flex justify-between items-center shrink-0">
-<div>
-<div className="text-white text-sm font-bold">MDHS County Training Simulator</div>
-<div className="text-teal-500 text-[11px]">{traineeName.first} {traineeName.last}{scenarioKey ? ` | ${SCENARIOS[scenarioKey].label} Application` : “”}</div>
-</div>
-<div className="flex items-center gap-3">
-<span className="text-[11px] text-slate-500">Screen {idx + 1}/{SCREENS.length}</span>
-<div className="w-24 h-1 bg-slate-800 rounded overflow-hidden"><div className=“h-full bg-gradient-to-r from-teal-600 to-cyan-500 rounded transition-all duration-500” style={{width: `${pct}%`}} /></div>
-</div>
-</div>
-)}
-<div className="flex-1 flex flex-col overflow-hidden">{renderScreen()}</div>
-{showChrome && (
-<div className="bg-slate-950 border-t border-slate-800 px-5 py-2 flex justify-between text-[11px] text-slate-600 shrink-0">
-<span>© 2026 MDHS Economic Programs Training Division</span>
-<span>Training Simulation Only</span>
-</div>
-)}
-{showEA900 && scenario && <EA900Modal applicant={scenario.applicant} onClose={() => setShowEA900(false)} />}
-</div>
+function handleComplete() {
+setTracker(function(prev) { return Object.assign({}, prev, { completed: true, endTime: new Date().toISOString() }); });
+goNext();
+}
+
+function openViewApp() { setShowEA900(true); }
+
+function renderScreen() {
+switch (currentScreen) {
+case “welcome”: return React.createElement(WelcomeScreen, { traineeName: traineeName, setTraineeName: setTraineeName, onNext: goNext });
+case “disclaimer”: return React.createElement(DisclaimerScreen, { onNext: goNext });
+case “login”: return React.createElement(LoginScreen, { onNext: goNext });
+case “carsDashboard”: return React.createElement(CARSDashboard, { onSelectScenario: handleSelectScenario });
+case “carsApplicantInfo”: return React.createElement(CARSApplicantInfo, { scenario: scenario, onNext: goNext, onBack: goBack, onViewApp: openViewApp });
+case “carsIncome”: return React.createElement(CARSDataScreen, {
+title: “Income”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
+fields: Object.entries(scenario.applicant.income).map(function(p) {
+return [p[0].replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){return s.toUpperCase();}), p[1]];
+})
+});
+case “carsResources”: return React.createElement(CARSDataScreen, {
+title: “Resources/Expenses”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
+fields: Object.entries(scenario.applicant.resources).concat(Object.entries(scenario.applicant.expenses)).map(function(p) {
+return [p[0].replace(/([A-Z])/g, “ $1”).replace(/^./, function(s){return s.toUpperCase();}), p[1]];
+})
+});
+case “carsAdditionalQuestions”: return React.createElement(CARSDataScreen, {
+title: “Additional Questions”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
+fields: [[“Receiving SNAP benefits in another state?”, “No”], [“Any household member a fleeing felon?”, “No”], [“Any household member in violation of parole?”, “No”], [“Any household member a convicted drug felon?”, “No”], [“Is anyone a migrant/seasonal farm worker?”, “No”]]
+});
+case “carsHousehold”: return React.createElement(CARSHouseholdScreen, { scenario: scenario, onNext: goNext, onBack: goBack, onViewApp: openViewApp });
+case “carsAdditionalAppInfo”: return React.createElement(CARSDataScreen, {
+title: “Additional Application Info (Optional)”, onNext: goNext, onBack: goBack, onViewApp: openViewApp,
+fields: [[“SNAP Authorized Representative”, “None”], [“SNAP Benefit Representative”, “None”], [“Additional Household Members”, “None”]]
+});
+case “mavsFUSC”: return React.createElement(FUSC, { onNext: goNext, onBack: goBack });
+case “mavsCLIR”: return React.createElement(CLIR, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsCLIS”: return React.createElement(CLIS, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsCLRE”: return React.createElement(CLRE, { onNext: goNext, onBack: goBack });
+case “mavsCLPR”: return React.createElement(CLPR, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsCLIR_DRS”: return React.createElement(CLIR_DRS, { onNext: goNext, onBack: goBack });
+case “mavsDRPR”: return React.createElement(DRPR, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsREAP”: return React.createElement(REAP, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsEXSW”: return React.createElement(EXSW, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsADDR”: return React.createElement(ADDR, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsCAP1”: return React.createElement(CAP1, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsNORE”: return React.createElement(NORE, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “mavsNOTI”: return React.createElement(NOTI, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “carsCase”: return React.createElement(CARSCaseScreen, { scenario: scenario, onNext: goNext, onBack: goBack });
+case “carsAppointment”: return React.createElement(CARSAppointment, { scenario: scenario, onNext: handleComplete, onBack: goBack });
+case “complete”: return React.createElement(CompleteScreen, { traineeName: traineeName, scenario: scenario, onRestart: handleRestart });
+default: return React.createElement(“div”, null, “Unknown screen”);
+}
+}
+
+var showHeader = NON_NAV_SCREENS.indexOf(currentScreen) === -1;
+
+return React.createElement(“div”, { style: S.app },
+showHeader && React.createElement(“div”, { style: S.header },
+React.createElement(“div”, null,
+React.createElement(“div”, { style: S.headerTitle }, “MDHS County Training Simulator”),
+React.createElement(“div”, { style: S.headerSub }, traineeName.first + “ “ + traineeName.last + (scenarioKey ? “ | “ + SCENARIOS[scenarioKey].label + “ Application” : “”))
+),
+React.createElement(“div”, { style: { display: “flex”, alignItems: “center”, gap: “12px” } },
+React.createElement(“span”, { style: { fontSize: “11px”, color: “#556” } }, “Screen “ + (screenIdx + 1) + “/” + SCREEN_FLOW.length),
+React.createElement(“div”, { style: { width: “100px” } }, React.createElement(ProgressBar, { current: screenIdx, total: SCREEN_FLOW.length - 1 }))
+)
+),
+React.createElement(“div”, { style: S.body }, renderScreen()),
+showHeader && React.createElement(“div”, { style: S.footer },
+React.createElement(“span”, null, “\u00A9 2026 MDHS Economic Programs Training Division”),
+React.createElement(“span”, null, “Training Simulation Only - Not Connected to Live Systems”)
+),
+showEA900 && scenario && React.createElement(EA900Modal, { applicant: scenario.applicant, onClose: function() { setShowEA900(false); } })
 );
 }
+
+ReactDOM.createRoot(document.getElementById(“root”)).render(React.createElement(App));
+</script>
+
+</head>
+<body>
+<div id="root"></div>
+</body>
+</html>
