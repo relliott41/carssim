@@ -4,24 +4,465 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MDHS Test</title>
+<title>MDHS County Training Simulator</title>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%;width:100%;overflow:hidden}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#020617}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:#0f172a}
+::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+.sim-app{width:100%;height:100%;display:flex;flex-direction:column;background:#020617;color:#e2e8f0;overflow:hidden}
+.sim-header{background:linear-gradient(135deg,#0f172a,#1e293b);border-bottom:2px solid #0f766e;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.sim-body{flex:1;overflow:auto;display:flex;flex-direction:column}
+.sim-footer{background:#020617;border-top:1px solid #1e293b;padding:6px 16px;display:flex;justify-content:space-between;font-size:10px;color:#475569;flex-shrink:0}
+.sim-card{background:#111827;border:1px solid #1e293b;border-radius:6px;padding:16px;margin:8px 0}
+.sim-input{background:#0a0e17;border:1px solid #334155;border-radius:3px;padding:7px 10px;color:#e2e8f0;font-size:13px;width:100%;outline:none;font-family:inherit}
+.sim-input:focus{border-color:#0f766e}
+.sim-label{display:block;font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.sim-btn{padding:8px 18px;border:none;border-radius:4px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;font-family:inherit}
+.sim-btn:disabled{opacity:.35;cursor:not-allowed}
+.sim-btn-p{background:#0f766e;color:#fff}.sim-btn-p:hover:not(:disabled){background:#0d9488}
+.sim-btn-s{background:#1e293b;color:#94a3b8;border:1px solid #334155}.sim-btn-s:hover:not(:disabled){background:#334155}
+.sim-btn-g{background:linear-gradient(135deg,#ca8a04,#a16207);color:#0f172a;font-weight:700}
+.cars-hdr{background:linear-gradient(135deg,#1e40af,#1e3a8a);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #60a5fa;flex-shrink:0}
+.cars-body{background:#f5f5f5;color:#333;padding:16px;flex:1;overflow:auto}
+.cars-field-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;margin-bottom:2px}
+.cars-field-val{background:#fafafa;border:1px solid #d1d5db;border-radius:3px;padding:6px 10px;font-size:13px;color:#1f2937}
+.term-shell{background:#000;font-family:'Courier New',Courier,monospace;color:#4ade80;padding:16px;flex:1;overflow:auto;font-size:13px;line-height:1.6}
+.term-hdr{background:#1e3a8a;color:#fff;font-family:'Courier New',Courier,monospace;padding:7px 14px;font-size:12px;display:flex;justify-content:space-between;border-bottom:2px solid #06b6d4;flex-shrink:0}
+.term-tag{background:#fff;color:#1e3a8a;padding:1px 8px;font-weight:700;font-size:11px;margin-left:20px}
+.tl{color:#4ade80}.tv{color:#fff}.th{color:#fde047;font-weight:700}
+.nav-bar{display:flex;justify-content:space-between;padding-top:12px;margin-top:12px;border-top:1px solid #1e293b}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.banner{border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:11px;display:flex;align-items:center;gap:8px}
+.banner-exp{background:#fef2f2;border:1px solid #fca5a5}
+.banner-reg{background:#eff6ff;border:1px solid #93c5fd}
+.center-col{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+.ea-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.ea-form{background:#fff;color:#000;font-family:'Times New Roman',serif;padding:24px;max-width:680px;width:100%;border-radius:4px;max-height:80vh;overflow:auto}
+.ea-form table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:10px}
+.ea-form td,.ea-form th{border:1px solid #000;padding:3px 5px}
+.ea-form th{background:#eee;font-weight:700;text-align:left}
+.ea-sect{font-size:12px;font-weight:700;border-bottom:1px solid #000;margin-bottom:6px;padding-bottom:2px}
+.pbar{height:3px;background:#1e293b;border-radius:2px;overflow:hidden;width:80px}
+.pfill{height:100%;background:linear-gradient(90deg,#0f766e,#06b6d4);border-radius:2px;transition:width .5s}
+.view-btn{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:3px;padding:4px 10px;cursor:pointer;font-size:10px;font-weight:600;font-family:inherit}
+.view-btn:hover{background:rgba(255,255,255,.35)}
+</style>
 </head>
 <body>
 <div id="root"></div>
 <script>
+"use strict";
 var h = React.createElement;
-function App() {
-  return h("div", {style: {background: "#0B1D3A", color: "#fff", height: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif"}},
-    h("div", {style: {textAlign: "center"}},
-      h("h1", null, "MDHS County Training Simulator"),
-      h("p", {style: {color: "#0f766e"}}, "React is working on GitHub Pages!"),
-      h("p", {style: {color: "#666", fontSize: "14px"}}, "If you see this, the full simulator will work too.")
-    )
-  );
+var useState = React.useState;
+var useEffect = React.useEffect;
+
+var SCENARIOS = {
+expedited: {
+label: “Expedited”,
+applicant: {
+firstName:“Tameka”,lastName:“Holloway”,mi:“R”,dob:“03/15/1989”,ssn:“429-55-8173”,sex:“F”,race:“B”,
+address:“1247 Hardy St, Hattiesburg, MS 39401”,mailingAddress:“Same as Residence”,
+phone:”(601) 555-0147”,email:“tameka.holloway@email.com”,county:“Forrest”,householdSize:3,
+householdMembers:[
+{name:“Holloway, Tameka R”,relation:“PI”,dob:“03/15/1989”,ssn:“429-55-8173”,sex:“F”},
+{name:“Holloway, Jayden M”,relation:“Son”,dob:“09/22/2016”,ssn:“429-55-9201”,sex:“M”},
+{name:“Holloway, Amari D”,relation:“Daughter”,dob:“01/08/2020”,ssn:“429-55-9302”,sex:“F”}
+],
+income:{“Employment”:”$780.00/mo”,“Self Employment”:”$0.00”,“Other Income”:”$0.00”,“Total Monthly”:”$780.00”},
+resources:{“Cash On Hand”:”$45.00”,“Checking”:”$112.00”,“Savings”:”$0.00”,“Vehicles”:“2009 Toyota Corolla”,“Total Liquid”:”$157.00”},
+expenses:{“Rent”:”$750.00”,“Utilities”:”$185.00”,“Phone”:”$55.00”,“Total Monthly”:”$990.00”},
+programsApplied:“FS”,appSource:“O”,isExpedited:true,
+expeditedReason:“Gross income ($780) + liquid resources ($157) = $937. Rent + utilities = $935. Expenses exceed income.”
+},
+caseNumber:“414008623”,fso:“740”,caseload:“01”,unit:“1”,workerName:“REDDING, DOMINIQUE”
+},
+nonExpedited: {
+label: “Non-Expedited”,
+applicant: {
+firstName:“Marcus”,lastName:“Henderson”,mi:“J”,dob:“07/22/1985”,ssn:“428-61-7234”,sex:“M”,race:“B”,
+address:“832 Main St, Laurel, MS 39440”,mailingAddress:“PO Box 214, Laurel, MS 39441”,
+phone:”(601) 555-0283”,email:“marcus.henderson@email.com”,county:“Jones”,householdSize:2,
+householdMembers:[
+{name:“Henderson, Marcus J”,relation:“PI”,dob:“07/22/1985”,ssn:“428-61-7234”,sex:“M”},
+{name:“Henderson, Keisha L”,relation:“Spouse”,dob:“11/03/1987”,ssn:“428-61-8456”,sex:“F”}
+],
+income:{“Employment”:”$2,450.00/mo”,“Self Employment”:”$0.00”,“Other Income”:”$320.00/mo”,“Total Monthly”:”$2,770.00”},
+resources:{“Cash On Hand”:”$200.00”,“Checking”:”$1,340.00”,“Savings”:”$500.00”,“Vehicles”:“2017 Honda Civic”,“Total Liquid”:”$2,040.00”},
+expenses:{“Rent”:”$850.00”,“Utilities”:”$210.00”,“Phone”:”$120.00”,“Total Monthly”:”$1,180.00”},
+programsApplied:“FS”,appSource:“O”,isExpedited:false,
+expeditedReason:“Gross income ($2,770) + liquid resources ($2,040) = $4,810. Rent + utilities = $1,060. Income exceeds shelter costs.”
+},
+caseNumber:“307224189”,fso:“741”,caseload:“03”,unit:“2”,workerName:“JOHNSON, PATRICIA”
 }
-ReactDOM.createRoot(document.getElementById("root")).render(h(App));
+};
+
+var SCREENS=[“welcome”,“disclaimer”,“login”,“dashboard”,“carsApplicant”,“carsIncome”,“carsResources”,“carsQuestions”,“carsHousehold”,“carsAddlInfo”,“mavsFUSC”,“mavsCLIR”,“mavsCLIS”,“mavsCLRE”,“mavsCLPR”,“mavsCLIR_DRS”,“mavsDRPR”,“mavsREAP”,“mavsEXSW”,“mavsADDR”,“mavsCAP1”,“mavsNORE”,“mavsNOTI”,“carsCase”,“carsAppt”,“complete”];
+var DAYS=[“SUNDAY”,“MONDAY”,“TUESDAY”,“WEDNESDAY”,“THURSDAY”,“FRIDAY”,“SATURDAY”];
+var today=new Date();
+var todayStr=String(today.getMonth()+1).padStart(2,“0”)+String(today.getDate()).padStart(2,“0”)+today.getFullYear();
+var todayDisp=today.toLocaleDateString();
+var benMonth=String(today.getMonth()+1).padStart(2,“0”)+String(today.getFullYear()).slice(-2);
+
+function getApptDate(isExp){
+var d=new Date();
+if(isExp){d.setDate(d.getDate()+1);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);}
+else{d.setDate(d.getDate()+7);while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);}
+return d;
+}
+
+function NavBar(p){
+return h(“div”,{className:“nav-bar”},
+h(“div”,null,p.onBack?h(“button”,{className:“sim-btn sim-btn-s”,onClick:p.onBack,disabled:p.backDisabled},p.backLabel||”<- Back”):null),
+p.onNext?h(“button”,{className:“sim-btn sim-btn-p”,onClick:p.nextDisabled?undefined:p.onNext,disabled:p.nextDisabled},p.nextLabel||“Next ->”):null
+);
+}
+
+function CarsHdr(p){
+return h(“div”,{className:“cars-hdr”},
+h(“span”,{style:{fontWeight:700,fontSize:“13px”}},p.title),
+p.onViewApp?h(“button”,{className:“view-btn”,onClick:p.onViewApp},“View Full Application”):null
+);
+}
+
+function CarsField(p){
+return h(“div”,null,
+h(“div”,{className:“cars-field-label”},p.label),
+h(“div”,{className:“cars-field-val”},p.value)
+);
+}
+
+function TL(p){return h(“div”,null,h(“span”,{className:“tl”},p.l+” “),h(“span”,{className:p.hi?“th”:“tv”},p.v));}
+
+function MavsShell(p){
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(“div”,{className:“term-hdr”},
+h(“div”,null,h(“span”,{style:{fontWeight:700}},“MDHS    MAVERICS”),h(“span”,{className:“term-tag”},p.sn)),
+h(“span”,{style:{fontSize:“10px”,opacity:.7}},p.sub||””)
+),
+h(“div”,{className:“term-shell”},p.children,h(NavBar,{onBack:p.onBack,onNext:p.onNext,nextLabel:p.nextLabel||“ENTER ->”}))
+);
+}
+
+/* === EA-900 MODAL === */
+function EA900(p){
+if(!p.a)return null;
+var a=p.a;
+function C(pr){return h(“td”,{style:{border:“1px solid #000”,padding:“3px 5px”,fontSize:“11px”,fontWeight:pr.b?“700”:“400”,width:pr.w||“auto”}},pr.children);}
+function Sect(pr){return h(“div”,{className:“ea-sect”},pr.children);}
+function DataTbl(pr){
+var rows=[];
+var keys=Object.keys(pr.data);
+for(var i=0;i<keys.length;i++){
+rows.push(h(“tr”,{key:keys[i]},C({b:true,w:“40%”,children:keys[i]+”:”}),C({children:pr.data[keys[i]]})));
+}
+return h(“table”,null,h(“tbody”,null,rows));
+}
+var mRows=[];
+for(var i=0;i<a.householdMembers.length;i++){
+var m=a.householdMembers[i];
+mRows.push(h(“tr”,{key:i},h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.name),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.relation),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.dob),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.ssn),h(“td”,{style:{border:“1px solid #000”,padding:“2px 4px”,fontSize:“10px”}},m.sex)));
+}
+return h(“div”,{className:“ea-overlay”,onClick:function(e){if(e.target===e.currentTarget)p.onClose();}},
+h(“div”,{className:“ea-form”},
+h(“div”,{style:{textAlign:“center”,borderBottom:“2px solid #000”,paddingBottom:“10px”,marginBottom:“12px”}},
+h(“div”,{style:{fontSize:“11px”,fontWeight:700}},“STATE OF MISSISSIPPI”),
+h(“div”,{style:{fontSize:“11px”}},“DEPARTMENT OF HUMAN SERVICES”),
+h(“div”,{style:{fontSize:“14px”,fontWeight:700,marginTop:“6px”}},“MDHS-EA-900”),
+h(“div”,{style:{fontSize:“12px”,fontWeight:700}},“APPLICATION FOR SNAP & TANF BENEFITS”)
+),
+h(“div”,{style:{fontSize:“11px”,fontWeight:700,marginBottom:“4px”}},“FOR OFFICE USE ONLY”),
+h(“table”,null,h(“tbody”,null,
+h(“tr”,null,C({b:true,w:“30%”,children:“Date Received:”}),C({children:todayDisp}),C({b:true,children:“Case Number:”}),C({children:“Pending”})),
+h(“tr”,null,C({b:true,w:“30%”,children:“County:”}),C({children:a.county}),C({b:true,children:“Expedited:”}),h(“td”,{style:{border:“1px solid #000”,padding:“3px 5px”,fontSize:“11px”,color:a.isExpedited?”#c00”:”#000”,fontWeight:a.isExpedited?“700”:“400”}},a.isExpedited?“YES”:“NO”))
+)),
+Sect({children:“SECTION 1: APPLICANT INFORMATION”}),
+h(“table”,null,h(“tbody”,null,
+[[“Name”,a.lastName+”, “+a.firstName+” “+a.mi],[“DOB”,a.dob],[“SSN”,a.ssn],[“Address”,a.address],[“Phone”,a.phone],[“Programs”,a.programsApplied===“FS”?“SNAP (Food Stamps)”:a.programsApplied]].map(function(r){return h(“tr”,{key:r[0]},C({b:true,w:“30%”,children:r[0]+”:”}),C({children:r[1]}));})
+)),
+Sect({children:“SECTION 2: HOUSEHOLD MEMBERS”}),
+h(“table”,null,
+h(“thead”,null,h(“tr”,null,[“Name”,“Relation”,“DOB”,“SSN”,“Sex”].map(function(x){return h(“th”,{key:x,style:{border:“1px solid #000”,padding:“3px”,background:”#eee”,fontSize:“10px”,fontWeight:700,textAlign:“left”}},x);}))),
+h(“tbody”,null,mRows)
+),
+Sect({children:“SECTION 3: INCOME”}),DataTbl({data:a.income}),
+Sect({children:“SECTION 4: RESOURCES”}),DataTbl({data:a.resources}),
+Sect({children:“SECTION 5: EXPENSES”}),DataTbl({data:a.expenses}),
+h(“div”,{style:{borderTop:“2px solid #000”,paddingTop:“8px”,fontSize:“11px”,textAlign:“center”,fontStyle:“italic”,marginTop:“10px”}},
+“Applicant Signature: “,h(“span”,{style:{textDecoration:“underline”}},a.firstName+” “+a.lastName),” | Date: “+todayDisp
+),
+h(“div”,{style:{textAlign:“center”,marginTop:“12px”}},
+h(“button”,{onClick:p.onClose,style:{background:”#333”,color:”#fff”,border:“none”,padding:“7px 24px”,borderRadius:“3px”,cursor:“pointer”,fontSize:“12px”,fontFamily:“inherit”}},“Close Application”)
+)
+)
+);
+}
+
+/* === SCREENS === */
+
+function WelcomeScreen(p){
+var fn=p.tn.first||””;var ln=p.tn.last||””;
+var ok=fn.trim().length>0&&ln.trim().length>0;
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“440px”,width:“100%”,textAlign:“center”}},
+h(“div”,{style:{fontSize:“10px”,color:”#0f766e”,fontWeight:700,letterSpacing:“2px”,textTransform:“uppercase”,marginBottom:“6px”}},“Mississippi Department of Human Services”),
+h(“h1”,{style:{fontSize:“22px”,fontWeight:700,color:”#fff”,marginBottom:“4px”}},“MDHS County Training Simulator”),
+h(“p”,{style:{color:”#64748b”,fontSize:“12px”,marginBottom:“24px”,lineHeight:“1.5”}},“Immersive training for eligibility clerks. Practice the full CARS and MAVERICS registration workflow.”),
+h(“div”,{className:“sim-card”,style:{textAlign:“left”}},
+h(“div”,{style:{fontSize:“13px”,fontWeight:600,color:”#fff”,marginBottom:“12px”}},“Enter your name to begin:”),
+h(“div”,{style:{display:“flex”,gap:“8px”,marginBottom:“12px”}},
+h(“div”,{style:{flex:1}},h(“label”,{className:“sim-label”},“First Name”),h(“input”,{className:“sim-input”,placeholder:“First name”,value:fn,onChange:function(e){p.setTn({first:e.target.value,last:ln});}})),
+h(“div”,{style:{flex:1}},h(“label”,{className:“sim-label”},“Last Name”),h(“input”,{className:“sim-input”,placeholder:“Last name”,value:ln,onChange:function(e){p.setTn({first:fn,last:e.target.value});}}))
+),
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”},onClick:ok?p.onNext:undefined,disabled:!ok},“Begin Training”)
+)
+)
+);
+}
+
+function DisclaimerScreen(p){
+var s=useState(false);var agreed=s[0];var setAgreed=s[1];
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“480px”,width:“100%”}},
+h(“div”,{className:“sim-card”,style:{borderColor:”#ca8a04”}},
+h(“div”,{style:{display:“flex”,alignItems:“center”,gap:“8px”,marginBottom:“10px”}},h(“span”,{style:{fontSize:“18px”}},”(!)”),h(“span”,{style:{fontSize:“14px”,fontWeight:700,color:”#ca8a04”}},“LEGAL DISCLAIMER”)),
+h(“p”,{style:{fontSize:“11px”,color:”#94a3b8”,lineHeight:“1.7”,marginBottom:“12px”}},“This training simulator is developed exclusively for MDHS for internal training purposes. All screen layouts, system names, and workflows are simulated. No real applicant data is used. This tool is not connected to any live system. Unauthorized use is prohibited.”),
+h(“label”,{style:{display:“flex”,alignItems:“center”,gap:“8px”,cursor:“pointer”,fontSize:“12px”,color:”#e2e8f0”}},
+h(“input”,{type:“checkbox”,checked:agreed,onChange:function(){setAgreed(!agreed);},style:{width:“16px”,height:“16px”,accentColor:”#0f766e”}}),
+“I understand this is a training simulation only”
+),
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”,marginTop:“12px”},onClick:agreed?p.onNext:undefined,disabled:!agreed},“Proceed”)
+)
+)
+);
+}
+
+function LoginScreen(p){
+var s=useState({u:””,pw:””,err:””});var st=s[0];var set=s[1];
+function login(){if(st.u===“jmitchell”&&st.pw===“MDHS2026!”)p.onNext();else set({u:st.u,pw:st.pw,err:“Invalid credentials. Use jmitchell / MDHS2026!”});}
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“360px”,width:“100%”}},
+h(“div”,{className:“sim-card”},
+h(“div”,{style:{textAlign:“center”,marginBottom:“16px”}},h(“div”,{style:{fontSize:“18px”,fontWeight:700,color:”#fff”}},“C.A.R.S.”),h(“div”,{style:{fontSize:“10px”,color:”#64748b”}},“Client Application & Registration System”)),
+st.err?h(“div”,{style:{background:“rgba(127,29,29,.4)”,border:“1px solid #7f1d1d”,borderRadius:“3px”,padding:“6px”,fontSize:“11px”,color:”#fca5a5”,marginBottom:“10px”}},st.err):null,
+h(“div”,{style:{marginBottom:“10px”}},h(“label”,{className:“sim-label”},“Username”),h(“input”,{className:“sim-input”,value:st.u,onChange:function(e){set({u:e.target.value,pw:st.pw,err:””});},onKeyDown:function(e){if(e.key===“Enter”)login();}})),
+h(“div”,{style:{marginBottom:“12px”}},h(“label”,{className:“sim-label”},“Password”),h(“input”,{className:“sim-input”,type:“password”,value:st.pw,onChange:function(e){set({u:st.u,pw:e.target.value,err:””});},onKeyDown:function(e){if(e.key===“Enter”)login();}})),
+h(“button”,{className:“sim-btn sim-btn-p”,style:{width:“100%”},onClick:login},“Log In”)
+)
+)
+);
+}
+
+function Dashboard(p){
+var s=useState(null);var hov=s[0];var setHov=s[1];
+var items=[{key:“expedited”,sub:“EXPEDITED”,c:”#b91c1c”,desc:“Expenses exceed income. Qualifies for expedited processing.”},{key:“nonExpedited”,sub:“NON-EXPEDITED”,c:”#1e40af”,desc:“Income exceeds expenses. Standard processing timeline.”}];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(“div”,{className:“cars-hdr”},h(“span”,{style:{fontWeight:700,fontSize:“13px”}},“C.A.R.S. Dashboard”),h(“span”,{style:{fontSize:“10px”,opacity:.7}},“User: jmitchell”)),
+h(“div”,{className:“cars-body”,style:{display:“flex”,flexDirection:“column”,alignItems:“center”,justifyContent:“center”,gap:“12px”}},
+h(“div”,{style:{textAlign:“center”,marginBottom:“8px”}},h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“14px”,marginBottom:“4px”}},“Online Registration”),h(“div”,{style:{fontSize:“11px”,color:”#666”}},“Select an application type to process”)),
+h(“div”,{style:{display:“flex”,gap:“16px”,flexWrap:“wrap”,justifyContent:“center”}},
+items.map(function(it){
+return h(“div”,{key:it.key,
+style:{background:”#fff”,border:hov===it.key?“2px solid “+it.c:“2px solid #ddd”,borderRadius:“8px”,padding:“16px”,width:“200px”,cursor:“pointer”,transition:“all .15s”,transform:hov===it.key?“translateY(-2px)”:“none”,boxShadow:hov===it.key?“0 4px 12px rgba(0,0,0,.12)”:“0 1px 3px rgba(0,0,0,.08)”},
+onClick:function(){p.onSelect(it.key);},onMouseEnter:function(){setHov(it.key);},onMouseLeave:function(){setHov(null);}},
+h(“div”,{style:{fontSize:“9px”,fontWeight:700,color:it.c,letterSpacing:“1px”,marginBottom:“4px”}},it.sub),
+h(“div”,{style:{fontSize:“14px”,fontWeight:700,color:”#333”,marginBottom:“6px”}},“Next Application”),
+h(“div”,{style:{fontSize:“10px”,color:”#777”,lineHeight:“1.4”}},it.desc)
+);
+})
+)
+)
+);
+}
+
+function CarsApplicantInfo(p){
+var d=p.sc.applicant;var isE=d.isExpedited;
+var fields=[[“First Name”,d.firstName],[“Last Name”,d.lastName],[“Middle Initial”,d.mi],[“Date of Birth”,d.dob],[“SSN”,d.ssn],[“Sex”,d.sex],[“Address”,d.address],[“Phone”,d.phone],[“Email”,d.email],[“County”,d.county]];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - Applicant Information”,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{className:“banner “+(isE?“banner-exp”:“banner-reg”)},h(“strong”,null,“Business Date:”),” “+todayDisp+” | “,h(“strong”,null,“Expedited:”),” “,h(“span”,{style:{color:isE?”#b91c1c”:”#166534”,fontWeight:700}},isE?“YES”:“NO”),” | “,h(“strong”,null,“Client Docs:”),” YES”),
+h(“div”,{className:“grid-2”},fields.map(function(f){return h(CarsField,{key:f[0],label:f[0],value:f[1]});})),
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
+)
+);
+}
+
+function CarsDataScreen(p){
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - “+p.title,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{className:“grid-2”},p.fields.map(function(f,i){return h(CarsField,{key:i,label:f[0],value:f[1]});})),
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
+)
+);
+}
+
+function CarsHousehold(p){
+var m=p.sc.applicant.householdMembers;
+var hdrs=[“Name”,“Relation”,“DOB”,“SSN”,“Sex”];
+return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},
+h(CarsHdr,{title:“C.A.R.S. - Household Information”,onViewApp:p.onViewApp}),
+h(“div”,{className:“cars-body”},
+h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“13px”,marginBottom:“8px”}},“Household Members (”+m.length+”)”),
+h(“table”,{style:{width:“100%”,background:”#fff”,borderCollapse:“collapse”,border:“1px solid #ddd”,fontSize:“11px”}},
+h(“thead”,null,h(“tr”,{style:{background:”#eff6ff”}},hdrs.map(function(x){return h(“th”,{key:x,style:{padding:“6px 8px”,textAlign:“left”,borderBottom:“2px solid #93c5fd”,fontWeight:700}},x);}))),
+h(“tbody”,null,m.map(function(r,i){return h(“tr”,{key:i,style:{borderBottom:“1px solid #eee”}},[r.name,r.relation,r.dob,r.ssn,r.sex].map(function(v,j){return h(“td”,{key:j,style:{padding:“5px 8px”}},v);}));}))
+),
+h(NavBar,{onBack:p.onBack,onNext:p.onNext})
+)
+);
+}
+
+function FUSC(p){return h(MavsShell,{sn:“FUSC”,sub:“Full Service Office Clerical Menu”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Select Option 2 ->”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“FULL SERVICE OFFICE CLERICAL MENU”),h(“div”,{style:{lineHeight:“2.2”}},h(“div”,null,”  1  GENERAL INQUIRIES & HISTORY”),h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  2  APPLICATION REGISTRATION   <”),h(“div”,null,”  3  NOTICE REQUEST”),h(“div”,null,”  4  ADD PROGRAM TO CASE”),h(“div”,null,”  5  CASE DESTRUCTION”)),h(“div”,{style:{marginTop:“16px”,color:”#6b7280”,fontSize:“10px”,fontStyle:“italic”}},“Select option 2 to begin application registration”));}
+
+function CLIR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLIR”,sub:“Client Inquiry/Registration”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY/REGISTRATION MENU”),h(“div”,{style:{lineHeight:“2”,marginBottom:“12px”}},h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  1  INQUIRE ON PERSON   <”),h(“div”,null,”  2  SAVE NEW CLIENT FOR REGISTRATION”),h(“div”,null,”  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),h(“div”,null,”  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),h(“div”,null,”  5  DELETE PREVIOUSLY SAVED PERSONS”),h(“div”,null,”  6  INQUIRE ON DRS INFORMATION”)),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“10px”}},h(“div”,{style:{color:”#6b7280”,marginBottom:“6px”,fontSize:“11px”}},“Function 1 selected - Enter client search criteria:”),h(“div”,{style:{display:“flex”,flexWrap:“wrap”,gap:“12px”}},h(TL,{l:“SURNAME:”,v:d.lastName.toUpperCase()}),h(TL,{l:“GIVEN:”,v:d.firstName.toUpperCase()}),h(TL,{l:“DOB:”,v:d.dob.replace(///g,””)})),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”}},”(!) Always search by name and birthdate, NOT SSN”)));}
+
+function CLIS(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLIS”,sub:“Client Inquiry Short List”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY SHORT LIST”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”,marginBottom:“8px”}},“Matching clients:”),h(“table”,{style:{width:“100%”,fontFamily:“inherit”,fontSize:“11px”,borderCollapse:“collapse”}},h(“thead”,null,h(“tr”,{style:{borderBottom:“1px solid #4ade80”}},[”#”,“NAME”,“DOB”,“SSN”,“SEX”,“RACE”].map(function(x){return h(“th”,{key:x,style:{textAlign:“left”,padding:“3px 6px”,color:”#4ade80”}},x);}))),h(“tbody”,null,h(“tr”,{style:{color:”#fde047”,fontWeight:700}},h(“td”,{style:{padding:“3px 6px”}},“1  <”),h(“td”,{style:{padding:“3px 6px”}},d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()),h(“td”,{style:{padding:“3px 6px”}},d.dob),h(“td”,{style:{padding:“3px 6px”}},d.ssn),h(“td”,{style:{padding:“3px 6px”}},d.sex),h(“td”,{style:{padding:“3px 6px”}},d.race)))));}
+
+function CLRE(p){return h(MavsShell,{sn:“CLRE”,sub:“Claim Responsibility Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“CLAIM RESPONSIBILITY”),h(“div”,{style:{textAlign:“center”,padding:“20px 0”}},h(“div”,{style:{color:”#fde047”,fontSize:“13px”,marginBottom:“6px”}},“NO CLAIMS FOR THIS CLIENT”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”}},“Press ENTER to continue to Client Profile”)));}
+
+function CLPR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“CLPR”,sub:“Client Profile”,onBack:p.onBack,onNext:p.onNext,nextLabel:“SAVE & SELECT ->”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT PROFILE”),h(“div”,{style:{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“2px 16px”,lineHeight:“2”,fontSize:“12px”}},h(TL,{l:“NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()+” “+d.mi}),h(TL,{l:“SSN:”,v:d.ssn}),h(TL,{l:“DOB:”,v:d.dob}),h(TL,{l:“SEX:”,v:d.sex}),h(TL,{l:“RACE:”,v:d.race}),h(TL,{l:“COUNTY:”,v:d.county.toUpperCase()})),h(“div”,{style:{marginTop:“16px”,border:“1px solid #fde047”,borderRadius:“3px”,padding:“10px”}},h(“div”,{style:{color:”#fde047”,fontSize:“11px”,fontWeight:700,marginBottom:“4px”}},”[x] SELECT THIS CLIENT FOR REGISTRATION”),h(“div”,{style:{color:”#6b7280”,fontSize:“10px”}},“Confirm identity, then save for registration”)));}
+
+function CLIR_DRS(p){return h(MavsShell,{sn:“CLIR”,sub:“DRS Inquiry - Function 6”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CLIENT INQUIRY/REGISTRATION MENU”),h(“div”,{style:{lineHeight:“2”,marginBottom:“10px”}},h(“div”,null,”  1  INQUIRE ON PERSON”),h(“div”,null,”  2  SAVE NEW CLIENT FOR REGISTRATION”),h(“div”,null,”  3  REGISTER APPLICATION WITH EXISTING CASE NUMBER”),h(“div”,null,”  4  REGISTER APPLICATION WITH NEW CASE NUMBER”),h(“div”,null,”  5  DELETE PREVIOUSLY SAVED PERSONS”),h(“div”,{style:{color:”#fde047”,fontWeight:700}},”  6  INQUIRE ON DRS INFORMATION   <”)),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”}},“DRS inquiry must be completed before registration. Press ENTER.”));}
+
+function DRPR(p){return h(MavsShell,{sn:“DRPR”,sub:“DRS Profile”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Continue ->”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“12px”}},“DRS PROFILE”),h(“div”,{style:{textAlign:“center”,padding:“20px 0”}},h(“div”,{style:{color:”#4ade80”,fontSize:“13px”}},“NO DISQUALIFICATIONS FOUND”),h(“div”,{style:{color:”#6b7280”,fontSize:“11px”,marginTop:“6px”}},“Client is clear. Press ENTER to continue.”)));}
+
+function REAP(p){var d=p.sc.applicant;var sc=p.sc;return h(MavsShell,{sn:“REAP”,sub:“Registration Entry Application Processing”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“12px”,marginBottom:“10px”}},“REGISTRATION ENTRY APPLICATION PROCESSING”),h(“div”,{style:{display:“grid”,gridTemplateColumns:“1fr 1fr”,gap:“1px 20px”,fontSize:“11px”,lineHeight:“2”}},h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber,hi:true}),h(TL,{l:“CASELOAD:”,v:sc.caseload+” “+sc.workerName}),h(TL,{l:“FULL SERVICE OFFICE:”,v:sc.fso,hi:true}),h(TL,{l:“UNIT:”,v:sc.unit}),h(TL,{l:“REGISTRATION BY PCN:”,v:“JMITCHELL”}),h(TL,{l:“OPEN REASON:”,v:“I”}),h(TL,{l:“APP SOURCE:”,v:d.appSource}),h(TL,{l:“HOMELESS:”,v:“N”}),h(TL,{l:“EXPEDITED FS:”,v:d.isExpedited?“Y”:“N”,hi:d.isExpedited})),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“8px”,marginTop:“8px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“PROGRAMS APPLIED FOR:”),h(“div”,{style:{display:“flex”,gap:“16px”,fontSize:“11px”,flexWrap:“wrap”}},h(TL,{l:“PGM:”,v:d.programsApplied}),h(TL,{l:“APP RECEIVED DATE:”,v:todayStr}),h(TL,{l:“BENEFIT START DATE:”,v:todayStr}))),h(“div”,{style:{borderTop:“1px solid #14532d”,paddingTop:“8px”,marginTop:“8px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“CLIENT:”),h(“div”,{style:{display:“flex”,flexWrap:“wrap”,gap:“12px”,fontSize:“11px”}},h(TL,{l:“NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“DOB:”,v:d.dob.replace(///g,””)}),h(TL,{l:“SSN:”,v:d.ssn.replace(/-/g,” “)}),h(TL,{l:“SEX:”,v:d.sex}),h(TL,{l:“RELATION:”,v:“PI”}),h(TL,{l:“POS ON APP:”,v:“01”}))),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”,fontStyle:“italic”}},“NOTE: Write down the case # at top. Always verify client information.”));}
+
+function EXSW(p){var d=p.sc.applicant;return h(MavsShell,{sn:“EXSW”,sub:“Expedited Screening Worksheet”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“EXPEDITED SCREENING WORKSHEET”),h(“div”,{style:{lineHeight:“2”,fontSize:“12px”,marginBottom:“8px”}},h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“CASE NUMBER:”,v:p.sc.caseNumber}),h(TL,{l:“APP RECEIVED DATE:”,v:todayDisp})),h(“div”,{style:{border:“1px solid “+(d.isExpedited?”#ef4444”:”#4ade80”),borderRadius:“3px”,padding:“10px”}},h(“div”,{style:{fontWeight:700,fontSize:“12px”,marginBottom:“6px”,color:d.isExpedited?”#f87171”:”#4ade80”}},“EXPEDITED STATUS: “+(d.isExpedited?“YES - QUALIFIES”:“NO - DOES NOT QUALIFY”)),h(“div”,{style:{color:”#9ca3af”,fontSize:“10px”,lineHeight:“1.5”}},d.expeditedReason)));}
+
+function ADDR(p){var d=p.sc.applicant;return h(MavsShell,{sn:“ADDR”,sub:“Address Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“ADDRESS”),h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“RESIDENCE ADDRESS:”,v:d.address}),h(TL,{l:“MAILING ADDRESS:”,v:d.mailingAddress||d.address}),h(TL,{l:“PHONE:”,v:d.phone}),h(TL,{l:“EMAIL:”,v:d.email}),h(TL,{l:“ENOTICE:”,v:“Y”}),h(TL,{l:“SNAP AUTHORIZED REP:”,v:“NONE”})));}
+
+function CAP1(p){var sc=p.sc;var d=sc.applicant;return h(MavsShell,{sn:“CAP1”,sub:“Case Information”,onBack:p.onBack,onNext:p.onNext,nextLabel:“Go to NORE ->”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“CASE ACTIVITY PROFILE”),h(“div”,{style:{lineHeight:“2”,fontSize:“12px”}},h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber,hi:true}),h(TL,{l:“CASE NAME:”,v:d.lastName.toUpperCase()+”, “+d.firstName.toUpperCase()}),h(TL,{l:“FSO:”,v:sc.fso}),h(TL,{l:“UNIT:”,v:sc.unit}),h(TL,{l:“CASELOAD:”,v:sc.caseload})),h(“div”,{style:{border:“1px solid #4ade80”,borderRadius:“3px”,padding:“8px”,marginTop:“12px”}},h(“div”,{style:{color:”#4ade80”,fontWeight:700,fontSize:“11px”,marginBottom:“4px”}},“PROGRAM STATUS:”),h(“div”,{style:{color:”#fff”,fontSize:“12px”}},“PRG: “,h(“strong”,null,d.programsApplied),”    STATUS: “,h(“span”,{style:{color:”#fde047”,fontWeight:700}},“REC’D”),”    DATE: “+todayDisp)),h(“div”,{style:{color:”#fde047”,fontSize:“10px”,marginTop:“8px”}},“Write down case number. Type NORE in NEXT field.”));}
+
+function NORE(p){var sc=p.sc;return h(MavsShell,{sn:“NORE”,sub:“Notice Request Screen”,onBack:p.onBack,onNext:p.onNext},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“NOTICE REQUEST”),h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“CASE NUMBER:”,v:sc.caseNumber}),h(TL,{l:“NOTICE TYPE:”,v:“A925”}),h(TL,{l:“BENEFIT MONTH:”,v:benMonth}),h(TL,{l:“PGM:”,v:sc.applicant.programsApplied})),h(“div”,{style:{color:”#6b7280”,fontSize:“10px”,marginTop:“8px”}},“Press ENTER to proceed to Notice screen”));}
+
+function NOTI(p){var d=p.sc.applicant;var isE=d.isExpedited;var apt=getApptDate(isE);return h(MavsShell,{sn:“NOTI”,sub:“Notice Screen”,onBack:p.onBack,onNext:p.onNext,nextLabel:“MAIL & CONTINUE ->”},h(“div”,{style:{color:”#86efac”,fontWeight:700,fontSize:“13px”,marginBottom:“10px”}},“NOTICE - A925 TELEPHONE APPOINTMENT”),isE?h(“div”,{style:{background:”#450a0a”,border:“1px solid #7f1d1d”,borderRadius:“3px”,padding:“6px”,fontSize:“10px”,color:”#fca5a5”,marginBottom:“8px”}},”(!) EXPEDITED: Must be same day or next business day. Max 3 business days.”):null,h(“div”,{style:{lineHeight:“2.2”,fontSize:“12px”}},h(TL,{l:“TELEPHONE:”,v:d.phone}),h(TL,{l:“DAY:”,v:DAYS[apt.getDay()]}),h(TL,{l:“DATE:”,v:apt.toLocaleDateString()}),h(TL,{l:“TIME:”,v:isE?“09:00 AM”:“10:30 AM”}),h(TL,{l:“PROGRAM:”,v:d.programsApplied===“FS”?”[x] SNAP”:d.programsApplied}),h(TL,{l:“WORKER:”,v:p.sc.workerName}),h(TL,{l:“MAIL?:”,v:“Y”,hi:true})));}
+
+function CarsCase(p){var sc=p.sc;return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},h(CarsHdr,{title:“C.A.R.S. - MAVS Case Number”}),h(“div”,{className:“cars-body”,style:{display:“flex”,flexDirection:“column”,alignItems:“center”,justifyContent:“center”}},h(“div”,{style:{maxWidth:“360px”,width:“100%”,textAlign:“center”}},h(“div”,{style:{fontWeight:700,color:”#333”,fontSize:“13px”,marginBottom:“16px”}},“Enter MAVERICS Case Number”),h(CarsField,{label:“Case Number”,value:sc.caseNumber}),h(“div”,{style:{background:”#f0fdf4”,border:“1px solid #86efac”,borderRadius:“4px”,padding:“8px”,fontSize:“11px”,color:”#166534”,marginTop:“10px”}},”[OK] Case Details saved! HOH: “+sc.applicant.lastName+”, “+sc.applicant.firstName)),h(NavBar,{onBack:p.onBack,onNext:p.onNext})));}
+
+function CarsAppt(p){var d=p.sc.applicant;var isE=d.isExpedited;var apt=getApptDate(isE);return h(“div”,{style:{flex:1,display:“flex”,flexDirection:“column”}},h(CarsHdr,{title:“C.A.R.S. - Appointment Screen”}),h(“div”,{className:“cars-body”},isE?h(“div”,{style:{background:”#fef2f2”,border:“1px solid #fca5a5”,borderRadius:“4px”,padding:“8px”,fontSize:“11px”,color:”#b91c1c”,fontWeight:600,marginBottom:“12px”}},”(!) EXPEDITED: Within 3 business days. Weekdays only. Correct FSO and worker.”):null,h(“div”,{className:“grid-2”,style:{maxWidth:“460px”}},h(CarsField,{label:“Case Worker”,value:p.sc.workerName}),h(CarsField,{label:“FSO”,value:p.sc.fso}),h(CarsField,{label:“Appointment Date”,value:apt.toLocaleDateString()}),h(CarsField,{label:“Appointment Time”,value:isE?“9:00 AM”:“10:30 AM”}),h(“div”,{style:{gridColumn:“span 2”}},h(CarsField,{label:“Place”,value:d.county+” County DHS Office”}))),h(NavBar,{onBack:p.onBack,onNext:p.onNext,nextLabel:”[OK] Submit”})));}
+
+function CompleteScreen(p){
+var tn=p.tn;var sc=p.sc;var d=sc.applicant;
+function openCert(){
+var w=window.open(””,”_blank”);if(!w)return;
+var name=tn.first+” “+tn.last;
+var dt=new Date().toLocaleDateString(“en-US”,{year:“numeric”,month:“long”,day:“numeric”});
+var id=“MDHS-CTS-2026-”+String(Math.floor(Math.random()*99999)).padStart(5,“0”);
+w.document.write(”<html><head><title>Certificate</title></head><body style="margin:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#0B1D3A;font-family:Georgia,serif">”);
+w.document.write(”<div style="background:#0B1D3A;color:#fff;padding:50px;max-width:750px;width:100%;text-align:center;border:3px solid #C5A55A;border-radius:8px">”);
+w.document.write(”<div style="font-size:11px;color:#007A8C;letter-spacing:3px;text-transform:uppercase">Mississippi Department of Human Services</div>”);
+w.document.write(”<div style="font-size:9px;color:#007A8C;margin-bottom:20px">Economic Programs Training Division</div>”);
+w.document.write(”<hr style="border:none;border-top:1px solid #C5A55A;margin:0 100px 20px">”);
+w.document.write(”<div style="font-size:15px;color:#C5A55A;font-weight:700;letter-spacing:4px;margin:20px 0">CERTIFICATE OF COMPLETION</div>”);
+w.document.write(”<div style="font-size:12px;color:#8899aa;margin:25px 0 8px">This is to certify that</div>”);
+w.document.write(”<div style="font-size:32px;font-weight:700;margin:8px 0;border-bottom:1px solid #C5A55A;display:inline-block;padding:0 40px 8px">”+name+”</div>”);
+w.document.write(”<div style="font-size:12px;color:#8899aa;margin:20px 0 8px">has successfully completed the</div>”);
+w.document.write(”<div style="font-size:20px;font-weight:700">MDHS County Training Simulator</div>”);
+w.document.write(”<div style="font-size:13px;color:#007A8C;font-weight:600;margin:8px 0 25px">Eligibility Clerk Application Registration Training</div>”);
+w.document.write(”<div style="font-size:9px;color:#667;margin:15px 0">Date: “+dt+”  |  Credential ID: “+id+”</div>”);
+w.document.write(”</div></body></html>”);
+w.document.close();
+setTimeout(function(){w.print();},500);
+}
+return h(“div”,{className:“center-col”},
+h(“div”,{style:{maxWidth:“460px”,width:“100%”,textAlign:“center”}},
+h(“div”,{style:{fontSize:“42px”,marginBottom:“8px”}},”[DONE]”),
+h(“h2”,{style:{color:”#fff”,fontSize:“20px”,fontWeight:700,marginBottom:“6px”}},“Registration Complete!”),
+h(“p”,{style:{color:”#64748b”,fontSize:“12px”,marginBottom:“16px”,lineHeight:“1.5”}},“Congratulations, “+tn.first+”! You completed the “+(d.isExpedited?“expedited”:“non-expedited”)+” registration for “+d.firstName+” “+d.lastName+”.”),
+h(“div”,{className:“sim-card”,style:{textAlign:“left”,marginBottom:“12px”}},
+h(“div”,{style:{fontSize:“12px”,fontWeight:700,color:”#ca8a04”,marginBottom:“8px”}},“Session Summary”),
+h(“div”,{style:{fontSize:“11px”,color:”#94a3b8”,lineHeight:“1.8”}},
+h(“div”,null,“Scenario: “+(d.isExpedited?“Expedited”:“Non-Expedited”)),
+h(“div”,null,“Applicant: “+d.firstName+” “+d.lastName),
+h(“div”,null,“Case Number: “+sc.caseNumber),
+h(“div”,null,“County: “+d.county)
+)
+),
+h(“div”,{style:{display:“flex”,gap:“8px”,justifyContent:“center”,flexWrap:“wrap”}},
+h(“button”,{className:“sim-btn sim-btn-g”,onClick:openCert},”[PDF] Download Certificate”),
+h(“button”,{className:“sim-btn sim-btn-p”,onClick:p.onRestart},“Start New Session”)
+)
+)
+);
+}
+
+/* === MAIN APP === */
+function App(){
+var idxS=useState(0);var idx=idxS[0];var setIdx=idxS[1];
+var tnS=useState({first:””,last:””});var tn=tnS[0];var setTn=tnS[1];
+var skS=useState(null);var sk=skS[0];var setSk=skS[1];
+var eaS=useState(false);var showEA=eaS[0];var setShowEA=eaS[1];
+
+var sc=sk?SCENARIOS[sk]:null;
+var screen=SCREENS[idx];
+var pct=Math.round((idx/(SCREENS.length-1))*100);
+var showChrome=[“welcome”,“disclaimer”,“login”,“complete”].indexOf(screen)===-1;
+
+function goNext(){setIdx(function(i){return Math.min(i+1,SCREENS.length-1);});}
+function goBack(){setIdx(function(i){return Math.max(i-1,0);});}
+function selectSc(key){setSk(key);goNext();}
+function handleComplete(){goNext();}
+function restart(){setIdx(0);setSk(null);setTn({first:””,last:””});}
+function openApp(){setShowEA(true);}
+
+function renderScreen(){
+switch(screen){
+case “welcome”:return h(WelcomeScreen,{tn:tn,setTn:setTn,onNext:goNext});
+case “disclaimer”:return h(DisclaimerScreen,{onNext:goNext});
+case “login”:return h(LoginScreen,{onNext:goNext});
+case “dashboard”:return h(Dashboard,{onSelect:selectSc});
+case “carsApplicant”:return h(CarsApplicantInfo,{sc:sc,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsIncome”:return h(CarsDataScreen,{title:“Income”,fields:Object.entries(sc.applicant.income),onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsResources”:var rf=Object.entries(sc.applicant.resources).concat(Object.entries(sc.applicant.expenses));return h(CarsDataScreen,{title:“Resources/Expenses”,fields:rf,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsQuestions”:return h(CarsDataScreen,{title:“Additional Questions”,fields:[[“Receiving SNAP in another state?”,“No”],[“Fleeing felon?”,“No”],[“Parole violation?”,“No”],[“Convicted drug felon?”,“No”],[“Migrant farm worker?”,“No”]],onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsHousehold”:return h(CarsHousehold,{sc:sc,onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “carsAddlInfo”:return h(CarsDataScreen,{title:“Additional Application Info”,fields:[[“SNAP Authorized Rep”,“None”],[“SNAP Benefit Rep”,“None”],[“Additional Members”,“None”]],onNext:goNext,onBack:goBack,onViewApp:openApp});
+case “mavsFUSC”:return h(FUSC,{onNext:goNext,onBack:goBack});
+case “mavsCLIR”:return h(CLIR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLIS”:return h(CLIS,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLRE”:return h(CLRE,{onNext:goNext,onBack:goBack});
+case “mavsCLPR”:return h(CLPR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCLIR_DRS”:return h(CLIR_DRS,{onNext:goNext,onBack:goBack});
+case “mavsDRPR”:return h(DRPR,{onNext:goNext,onBack:goBack});
+case “mavsREAP”:return h(REAP,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsEXSW”:return h(EXSW,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsADDR”:return h(ADDR,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsCAP1”:return h(CAP1,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsNORE”:return h(NORE,{sc:sc,onNext:goNext,onBack:goBack});
+case “mavsNOTI”:return h(NOTI,{sc:sc,onNext:goNext,onBack:goBack});
+case “carsCase”:return h(CarsCase,{sc:sc,onNext:goNext,onBack:goBack});
+case “carsAppt”:return h(CarsAppt,{sc:sc,onNext:handleComplete,onBack:goBack});
+case “complete”:return h(CompleteScreen,{tn:tn,sc:sc,onRestart:restart});
+default:return h(“div”,null,“Unknown screen”);
+}
+}
+
+return h(“div”,{className:“sim-app”},
+showChrome?h(“div”,{className:“sim-header”},
+h(“div”,null,
+h(“div”,{style:{color:”#fff”,fontSize:“13px”,fontWeight:700}},“MDHS County Training Simulator”),
+h(“div”,{style:{color:”#0f766e”,fontSize:“10px”}},tn.first+” “+tn.last+(sk?” | “+SCENARIOS[sk].label+” Application”:””))
+),
+h(“div”,{style:{display:“flex”,alignItems:“center”,gap:“10px”}},
+h(“span”,{style:{fontSize:“10px”,color:”#475569”}},“Screen “+(idx+1)+”/”+SCREENS.length),
+h(“div”,{className:“pbar”},h(“div”,{className:“pfill”,style:{width:pct+”%”}}))
+)
+):null,
+h(“div”,{className:“sim-body”},renderScreen()),
+showChrome?h(“div”,{className:“sim-footer”},h(“span”,null,”(c) 2026 MDHS Economic Programs Training Division”),h(“span”,null,“Training Simulation Only”)):null,
+showEA&&sc?h(EA900,{a:sc.applicant,onClose:function(){setShowEA(false);}}):null
+);
+}
+
+ReactDOM.createRoot(document.getElementById(“root”)).render(h(App));
 </script>
+
 </body>
 </html>
