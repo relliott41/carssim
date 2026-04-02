@@ -139,6 +139,7 @@ body {
   white-space: pre;
   line-height: 1.4;
   overflow: auto;
+  position: relative;
 }
 .mav-input {
   background: #000;
@@ -150,6 +151,14 @@ body {
   outline: none;
   width: 180px;
   padding: 1px 3px;
+  caret-color: #00ff00;
+}
+.mav-input:focus {
+  animation: mav-blink 1s step-end infinite;
+}
+@keyframes mav-blink {
+  0%, 100% { border-bottom-color: #00ff00; }
+  50% { border-bottom-color: transparent; }
 }
 .mav-titlebar {
   background: #001a00;
@@ -160,6 +169,15 @@ body {
   display: flex;
   justify-content: space-between;
   border-bottom: 1px solid #00ff00;
+}
+.mav-fkey-bar {
+  background: #001a00;
+  color: #00cc00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-top: 1px solid #00ff00;
+  letter-spacing: 0.5px;
 }
 .welcome-screen {
   background: linear-gradient(135deg, #003087 60%, #1a2744 100%);
@@ -267,6 +285,7 @@ body {
   cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
   background: white;
+  position: relative;
 }
 .scenario-card:hover {
   border-color: #003087;
@@ -291,6 +310,18 @@ body {
   font-size: 11px;
   color: #555;
   line-height: 1.6;
+}
+.priority-banner {
+  background: #cc3300;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 3px 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-radius: 0 2px 0 4px;
 }
 .completion-screen {
   background: linear-gradient(135deg, #003087, #1a2744);
@@ -380,19 +411,6 @@ body {
   font-size: 11px;
   color: #888;
 }
-.appt-radio-row {
-  display: flex;
-  gap: 20px;
-  margin: 8px 0;
-  align-items: center;
-}
-.appt-radio-row label {
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  cursor: pointer;
-}
 .case-num-input {
   font-size: 13px;
   padding: 5px 10px;
@@ -402,31 +420,9 @@ body {
   font-family: 'Courier New', monospace;
   letter-spacing: 1px;
 }
-.highlight-row {
-  background: #fffbcc !important;
-}
-.screen-nav-tabs {
-  display: flex;
-  background: #e8edf5;
-  border-bottom: 2px solid #003087;
-  overflow-x: auto;
-}
-.screen-nav-tab {
-  padding: 6px 14px;
-  font-size: 11px;
-  color: #555;
-  white-space: nowrap;
-  cursor: default;
-  border-right: 1px solid #ccc;
-}
-.screen-nav-tab.active {
-  background: #003087;
-  color: white;
+.mav-err {
+  color: #ff4444;
   font-weight: bold;
-}
-.screen-nav-tab.done {
-  color: #007700;
-  background: #efffef;
 }
 </style>
 </head>
@@ -438,7 +434,7 @@ var useState = React.useState;
 var useEffect = React.useEffect;
 var useRef = React.useRef;
 
-// –– SCENARIO DATA ––
+// – SCENARIO DATA –
 var SCENARIOS = {
 expedited: {
 label: ‘Expedited’,
@@ -500,7 +496,7 @@ apptDays: 30
 }
 };
 
-// –– BUSINESS DAYS HELPER ––
+// – BUSINESS DAYS HELPER –
 function addBusinessDays(days) {
 var d = new Date();
 var count = 0;
@@ -525,18 +521,81 @@ if (dy.length < 2) { dy = ‘0’ + dy; }
 return mo + ‘/’ + dy + ‘/’ + d.getFullYear();
 }
 
-// –– EA-900 MODAL ––
+// P1: MAVERICS date format MMDDYY
+function getMavDate() {
+var d = new Date();
+var mo = String(d.getMonth() + 1);
+if (mo.length < 2) { mo = ‘0’ + mo; }
+var dy = String(d.getDate());
+if (dy.length < 2) { dy = ‘0’ + dy; }
+var yr = String(d.getFullYear()).substring(2);
+return mo + dy + yr;
+}
+
+function toMavDate(dateStr) {
+// Convert MM/DD/YYYY to MMDDYY
+var parts = dateStr.split(’/’);
+if (parts.length === 3) {
+var yr = parts[2].length === 4
+? parts[2].substring(2) : parts[2];
+return parts[0] + parts[1] + yr;
+}
+return dateStr;
+}
+
+// P1: Function key legend bar component
+function MavFKeyBar(props) {
+var text = props.text ||
+‘PF1=HELP  PF3=EXIT  PF5=REFRESH’ +
+’  PF7=BACK  PF8=FWD  PF12=CANCEL’;
+return h(‘div’, { className: ‘mav-fkey-bar’ }, text);
+}
+
+// P4: DOB format validator
+function isValidDobFormat(val) {
+if (val.length !== 10) { return false; }
+if (val.charAt(2) !== ‘/’ || val.charAt(5) !== ‘/’) {
+return false;
+}
+var mo = val.substring(0, 2);
+var dy = val.substring(3, 5);
+var yr = val.substring(6, 10);
+var moN = parseInt(mo, 10);
+var dyN = parseInt(dy, 10);
+var yrN = parseInt(yr, 10);
+if (isNaN(moN) || isNaN(dyN) || isNaN(yrN)) {
+return false;
+}
+if (moN < 1 || moN > 12) { return false; }
+if (dyN < 1 || dyN > 31) { return false; }
+if (yrN < 1900 || yrN > 2100) { return false; }
+return true;
+}
+
+// – EA-900 MODAL –
 function FullApplicationModal(props) {
 var sc = props.scenario;
 if (!props.open) { return null; }
-return h(‘div’, { className: ‘modal-overlay’, onClick: props.onClose },
-h(‘div’, { className: ‘modal-box’, onClick: function(e){ e.stopPropagation(); } },
+return h(‘div’, {
+className: ‘modal-overlay’,
+onClick: props.onClose
+},
+h(‘div’, {
+className: ‘modal-box’,
+onClick: function(e){ e.stopPropagation(); }
+},
 h(‘div’, { className: ‘modal-titlebar’ },
-h(‘span’, null, ’EA-900 Application for Assistance - ’ + sc.applicant),
-h(‘button’, { className: ‘modal-close’, onClick: props.onClose }, ‘X’)
+h(‘span’, null,
+’EA-900 Application for Assistance - ’ +
+sc.applicant),
+h(‘button’, {
+className: ‘modal-close’,
+onClick: props.onClose
+}, ‘X’)
 ),
 h(‘div’, { className: ‘modal-body’ },
-h(‘div’, { className: ‘cars-section-header’ }, ‘SECTION 1 - APPLICANT INFORMATION’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘SECTION 1 - APPLICANT INFORMATION’),
 h(‘table’, { className: ‘ea900-table’ },
 h(‘tbody’, null,
 h(‘tr’, null,
@@ -557,13 +616,16 @@ h(‘td’, null, sc.county)
 ),
 h(‘tr’, null,
 h(‘td’, null, h(‘b’, null, ‘Address:’)),
-h(‘td’, { colSpan: 3 }, sc.address + ’, ’ + sc.city + ’, ’ + sc.state + ’ ’ + sc.zip),
+h(‘td’, { colSpan: 3 },
+sc.address + ’, ’ + sc.city +
+’, ’ + sc.state + ’ ’ + sc.zip),
 h(‘td’, null, h(‘b’, null, ‘Phone:’)),
 h(‘td’, null, sc.phone)
 )
 )
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘SECTION 2 - HOUSEHOLD MEMBERS’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘SECTION 2 - HOUSEHOLD MEMBERS’),
 h(‘table’, { className: ‘ea900-table’ },
 h(‘thead’, null,
 h(‘tr’, null,
@@ -575,7 +637,8 @@ h(‘th’, null, ‘SSN’)
 ),
 h(‘tbody’, null,
 h(‘tr’, null,
-h(‘td’, null, sc.firstName + ’ ’ + sc.lastName),
+h(‘td’, null,
+sc.firstName + ’ ’ + sc.lastName),
 h(‘td’, null, ‘Principal Applicant’),
 h(‘td’, null, sc.dob),
 h(‘td’, null, sc.ssn)
@@ -606,11 +669,14 @@ h(‘td’, null, ‘428-61-7890’)
 : null
 )
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘SECTION 3 - INCOME & RESOURCES’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘SECTION 3 - INCOME & RESOURCES’),
 h(‘table’, { className: ‘ea900-table’ },
 h(‘thead’, null,
 h(‘tr’, null,
-h(‘th’, null, ‘Type’), h(‘th’, null, ‘Amount’), h(‘th’, null, ‘Frequency’)
+h(‘th’, null, ‘Type’),
+h(‘th’, null, ‘Amount’),
+h(‘th’, null, ‘Frequency’)
 )
 ),
 h(‘tbody’, null,
@@ -633,27 +699,36 @@ h(‘td’, null, ‘Current Balance’)
 )
 )
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘SECTION 4 - EXPENSES’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘SECTION 4 - EXPENSES’),
 h(‘table’, { className: ‘ea900-table’ },
 h(‘thead’, null,
 h(‘tr’, null,
-h(‘th’, null, ‘Expense’), h(‘th’, null, ‘Amount’), h(‘th’, null, ‘Frequency’)
+h(‘th’, null, ‘Expense’),
+h(‘th’, null, ‘Amount’),
+h(‘th’, null, ‘Frequency’)
 )
 ),
 h(‘tbody’, null,
 h(‘tr’, null,
 h(‘td’, null, ‘Rent/Mortgage’),
-h(‘td’, null, sc.county === ‘Forrest’ ? ‘$650.00’ : ‘$875.00’),
+h(‘td’, null,
+sc.county === ‘Forrest’
+? ‘$650.00’ : ‘$875.00’),
 h(‘td’, null, ‘Monthly’)
 ),
 h(‘tr’, null,
 h(‘td’, null, ‘Utilities’),
-h(‘td’, null, sc.county === ‘Forrest’ ? ‘$210.00’ : ‘$185.00’),
+h(‘td’, null,
+sc.county === ‘Forrest’
+? ‘$210.00’ : ‘$185.00’),
 h(‘td’, null, ‘Monthly’)
 ),
 h(‘tr’, null,
 h(‘td’, null, ‘Phone’),
-h(‘td’, null, sc.county === ‘Forrest’ ? ‘$130.00’ : ‘$120.00’),
+h(‘td’, null,
+sc.county === ‘Forrest’
+? ‘$130.00’ : ‘$120.00’),
 h(‘td’, null, ‘Monthly’)
 )
 )
@@ -663,7 +738,7 @@ h(‘td’, null, ‘Monthly’)
 );
 }
 
-// –– SCREEN 1: WELCOME ––
+// – SCREEN 1: WELCOME –
 function WelcomeScreen(props) {
 var name = props.traineeName;
 var setName = props.setTraineeName;
@@ -675,18 +750,25 @@ h(‘div’, { className: ‘welcome-logo’ }, ‘MDHS’),
 h(‘div’, { className: ‘welcome-sub’ },
 ‘Mississippi Department of Human Services’
 ),
-h(‘div’, { style: { fontSize: ‘18px’, fontWeight: ‘bold’,
-marginBottom: ‘4px’, color: ‘white’ } },
-‘County Training Simulator’
-),
-h(‘div’, { style: { fontSize: ‘12px’, color: ‘#aabbd0’, marginBottom: ‘28px’ } },
-‘SNAP / TANF Eligibility Clerk Workflow Training’
-),
+h(‘div’, {
+style: {
+fontSize: ‘18px’, fontWeight: ‘bold’,
+marginBottom: ‘4px’, color: ‘white’
+}
+}, ‘County Training Simulator’),
+h(‘div’, {
+style: {
+fontSize: ‘12px’, color: ‘#aabbd0’,
+marginBottom: ‘28px’
+}
+}, ‘SNAP / TANF Eligibility Clerk Workflow Training’),
 h(‘div’, { className: ‘welcome-form’ },
-h(‘div’, { style: { fontSize: ‘13px’, marginBottom: ‘14px’,
-color: ‘#ccd6f6’ } },
-‘Please enter your name to begin’
-),
+h(‘div’, {
+style: {
+fontSize: ‘13px’, marginBottom: ‘14px’,
+color: ‘#ccd6f6’
+}
+}, ‘Please enter your name to begin’),
 h(‘input’, {
 className: ‘welcome-input’,
 type: ‘text’,
@@ -697,17 +779,21 @@ onKeyDown: function(e){
 if (e.key === ‘Enter’) { handleStart(); }
 }
 }),
-h(‘button’, { className: ‘welcome-btn’, onClick: handleStart },
-‘BEGIN TRAINING SIMULATION’
-)
+h(‘button’, {
+className: ‘welcome-btn’,
+onClick: handleStart
+}, ‘BEGIN TRAINING SIMULATION’)
 ),
-h(‘div’, { style: { fontSize: ‘11px’, color: ‘#667788’, marginTop: ‘32px’ } },
-‘For training use only. Not a live MDHS system.’
-)
+h(‘div’, {
+style: {
+fontSize: ‘11px’, color: ‘#667788’,
+marginTop: ‘32px’
+}
+}, ‘For training use only. Not a live MDHS system.’)
 );
 }
 
-// –– SCREEN 2: DISCLAIMER ––
+// – SCREEN 2: DISCLAIMER –
 function DisclaimerScreen(props) {
 var checked = props.checked;
 var setChecked = props.setChecked;
@@ -716,53 +802,78 @@ h(‘div’, { className: ‘cars-section-header’ },
 ‘TRAINING DISCLAIMER & CONFIDENTIALITY NOTICE’
 ),
 h(‘div’, { className: ‘disclaimer-box’ },
-h(‘p’, { style: { marginBottom: ‘10px’, fontWeight: ‘bold’ } },
-‘IMPORTANT: READ BEFORE PROCEEDING’
-),
+h(‘p’, {
+style: { marginBottom: ‘10px’, fontWeight: ‘bold’ }
+}, ‘IMPORTANT: READ BEFORE PROCEEDING’),
 h(‘p’, { style: { marginBottom: ‘8px’ } },
-’This training simulator is designed exclusively for use by authorized ’ +
-’Mississippi Department of Human Services (MDHS) personnel for training ’ +
+’This training simulator is designed exclusively ’ +
+’for use by authorized Mississippi Department of ’ +
+’Human Services (MDHS) personnel for training ’ +
 ‘and educational purposes only.’
 ),
 h(‘p’, { style: { marginBottom: ‘8px’ } },
-’1. SIMULATED ENVIRONMENT: All screens, data, and workflows in this ’ +
-’simulator are simulated representations of MDHS systems. No real client ’ +
-‘data is accessed, stored, or transmitted during this training exercise.’
+’1. SIMULATED ENVIRONMENT: All screens, data, ’ +
+’and workflows in this simulator are simulated ’ +
+’representations of MDHS systems. No real client ’ +
+’data is accessed, stored, or transmitted during ’ +
+‘this training exercise.’
 ),
 h(‘p’, { style: { marginBottom: ‘8px’ } },
-’2. AUTHORIZED USE ONLY: This simulator may only be used by MDHS employees ’ +
-’or authorized contractors for approved training activities. Unauthorized ’ +
-‘access or distribution is strictly prohibited.’
+’2. AUTHORIZED USE ONLY: This simulator may only ’ +
+’be used by MDHS employees or authorized ’ +
+’contractors for approved training activities. ’ +
+’Unauthorized access or distribution is strictly ’ +
+‘prohibited.’
 ),
 h(‘p’, { style: { marginBottom: ‘8px’ } },
-’3. SCENARIO DATA: All applicant names, Social Security numbers, addresses, ’ +
-’and case information shown in this simulator are entirely fictitious. Any ’ +
-‘resemblance to real individuals is coincidental.’
+’3. SCENARIO DATA: All applicant names, Social ’ +
+’Security numbers, addresses, and case information ’ +
+’shown in this simulator are entirely fictitious. ’ +
+‘Any resemblance to real individuals is coincidental.’
 ),
 h(‘p’, { style: { marginBottom: ‘8px’ } },
-’4. SYSTEM REPRESENTATION: This simulator is intended to reflect general ’ +
-’MDHS workflow procedures. Screen layouts and field labels are ’ +
-‘representative and may not exactly match production systems.’
+’4. SYSTEM REPRESENTATION: This simulator is ’ +
+’intended to reflect general MDHS workflow ’ +
+’procedures. Screen layouts and field labels are ’ +
+’representative and may not exactly match ’ +
+‘production systems.’
 ),
 h(‘p’, null,
-’5. POLICY REFERENCE: This simulator supplements but does not replace ’ +
-’official MDHS policy manuals, procedure guides, or supervisor instruction. ’ +
-‘Always consult current MDHS policy for official guidance.’
+’5. POLICY REFERENCE: This simulator supplements ’ +
+’but does not replace official MDHS policy manuals, ’ +
+’procedure guides, or supervisor instruction. ’ +
+’Always consult current MDHS policy for official ’ +
+‘guidance.’
 )
 ),
-h(‘div’, { style: { margin: ‘16px 0’, display: ‘flex’,
-alignItems: ‘center’, gap: ‘10px’ } },
+h(‘div’, {
+style: {
+margin: ‘16px 0’, display: ‘flex’,
+alignItems: ‘center’, gap: ‘10px’
+}
+},
 h(‘input’, {
 type: ‘checkbox’,
 id: ‘disck’,
 checked: checked,
-onChange: function(e){ setChecked(e.target.checked); },
-style: { width: ‘16px’, height: ‘16px’, cursor: ‘pointer’ }
+onChange: function(e){
+setChecked(e.target.checked);
+},
+style: {
+width: ‘16px’, height: ‘16px’,
+cursor: ‘pointer’
+}
 }),
-h(‘label’, { htmlFor: ‘disck’, style: { fontSize: ‘13px’,
-fontWeight: ‘bold’, cursor: ‘pointer’ } },
-’I have read and understand the above disclaimer and agree to use ’ +
-‘this simulator for authorized training purposes only.’
+h(‘label’, {
+htmlFor: ‘disck’,
+style: {
+fontSize: ‘13px’, fontWeight: ‘bold’,
+cursor: ‘pointer’
+}
+},
+’I have read and understand the above disclaimer ’ +
+’and agree to use this simulator for authorized ’ +
+‘training purposes only.’
 )
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
@@ -771,13 +882,16 @@ h(‘button’, {
 className: ‘cars-btn’,
 onClick: props.onNext,
 disabled: !checked,
-style: { opacity: checked ? 1 : 0.4, cursor: checked ? ‘pointer’ : ‘not-allowed’ }
+style: {
+opacity: checked ? 1 : 0.4,
+cursor: checked ? ‘pointer’ : ‘not-allowed’
+}
 }, ‘PROCEED TO LOGIN’)
 )
 );
 }
 
-// –– SCREEN 3: CARS LOGIN ––
+// – SCREEN 3: CARS LOGIN –
 function LoginScreen(props) {
 var user = props.loginUser;
 var pass = props.loginPass;
@@ -789,99 +903,173 @@ function handleLogin() {
 if (user === ‘jmitchell’ && pass === ‘MDHS2026!’) {
 props.onNext();
 } else {
-setErr(‘Invalid username or password. Please try again.’);
+setErr(‘Invalid username or password. ’ +
+‘Please try again.’);
 }
 }
 return h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { textAlign: ‘center’, marginBottom: ‘24px’ } },
-h(‘div’, { style: { fontSize: ‘22px’, fontWeight: ‘900’,
-color: ‘#003087’, letterSpacing: ‘2px’ } }, ‘CARS’),
-h(‘div’, { style: { fontSize: ‘12px’, color: ‘#555’, marginTop: ‘4px’ } },
-‘Client Application & Registration System’
-),
-h(‘div’, { style: { fontSize: ‘11px’, color: ‘#888’, marginTop: ‘2px’ } },
-‘Mississippi Department of Human Services’
-)
+h(‘div’, {
+style: { textAlign: ‘center’, marginBottom: ‘24px’ }
+},
+h(‘div’, {
+style: {
+fontSize: ‘22px’, fontWeight: ‘900’,
+color: ‘#003087’, letterSpacing: ‘2px’
+}
+}, ‘CARS’),
+h(‘div’, {
+style: {
+fontSize: ‘12px’, color: ‘#555’,
+marginTop: ‘4px’
+}
+}, ‘Client Application & Registration System’),
+h(‘div’, {
+style: {
+fontSize: ‘11px’, color: ‘#888’,
+marginTop: ‘2px’
+}
+}, ‘Mississippi Department of Human Services’)
 ),
 h(‘div’, { className: ‘login-box’ },
-err ? h(‘div’, { className: ‘error-msg’ }, err) : null,
-h(‘label’, { className: ‘login-field-label’ }, ‘Username’),
+err ? h(‘div’, { className: ‘error-msg’ }, err)
+: null,
+h(‘label’, {
+className: ‘login-field-label’
+}, ‘Username’),
 h(‘input’, {
 className: ‘login-input’,
 type: ‘text’,
 value: user,
-onChange: function(e){ setUser(e.target.value); setErr(’’); },
+onChange: function(e){
+setUser(e.target.value); setErr(’’);
+},
 autoComplete: ‘off’
 }),
-h(‘label’, { className: ‘login-field-label’ }, ‘Password’),
+h(‘label’, {
+className: ‘login-field-label’
+}, ‘Password’),
 h(‘input’, {
 className: ‘login-input’,
 type: ‘password’,
 value: pass,
-onChange: function(e){ setPass(e.target.value); setErr(’’); },
-onKeyDown: function(e){ if (e.key === ‘Enter’) { handleLogin(); } }
+onChange: function(e){
+setPass(e.target.value); setErr(’’);
+},
+onKeyDown: function(e){
+if (e.key === ‘Enter’) { handleLogin(); }
+}
 }),
-h(‘button’, { className: ‘cars-btn’, onClick: handleLogin,
-style: { width: ‘100%’, marginTop: ‘4px’, padding: ‘10px’ } },
-‘LOG IN’
-),
-h(‘div’, { style: { fontSize: ‘11px’, color: ‘#888’, marginTop: ‘12px’,
-textAlign: ‘center’ } },
-‘Hint: jmitchell / MDHS2026!’
-)
+h(‘button’, {
+className: ‘cars-btn’, onClick: handleLogin,
+style: {
+width: ‘100%’, marginTop: ‘4px’,
+padding: ‘10px’
+}
+}, ‘LOG IN’),
+h(‘div’, {
+style: {
+fontSize: ‘11px’, color: ‘#888’,
+marginTop: ‘12px’, textAlign: ‘center’
+}
+}, ‘Hint: jmitchell / MDHS2026!’)
 )
 );
 }
 
-// –– SCREEN 4: DASHBOARD ––
+// – SCREEN 4: DASHBOARD (P3 priority indicator) –
 function DashboardScreen(props) {
 return h(‘div’, null,
 h(‘div’, { className: ‘cars-titlebar’ },
 h(‘span’, null, ‘CARS - Case Dashboard’),
-h(‘span’, null, ’User: MITCHELL, JESSICA | ’ + getTodayStr())
+h(‘span’, null,
+’User: MITCHELL, JESSICA | ’ + getTodayStr())
 ),
 h(‘div’, { className: ‘cars-content’ },
 h(‘div’, { className: ‘cars-section-header’ },
 ‘SELECT TRAINING SCENARIO’
 ),
-h(‘p’, { style: { fontSize: ‘12px’, color: ‘#555’,
-marginBottom: ‘16px’ } },
-‘Choose a case scenario to begin the eligibility workflow exercise.’
+h(‘p’, {
+style: {
+fontSize: ‘12px’, color: ‘#555’,
+marginBottom: ‘6px’
+}
+},
+‘Choose a case scenario to begin the eligibility ’ +
+‘workflow exercise.’
+),
+// P3: Instruction line about expedited priority
+h(‘p’, {
+style: {
+fontSize: ‘11px’, color: ‘#cc3300’,
+marginBottom: ‘16px’, fontWeight: ‘bold’,
+fontStyle: ‘italic’
+}
+},
+‘NOTE: In real workflow, expedited cases are ’ +
+‘always processed before non-expedited cases.’
 ),
 h(‘div’, { className: ‘dashboard-grid’ },
-h(‘div’, { className: ‘scenario-card’,
-onClick: function(){ props.onScenario(‘expedited’); } },
+// P3: Expedited card with priority banner
+h(‘div’, {
+className: ‘scenario-card’,
+onClick: function(){
+props.onScenario(‘expedited’);
+},
+style: { borderColor: ‘#cc3300’ }
+},
+h(‘div’, { className: ‘priority-banner’ },
+‘MUST PROCESS FIRST’),
 h(‘h3’, null, ‘Tameka R. Holloway’),
 h(‘div’, null,
-h(‘span’, { className: ‘scenario-badge badge-exp’ }, ‘EXPEDITED’)
+h(‘span’, {
+className: ‘scenario-badge badge-exp’
+}, ‘EXPEDITED’)
 ),
 h(‘div’, { className: ‘scenario-detail’ },
 h(‘div’, null, ‘DOB: 03/15/1989’),
 h(‘div’, null, ‘County: Forrest | FSO: 740’),
-h(‘div’, null, ‘HH Size: 3 | Income: $780.00/mo’),
+h(‘div’, null,
+‘HH Size: 3 | Income: $780.00/mo’),
 h(‘div’, null, ‘Resources: $157.00’),
 h(‘div’, null, ‘Expenses: $990.00/mo’),
-h(‘div’, { style: { marginTop: ‘8px’, color: ‘#7a5c00’,
-fontWeight: ‘bold’ } },
-‘Expedited: Income+Resources ($937) < Expenses ($990)’
+h(‘div’, {
+style: {
+marginTop: ‘8px’, color: ‘#7a5c00’,
+fontWeight: ‘bold’
+}
+},
+‘Expedited: Income+Resources ($937)’ +
+’ < Expenses ($990)’
 )
 )
 ),
-h(‘div’, { className: ‘scenario-card’,
-onClick: function(){ props.onScenario(‘nonExpedited’); } },
+h(‘div’, {
+className: ‘scenario-card’,
+onClick: function(){
+props.onScenario(‘nonExpedited’);
+}
+},
 h(‘h3’, null, ‘Marcus J. Henderson’),
 h(‘div’, null,
-h(‘span’, { className: ‘scenario-badge badge-nonexp’ }, ‘NON-EXPEDITED’)
+h(‘span’, {
+className: ‘scenario-badge badge-nonexp’
+}, ‘NON-EXPEDITED’)
 ),
 h(‘div’, { className: ‘scenario-detail’ },
 h(‘div’, null, ‘DOB: 07/22/1985’),
 h(‘div’, null, ‘County: Jones | FSO: 741’),
-h(‘div’, null, ‘HH Size: 2 | Income: $2,770.00/mo’),
+h(‘div’, null,
+‘HH Size: 2 | Income: $2,770.00/mo’),
 h(‘div’, null, ‘Resources: $2,040.00’),
 h(‘div’, null, ‘Expenses: $1,180.00/mo’),
-h(‘div’, { style: { marginTop: ‘8px’, color: ‘#155724’,
-fontWeight: ‘bold’ } },
-‘Not Expedited: Income+Resources ($4,810) > Expenses ($1,180)’
+h(‘div’, {
+style: {
+marginTop: ‘8px’, color: ‘#155724’,
+fontWeight: ‘bold’
+}
+},
+‘Not Expedited: Income+Resources ($4,810)’ +
+’ > Expenses ($1,180)’
 )
 )
 )
@@ -890,22 +1078,29 @@ fontWeight: ‘bold’ } },
 );
 }
 
-// –– CARS SCREENS 5-10 (CARS APPLICATION REVIEW) ––
+// – CARS SCREENS 5-10 –
 function CarsApplicantInfo(props) {
 var sc = props.scenario;
-var showModal = props.showModal;
 return h(‘div’, null,
 h(‘div’, { className: ‘cars-titlebar’ },
 h(‘span’, null, ‘CARS - Applicant Information’),
-h(‘span’, null, ’Case: NEW APPLICATION | ’ + getTodayStr())
+h(‘span’, null,
+’Case: NEW APPLICATION | ’ + getTodayStr())
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘PERSONAL INFORMATION’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘PERSONAL INFORMATION’),
 h(‘div’, { className: ‘cars-field-row’ },
 h(‘span’, { className: ‘cars-label’ }, ‘Last Name:’),
 h(‘span’, { className: ‘cars-value’ }, sc.lastName)
@@ -915,21 +1110,27 @@ h(‘span’, { className: ‘cars-label’ }, ‘First Name:’),
 h(‘span’, { className: ‘cars-value’ }, sc.firstName)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Middle Initial:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Middle Initial:’),
 h(‘span’, { className: ‘cars-value’ }, sc.mi)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Date of Birth:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Date of Birth:’),
 h(‘span’, { className: ‘cars-value’ }, sc.dob)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Social Security No:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Social Security No:’),
 h(‘span’, { className: ‘cars-value’ }, sc.ssn)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘CONTACT INFORMATION’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘CONTACT INFORMATION’),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Street Address:’),
-h(‘span’, { className: ‘cars-value wide’ }, sc.address)
+h(‘span’, { className: ‘cars-label’ },
+‘Street Address:’),
+h(‘span’, { className: ‘cars-value wide’ },
+sc.address)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
 h(‘span’, { className: ‘cars-label’ }, ‘City:’),
@@ -948,16 +1149,18 @@ h(‘span’, { className: ‘cars-label’ }, ‘County:’),
 h(‘span’, { className: ‘cars-value’ }, sc.county)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Phone Number:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Phone Number:’),
 h(‘span’, { className: ‘cars-value’ }, sc.phone)
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘NEXT: INCOME >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘NEXT: INCOME >’)
 )
 )
 );
@@ -973,13 +1176,23 @@ h(‘span’, null, ‘CARS - Income Information’),
 h(‘span’, null, ’Applicant: ’ + sc.applicant)
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘HOUSEHOLD INCOME SOURCES’),
-h(‘table’, { className: ‘ea900-table’, style: { marginBottom: ‘12px’ } },
+h(‘div’, { className: ‘cars-section-header’ },
+‘HOUSEHOLD INCOME SOURCES’),
+h(‘table’, {
+className: ‘ea900-table’,
+style: { marginBottom: ‘12px’ }
+},
 h(‘thead’, null,
 h(‘tr’, null,
 h(‘th’, null, ‘Member’),
@@ -990,14 +1203,17 @@ h(‘th’, null, ‘Frequency’)
 ),
 h(‘tbody’, null,
 h(‘tr’, null,
-h(‘td’, null, sc.firstName + ’ ’ + sc.lastName),
+h(‘td’, null,
+sc.firstName + ’ ’ + sc.lastName),
 h(‘td’, null, ‘Employment’),
-h(‘td’, null, ‘$’ + parseFloat(sc.income).toFixed(2)),
+h(‘td’, null,
+‘$’ + parseFloat(sc.income).toFixed(2)),
 h(‘td’, null, ‘Monthly’)
 ),
 csAmt > 0
 ? h(‘tr’, null,
-h(‘td’, null, sc.firstName + ’ ’ + sc.lastName),
+h(‘td’, null,
+sc.firstName + ’ ’ + sc.lastName),
 h(‘td’, null, ‘Child Support’),
 h(‘td’, null, ‘$570.00’),
 h(‘td’, null, ‘Monthly’)
@@ -1006,19 +1222,21 @@ h(‘td’, null, ‘Monthly’)
 )
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Total Monthly Income:’),
-h(‘span’, { className: ‘cars-value’,
-style: { fontWeight: ‘bold’, color: ‘#003087’ } },
-‘$’ + (incomeTotal + csAmt).toFixed(2)
-)
+h(‘span’, { className: ‘cars-label’ },
+‘Total Monthly Income:’),
+h(‘span’, {
+className: ‘cars-value’,
+style: { fontWeight: ‘bold’, color: ‘#003087’ }
+}, ‘$’ + (incomeTotal + csAmt).toFixed(2))
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘NEXT: RESOURCES/EXPENSES >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘NEXT: RESOURCES/EXPENSES >’)
 )
 )
 );
@@ -1026,27 +1244,43 @@ h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
 
 function CarsResources(props) {
 var sc = props.scenario;
-var rentAmt = sc.county === ‘Forrest’ ? ‘650.00’ : ‘875.00’;
-var utilAmt = sc.county === ‘Forrest’ ? ‘210.00’ : ‘185.00’;
-var phoneAmt = sc.county === ‘Forrest’ ? ‘130.00’ : ‘120.00’;
+var rentAmt = sc.county === ‘Forrest’
+? ‘650.00’ : ‘875.00’;
+var utilAmt = sc.county === ‘Forrest’
+? ‘210.00’ : ‘185.00’;
+var phoneAmt = sc.county === ‘Forrest’
+? ‘130.00’ : ‘120.00’;
 return h(‘div’, null,
 h(‘div’, { className: ‘cars-titlebar’ },
 h(‘span’, null, ‘CARS - Resources & Expenses’),
 h(‘span’, null, ’Applicant: ’ + sc.applicant)
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘LIQUID RESOURCES’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘LIQUID RESOURCES’),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Checking/Savings Total:’),
-h(‘span’, { className: ‘cars-value’ }, ‘$’ + sc.resources)
+h(‘span’, { className: ‘cars-label’ },
+‘Checking/Savings Total:’),
+h(‘span’, { className: ‘cars-value’ },
+‘$’ + sc.resources)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘MONTHLY EXPENSES’),
-h(‘table’, { className: ‘ea900-table’, style: { marginBottom: ‘12px’ } },
+h(‘div’, { className: ‘cars-section-header’ },
+‘MONTHLY EXPENSES’),
+h(‘table’, {
+className: ‘ea900-table’,
+style: { marginBottom: ‘12px’ }
+},
 h(‘thead’, null,
 h(‘tr’, null,
 h(‘th’, null, ‘Expense Type’),
@@ -1069,19 +1303,21 @@ h(‘td’, null, ‘$’ + phoneAmt)
 )
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Total Monthly Expenses:’),
-h(‘span’, { className: ‘cars-value’,
-style: { fontWeight: ‘bold’, color: ‘#003087’ } },
-‘$’ + sc.expenses
-)
+h(‘span’, { className: ‘cars-label’ },
+‘Total Monthly Expenses:’),
+h(‘span’, {
+className: ‘cars-value’,
+style: { fontWeight: ‘bold’, color: ‘#003087’ }
+}, ‘$’ + sc.expenses)
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘NEXT: ADDITIONAL QUESTIONS >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘NEXT: ADDITIONAL QUESTIONS >’)
 )
 )
 );
@@ -1095,62 +1331,77 @@ h(‘span’, null, ‘CARS - Additional Questions’),
 h(‘span’, null, ’Applicant: ’ + sc.applicant)
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
 h(‘div’, { className: ‘cars-section-header’ },
 ‘PROGRAM QUESTIONS & HOUSEHOLD STATUS’
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Applying for SNAP:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Applying for SNAP:’),
 h(‘span’, { className: ‘cars-value’ }, ‘YES’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Applying for TANF:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Applying for TANF:’),
 h(‘span’, { className: ‘cars-value’ },
-sc.household === 3 ? ‘YES’ : ‘NO’
-)
+sc.household === 3 ? ‘YES’ : ‘NO’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Currently Homeless:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Currently Homeless:’),
 h(‘span’, { className: ‘cars-value’ }, ‘NO’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Fleeing Felony/Warrant:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Fleeing Felony/Warrant:’),
 h(‘span’, { className: ‘cars-value’ }, ‘NO’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Prior SNAP Disqualification:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Prior SNAP Disqualification:’),
 h(‘span’, { className: ‘cars-value’ }, ‘NO’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Drug Felony Conviction:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Drug Felony Conviction:’),
 h(‘span’, { className: ‘cars-value’ }, ‘NO’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Active Work Registration:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Active Work Registration:’),
 h(‘span’, { className: ‘cars-value’ }, ‘YES’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Expedited Screening Status:’),
-h(‘span’, { className: ‘cars-value’,
+h(‘span’, { className: ‘cars-label’ },
+‘Expedited Screening Status:’),
+h(‘span’, {
+className: ‘cars-value’,
 style: {
 fontWeight: ‘bold’,
 color: sc.isExpedited ? ‘#7a5c00’ : ‘#155724’,
-background: sc.isExpedited ? ‘#ffeeba’ : ‘#d4edda’
-} },
-sc.isExpedited ? ‘EXPEDITED’ : ‘NON-EXPEDITED’
-)
+background: sc.isExpedited
+? ‘#ffeeba’ : ‘#d4edda’
+}
+}, sc.isExpedited ? ‘EXPEDITED’ : ‘NON-EXPEDITED’)
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘NEXT: HOUSEHOLD >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘NEXT: HOUSEHOLD >’)
 )
 )
 );
@@ -1164,13 +1415,23 @@ h(‘span’, null, ‘CARS - Household Information’),
 h(‘span’, null, ’Applicant: ’ + sc.applicant)
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘HOUSEHOLD MEMBERS’),
-h(‘table’, { className: ‘ea900-table’, style: { marginBottom: ‘12px’ } },
+h(‘div’, { className: ‘cars-section-header’ },
+‘HOUSEHOLD MEMBERS’),
+h(‘table’, {
+className: ‘ea900-table’,
+style: { marginBottom: ‘12px’ }
+},
 h(‘thead’, null,
 h(‘tr’, null,
 h(‘th’, null, ‘Name’),
@@ -1181,7 +1442,9 @@ h(‘th’, null, ‘SSN’)
 ),
 h(‘tbody’, null,
 h(‘tr’, null,
-h(‘td’, null, sc.lastName + ’, ’ + sc.firstName + ’ ’ + sc.mi),
+h(‘td’, null,
+sc.lastName + ’, ’ + sc.firstName +
+’ ’ + sc.mi),
 h(‘td’, null, ‘Principal Applicant’),
 h(‘td’, null, sc.dob),
 h(‘td’, null, sc.ssn)
@@ -1192,37 +1455,37 @@ h(‘td’, null, ‘HOLLOWAY, JAYLEN D’),
 h(‘td’, null, ‘Child’),
 h(‘td’, null, ‘06/12/2015’),
 h(‘td’, null, ‘429-55-9201’)
-)
-: null,
+) : null,
 sc.household === 3
 ? h(‘tr’, null,
 h(‘td’, null, ‘HOLLOWAY, AMARA K’),
 h(‘td’, null, ‘Child’),
 h(‘td’, null, ‘03/28/2018’),
 h(‘td’, null, ‘429-55-9202’)
-)
-: null,
+) : null,
 sc.household === 2
 ? h(‘tr’, null,
 h(‘td’, null, ‘HENDERSON, LISA M’),
 h(‘td’, null, ‘Spouse’),
 h(‘td’, null, ‘09/14/1987’),
 h(‘td’, null, ‘428-61-7890’)
-)
-: null
+) : null
 )
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Total HH Members:’),
-h(‘span’, { className: ‘cars-value’ }, String(sc.household))
+h(‘span’, { className: ‘cars-label’ },
+‘Total HH Members:’),
+h(‘span’, { className: ‘cars-value’ },
+String(sc.household))
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘NEXT: ADDITIONAL APP INFO >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘NEXT: ADDITIONAL APP INFO >’)
 )
 )
 );
@@ -1236,28 +1499,39 @@ h(‘span’, null, ‘CARS - Additional Application Info’),
 h(‘span’, null, ’Applicant: ’ + sc.applicant)
 ),
 h(‘div’, { className: ‘cars-content’ },
-h(‘div’, { style: { display: ‘flex’, justifyContent: ‘flex-end’,
-marginBottom: ‘8px’ } },
-h(‘button’, { className: ‘cars-btn gold’,
-onClick: props.onViewApp }, ‘VIEW FULL APPLICATION (EA-900)’)
+h(‘div’, {
+style: {
+display: ‘flex’, justifyContent: ‘flex-end’,
+marginBottom: ‘8px’
+}
+},
+h(‘button’, {
+className: ‘cars-btn gold’,
+onClick: props.onViewApp
+}, ‘VIEW FULL APPLICATION (EA-900)’)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘APPLICATION DETAILS’),
+h(‘div’, { className: ‘cars-section-header’ },
+‘APPLICATION DETAILS’),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Application Date:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Application Date:’),
 h(‘span’, { className: ‘cars-value’ }, getTodayStr())
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Application Method:’),
-h(‘span’, { className: ‘cars-value’ }, ‘In-Person Office Visit’)
-),
-h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Programs Requested:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Application Method:’),
 h(‘span’, { className: ‘cars-value’ },
-sc.household === 3 ? ‘SNAP, TANF’ : ‘SNAP’
-)
+‘In-Person Office Visit’)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘County of Application:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Programs Requested:’),
+h(‘span’, { className: ‘cars-value’ },
+sc.household === 3 ? ‘SNAP, TANF’ : ‘SNAP’)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘County of Application:’),
 h(‘span’, { className: ‘cars-value’ }, sc.county)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
@@ -1265,30 +1539,45 @@ h(‘span’, { className: ‘cars-label’ }, ‘FSO:’),
 h(‘span’, { className: ‘cars-value’ }, sc.fso)
 ),
 h(‘div’, { className: ‘cars-field-row’ },
-h(‘span’, { className: ‘cars-label’ }, ‘Assigned Worker:’),
+h(‘span’, { className: ‘cars-label’ },
+‘Assigned Worker:’),
 h(‘span’, { className: ‘cars-value’ }, sc.worker)
 ),
-h(‘div’, { className: ‘cars-section-header’ }, ‘NEXT STEPS’),
-h(‘p’, { style: { fontSize: ‘12px’, color: ‘#555’, marginBottom: ‘10px’ } },
-’Application review is complete. You will now access MAVERICS to ’ +
-‘register this client, enter case data, and schedule the interview appointment.’
+h(‘div’, { className: ‘cars-section-header’ },
+‘NEXT STEPS’),
+h(‘p’, {
+style: {
+fontSize: ‘12px’, color: ‘#555’,
+marginBottom: ‘10px’
+}
+},
+’Application review is complete. You will now ’ +
+’access MAVERICS to register this client, enter ’ +
+‘case data, and schedule the interview appointment.’
 ),
-h(‘p’, { style: { fontSize: ‘12px’, color: ‘#003087’, fontWeight: ‘bold’ } },
-‘Action Required: Open MAVERICS and proceed to the FUSC menu.’
+h(‘p’, {
+style: {
+fontSize: ‘12px’, color: ‘#003087’,
+fontWeight: ‘bold’
+}
+},
+’Action Required: Open MAVERICS and proceed ’ +
+‘to the FUSC menu.’
 ),
 h(‘div’, { className: ‘nav-btn-row’ },
-h(‘button’, { className: ‘cars-btn secondary’, onClick: props.onBack },
-‘< BACK’
-),
-h(‘button’, { className: ‘cars-btn’, onClick: props.onNext },
-‘PROCEED TO MAVERICS >’
-)
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’, onClick: props.onNext
+}, ‘PROCEED TO MAVERICS >’)
 )
 )
 );
 }
 
-// –– MAVERICS SCREENS ––
+// – MAVERICS SCREENS (P1 authenticity applied) –
 function MavFUSC(props) {
 var sc = props.scenario;
 var inputVal = props.fuscInput;
@@ -1299,14 +1588,17 @@ function handleSubmit() {
 if (inputVal === ‘2’) {
 props.onNext();
 } else {
-setErr(‘INVALID SELECTION - PLEASE ENTER 2 FOR CLIENT REGISTRATION’);
+setErr(
+‘INVALID SELECTION - ENTER 2 FOR ’ +
+‘CLIENT REGISTRATION’
+);
 }
 }
-var today = getTodayStr();
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS TERMINAL - FSO: ’ + sc.fso),
-h(‘span’, null, today)
+h(‘span’, null, ‘FUSC  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  MISSISSIPPI DEPT OF HUMAN SERVICES\n’ +
@@ -1314,7 +1606,8 @@ h(‘div’, { className: ‘mav-screen’ },
 ’    ELIGIBILITY RESOURCE INTEGRATED CASE SYSTEM\n’ +
 ‘\n’ +
 ’  FUSC - FULL SERVICE CLERICAL MENU\n’ +
-’  FSO: ’ + sc.fso + ’     USER: JMITCHELL\n’ +
+’  FSO: ’ + sc.fso +
+’     USER: JMITCHELL\n’ +
 ‘\n’ +
 ’  SELECT FUNCTION:\n’ +
 ‘\n’ +
@@ -1325,22 +1618,30 @@ h(‘div’, { className: ‘mav-screen’ },
 ’    5. BATCH PROCESSING\n’ +
 ’    9. EXIT\n’ +
 ‘\n’,
-err ? (’  *** ’ + err + ’ ***\n\n’) : ‘\n’,
+err
+? h(‘span’, { className: ‘mav-err’ },
+’  *** ’ + err + ’ ***\n\n’)
+: ‘\n’,
 ’  ENTER SELECTION: ‘,
 h(‘input’, {
 className: ‘mav-input’,
 value: inputVal,
-onChange: function(e){ setInput(e.target.value); setErr(’’); },
-onKeyDown: function(e){ if (e.key === ‘Enter’) { handleSubmit(); } },
+onChange: function(e){
+setInput(e.target.value); setErr(’’);
+},
+onKeyDown: function(e){
+if (e.key === ‘Enter’) { handleSubmit(); }
+},
 maxLength: 1,
 style: { width: ‘40px’ },
 autoFocus: true
-}),
-‘\n\n  [PF3=EXIT]  [ENTER=SELECT]’
-)
+})
+),
+h(MavFKeyBar, null)
 );
 }
 
+// P4: CLIR with DOB format validation
 function MavCLIR(props) {
 var sc = props.scenario;
 var lastInput = props.clirLast;
@@ -1352,6 +1653,12 @@ var setDob = props.setClirDob;
 var err = props.clirError;
 var setErr = props.setClirError;
 function handleSearch() {
+// P4: validate DOB format first
+if (dobInput.trim().length > 0
+&& !isValidDobFormat(dobInput.trim())) {
+setErr(‘INVALID DATE FORMAT - USE MM/DD/YYYY’);
+return;
+}
 var ln = lastInput.trim().toUpperCase();
 var fn = firstInput.trim().toUpperCase();
 var db = dobInput.trim();
@@ -1363,22 +1670,26 @@ props.onNext();
 setErr(‘NO RECORDS FOUND - VERIFY NAME AND DOB’);
 }
 }
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CLIR CLIENT INQUIRY’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CLIR  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CLIR - CLIENT INQUIRY\n’ +
 ’  FUNCTION: 1 - SEARCH BY NAME/DOB\n’ +
-’  FSO: ’ + sc.fso + ’     USER: JMITCHELL\n’ +
+’  FSO: ’ + sc.fso +
+’     USER: JMITCHELL\n’ +
 ‘\n’ +
 ’  ENTER SEARCH CRITERIA:\n\n’ +
 ’  LAST NAME : ‘,
 h(‘input’, {
 className: ‘mav-input’,
 value: lastInput,
-onChange: function(e){ setLast(e.target.value); setErr(’’); },
+onChange: function(e){
+setLast(e.target.value); setErr(’’);
+},
 style: { width: ‘160px’ },
 placeholder: sc.lastName
 }),
@@ -1386,7 +1697,9 @@ placeholder: sc.lastName
 h(‘input’, {
 className: ‘mav-input’,
 value: firstInput,
-onChange: function(e){ setFirst(e.target.value); setErr(’’); },
+onChange: function(e){
+setFirst(e.target.value); setErr(’’);
+},
 style: { width: ‘160px’ },
 placeholder: sc.firstName
 }),
@@ -1394,267 +1707,404 @@ placeholder: sc.firstName
 h(‘input’, {
 className: ‘mav-input’,
 value: dobInput,
-onChange: function(e){ setDob(e.target.value); setErr(’’); },
+onChange: function(e){
+setDob(e.target.value); setErr(’’);
+},
 style: { width: ‘120px’ },
-placeholder: sc.dob
+placeholder: ‘MM/DD/YYYY’
 }),
 ‘\n\n’,
-err ? (’  *** ’ + err + ’ ***\n\n’) : ‘\n’,
-’  Hint: ’ + sc.lastName + ’ / ’ + sc.firstName + ’ / ’ + sc.dob + ‘\n\n’,
-h(‘button’, { className: ‘cars-btn’, onClick: handleSearch,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (SEARCH)’
-),
+err
+? h(‘span’, { className: ‘mav-err’ },
+’  *** ’ + err + ’ ***\n\n’)
+: ‘\n’,
+’  Hint: ’ + sc.lastName + ’ / ’ +
+sc.firstName + ’ / ’ + sc.dob + ‘\n\n’,
+h(‘button’, {
+className: ‘cars-btn’, onClick: handleSearch,
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (SEARCH)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavCLIS(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
+var nameStr = sc.lastName + ‘, ’ +
+sc.firstName + ’ ’ + sc.mi;
+while (nameStr.length < 20) { nameStr = nameStr + ’ ‘; }
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CLIS CLIENT INQUIRY SHORT LIST’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CLIS  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CLIS - CLIENT INQUIRY SHORT LIST\n’ +
 ’  SEARCH: ’ + sc.lastName.toUpperCase() + ‘, ’ +
-sc.firstName.toUpperCase() + ’  DOB: ’ + sc.dob + ‘\n\n’ +
-’  SEL  CLIENT NUMBER  NAME                  DOB        SSN\n’ +
-’  —  ———––  ––––––––––  ———  ———–\n’ +
-’   1   CLT-’ + sc.caseNumber.substring(0,6) + ’  ’ +
-(sc.lastName + ‘, ’ + sc.firstName + ’ ’ + sc.mi).padEnd(20) +
+sc.firstName.toUpperCase() +
+’  DOB: ’ + sc.dob + ‘\n\n’ +
+’  SEL  CLIENT NUMBER  NAME’ +
+’                  DOB        SSN\n’ +
+’  —  ————  ––’ +
+‘––––––––  –––––  ———–\n’ +
+’   1   CLT-’ + sc.caseNumber.substring(0,6) +
+’  ’ + nameStr +
 ’  ’ + sc.dob + ’  ’ + sc.ssn + ‘\n\n’ +
 ’  ENTER SELECTION (1) TO VIEW CLIENT PROFILE:\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-’SELECT 1 - ’ + sc.lastName.toUpperCase()
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ’SELECT 1 - ’ + sc.lastName.toUpperCase()),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavCLRE(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CLRE CLAIM RESPONSIBILITY’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CLRE  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CLRE - CLAIM RESPONSIBILITY INQUIRY\n’ +
 ’  CLIENT: ’ + sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ’ ’ + sc.mi + ‘\n’ +
-’  SSN: ’ + sc.ssn + ’   DOB: ’ + sc.dob + ‘\n\n’ +
-’  *** NO ACTIVE CLAIMS ON FILE FOR THIS CLIENT ***\n\n’ +
-’  CLAIM TYPE     STATUS     AMOUNT      DATE\n’ +
-’  –––––     ––––   –––––  –––––\n’ +
+’  SSN: ’ + sc.ssn +
+’   DOB: ’ + sc.dob + ‘\n\n’ +
+’  *** NO ACTIVE CLAIMS ON FILE ***\n\n’ +
+’  CLAIM TYPE     STATUS     AMOUNT’ +
+’      DATE\n’ +
+’  –––––     ——   ––––’ +
+’  –––––\n’ +
 ’  NONE FOUND\n\n\n’ +
 ’  No prior claim responsibility found.\n’ +
-’  Proceed to client profile registration.\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+’  Proceed to client profile.\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (CONTINUE TO CLPR)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (CONTINUE TO CLPR)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavCLPR(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
+var sex = sc.county === ‘Forrest’ ? ‘F’ : ‘M’;
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CLPR CLIENT PROFILE’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CLPR  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CLPR - CLIENT PROFILE\n’ +
 ’  CLIENT: ’ + sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ’ ’ + sc.mi + ‘\n\n’ +
-’  CLIENT NUMBER : CLT-’ + sc.caseNumber.substring(0,6) + ‘\n’ +
-’  LAST NAME     : ’ + sc.lastName.toUpperCase() + ‘\n’ +
-’  FIRST NAME    : ’ + sc.firstName.toUpperCase() + ‘\n’ +
+’  CLIENT NUMBER : CLT-’ +
+sc.caseNumber.substring(0,6) + ‘\n’ +
+’  LAST NAME     : ’ +
+sc.lastName.toUpperCase() + ‘\n’ +
+’  FIRST NAME    : ’ +
+sc.firstName.toUpperCase() + ‘\n’ +
 ’  MIDDLE INIT   : ’ + sc.mi + ‘\n’ +
-’  DATE OF BIRTH : ’ + sc.dob + ‘\n’ +
+’  DATE OF BIRTH : ’ +
+toMavDate(sc.dob) + ‘\n’ +
 ’  SSN           : ’ + sc.ssn + ‘\n’ +
-’  SEX           : ’ + (sc.county === ‘Forrest’ ? ‘F’ : ‘M’) + ‘\n’ +
-’  ADDRESS       : ’ + sc.address.toUpperCase() + ‘\n’ +
-’                  ’ + sc.city.toUpperCase() + ‘, ’ +
+’  SEX           : ’ + sex + ‘\n’ +
+’  ADDRESS       : ’ +
+sc.address.toUpperCase() + ‘\n’ +
+’                  ’ +
+sc.city.toUpperCase() + ‘, ’ +
 sc.state + ’  ’ + sc.zip + ‘\n’ +
-’  COUNTY        : ’ + sc.county.toUpperCase() + ‘\n’ +
+’  COUNTY        : ’ +
+sc.county.toUpperCase() + ‘\n’ +
 ’  PHONE         : ’ + sc.phone + ‘\n\n’ +
-’  STATUS: ACTIVE CLIENT - ELIGIBLE FOR REGISTRATION\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+’  STATUS: ACTIVE - ELIGIBLE FOR REGISTRATION\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘PF6 (SAVE & SELECT FOR REGISTRATION)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘PF6 (SAVE & SELECT FOR REGISTRATION)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavCLIRDRS(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CLIR DRS INQUIRY (FUNCTION 6)’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CLIR  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CLIR - CLIENT INQUIRY\n’ +
 ’  FUNCTION: 6 - DRS DISQUALIFICATION INQUIRY\n’ +
 ’  CLIENT: ’ + sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ’ ’ + sc.mi + ‘\n’ +
-’  SSN: ’ + sc.ssn + ’   DOB: ’ + sc.dob + ‘\n\n’ +
+’  SSN: ’ + sc.ssn +
+’   DOB: ’ + toMavDate(sc.dob) + ‘\n\n’ +
 ’  DRS INQUIRY RESULTS:\n’ +
-’  —————————————––\n’ +
+’  —————————————–\n’ +
 ’  DISQUALIFICATION STATUS : NO DISQUALIFICATIONS\n’ +
 ’  IPV HISTORY             : NONE ON FILE\n’ +
 ’  FRAUD FINDINGS          : NONE ON FILE\n’ +
 ’  FLEEING FELON           : NO\n’ +
 ’  DRUG FELONY             : NO\n’ +
 ’  PRIOR PROGRAM VIOLATION : NO\n’ +
-’  —————————————––\n\n’ +
-’  CLIENT IS ELIGIBLE TO PROCEED WITH REGISTRATION.\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+’  —————————————–\n\n’ +
+’  CLIENT ELIGIBLE TO PROCEED.\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (PROCEED TO DRPR)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (PROCEED TO DRPR)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavDRPR(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - DRPR DRS PROFILE’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘DRPR  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  DRPR - DRS PROFILE\n’ +
 ’  CLIENT: ’ + sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ‘\n’ +
 ’  SSN: ’ + sc.ssn + ‘\n\n’ +
-’  PROGRAM   DISQ-TYPE  BEGIN-DT    END-DT      REASON\n’ +
-’  —––   ———  –––––  –––––  ——\n’ +
+’  PROGRAM   DISQ-TYPE  BEGIN-DT’ +
+’    END-DT      REASON\n’ +
+’  —––   ———  ––––’ +
+’    ––––    ——\n’ +
 ’  (NO DISQUALIFICATION RECORDS FOUND)\n\n\n’ +
 ’  DRS STATUS: CLEAR - NO ACTIVE DISQUALIFICATIONS\n\n’ +
-’  Client cleared to proceed with REAP registration.\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+’  Client cleared to proceed with REAP.\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (PROCEED TO REAP)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (PROCEED TO REAP)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
+// P2: Interactive REAP with editable fields
 function MavREAP(props) {
 var sc = props.scenario;
-var today = getTodayStr();
+var mavDt = getMavDate();
+var progInput = props.reapProg;
+var setProgInput = props.setReapProg;
+var intInput = props.reapInt;
+var setIntInput = props.setReapInt;
+var reapErr = props.reapError;
+var setReapErr = props.setReapError;
+var correctProg = sc.household === 3 ? ‘FS CC’ : ‘FS’;
+var correctInt = sc.isExpedited ? ‘EXP’ : ‘REG’;
+function handleSave() {
+var pVal = progInput.trim().toUpperCase();
+var iVal = intInput.trim().toUpperCase();
+if (pVal !== correctProg) {
+setReapErr(
+‘INVALID PROGRAM CODE - ENTER ’ +
+correctProg + ’ FOR THIS CASE’
+);
+return;
+}
+if (iVal !== correctInt) {
+setReapErr(
+‘INVALID INTERVIEW TYPE - ENTER ’ +
+correctInt + ’ FOR THIS CASE’
+);
+return;
+}
+setReapErr(’’);
+props.onNext();
+}
+var sex = sc.county === ‘Forrest’ ? ‘F’ : ‘M’;
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - REAP REGISTRATION ENTRY’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘REAP  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
-’  REAP - REGISTRATION ENTRY APPLICATION PROCESSING\n’ +
-’  ================================================\n’ +
-’  CASE NAME   : ’ + sc.lastName.toUpperCase() + ‘, ’ +
+’  REAP - REGISTRATION ENTRY APPLICATION\n’ +
+’  ======================================\n’ +
+’  CASE NAME   : ’ +
+sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ’ ’ + sc.mi + ‘\n’ +
 ’  CASE NUMBER : ’ + sc.caseNumber + ‘\n’ +
 ’  CASELOAD    : ’ + sc.pn + ‘\n’ +
 ’  FSO         : ’ + sc.fso + ‘\n’ +
 ’  UNIT        : ’ + sc.unit + ‘\n’ +
 ’  PCN         : ’ + sc.pcn + ‘\n’ +
-’  RCV DATE    : ’ + today + ‘\n’ +
-’  PROGRAMS    : ’ + (sc.household === 3 ? ‘FS  CC’ : ‘FS’) + ‘\n’ +
-‘\n’ +
+’  RCV DATE    : ’ + mavDt + ‘\n’ +
+’  PROGRAMS    : ‘,
+h(‘input’, {
+className: ‘mav-input’,
+value: progInput,
+onChange: function(e){
+setProgInput(e.target.value); setReapErr(’’);
+},
+style: { width: ‘80px’ },
+placeholder: correctProg
+}),
+‘\n\n’ +
 ’  CLIENT INFORMATION:\n’ +
-’  LAST NAME   : ’ + sc.lastName.toUpperCase() + ‘\n’ +
-’  FIRST NAME  : ’ + sc.firstName.toUpperCase() + ‘\n’ +
+’  LAST NAME   : ’ +
+sc.lastName.toUpperCase() + ‘\n’ +
+’  FIRST NAME  : ’ +
+sc.firstName.toUpperCase() + ‘\n’ +
 ’  MI          : ’ + sc.mi + ‘\n’ +
-’  DOB         : ’ + sc.dob + ‘\n’ +
+’  DOB         : ’ + toMavDate(sc.dob) + ‘\n’ +
 ’  SSN         : ’ + sc.ssn + ‘\n’ +
-’  SEX         : ’ + (sc.county === ‘Forrest’ ? ‘F’ : ‘M’) + ‘\n’ +
+’  SEX         : ’ + sex + ‘\n’ +
 ’  RACE        : B\n’ +
 ’  CITIZENSHIP : US\n’ +
 ’  COUNTY      : ’ + sc.fso + ‘\n’ +
-’  HH SIZE     : ’ + sc.household + ‘\n’ +
-‘\n’ +
-’  INTERVIEW   : ’ + (sc.isExpedited ? ‘EXP’ : ‘REG’) + ‘\n’ +
-’  STATUS      : REC'D\n\n’,
-h(‘button’, { className: ‘cars-btn’,
-onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘PF2 (SAVE & CONTINUE TO EXSW)’
-),
+’  HH SIZE     : ’ + sc.household + ‘\n\n’ +
+’  INTERVIEW   : ‘,
+h(‘input’, {
+className: ‘mav-input’,
+value: intInput,
+onChange: function(e){
+setIntInput(e.target.value); setReapErr(’’);
+},
+style: { width: ‘60px’ },
+placeholder: correctInt
+}),
+‘\n  STATUS      : REC'D\n\n’,
+reapErr
+? h(‘span’, { className: ‘mav-err’ },
+’  *** ’ + reapErr + ’ ***\n\n’)
+: ‘’,
+’  Hint: Programs=’ + correctProg +
+’  Interview=’ + correctInt + ‘\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
+onClick: handleSave,
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘PF2 (SAVE & CONTINUE TO EXSW)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavEXSW(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 var incomeAmt = parseFloat(sc.income);
 var csAmt = sc.county === ‘Jones’ ? 570 : 0;
 var totalInc = incomeAmt + csAmt;
@@ -1663,53 +2113,67 @@ var totalExp = parseFloat(sc.expenses);
 var combined = totalInc + totalRes;
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - EXSW EXPEDITED SCREENING’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘EXSW  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  EXSW - EXPEDITED SCREENING WORKSHEET\n’ +
 ’  =====================================\n’ +
 ’  CASE: ’ + sc.caseNumber + ’  CLIENT: ’ +
-sc.lastName.toUpperCase() + ‘, ’ + sc.firstName.toUpperCase() + ‘\n\n’ +
-’  GROSS MONTHLY INCOME    : $’ + totalInc.toFixed(2) + ‘\n’ +
-’  LIQUID RESOURCES        : $’ + totalRes.toFixed(2) + ‘\n’ +
+sc.lastName.toUpperCase() + ‘, ’ +
+sc.firstName.toUpperCase() + ‘\n\n’ +
+’  GROSS MONTHLY INCOME    : $’ +
+totalInc.toFixed(2) + ‘\n’ +
+’  LIQUID RESOURCES        : $’ +
+totalRes.toFixed(2) + ‘\n’ +
 ’                            ––––\n’ +
-’  COMBINED (INC+RES)      : $’ + combined.toFixed(2) + ‘\n\n’ +
-’  MONTHLY SHELTER EXPENSE : $’ + totalExp.toFixed(2) + ‘\n\n’ +
+’  COMBINED (INC+RES)      : $’ +
+combined.toFixed(2) + ‘\n\n’ +
+’  MONTHLY SHELTER EXPENSE : $’ +
+totalExp.toFixed(2) + ‘\n\n’ +
 ’  EXPEDITED CRITERIA      : COMBINED < EXPENSES\n’ +
 ’  ’ + combined.toFixed(2) + ’ ’ +
-(sc.isExpedited ? ‘<’ : ‘>’) + ’ ’ + totalExp.toFixed(2) + ‘\n\n’ +
+(sc.isExpedited ? ‘<’ : ‘>’) + ’ ’ +
+totalExp.toFixed(2) + ‘\n\n’ +
 ’  EXPEDITED STATUS: ’ +
 (sc.isExpedited
 ? ‘*** EXPEDITED PROCESSING REQUIRED ***\n’ +
-’  Interview must be scheduled within 3 business days.\n’
+’  Interview within 3 business days.\n’
 : ‘NON-EXPEDITED\n’ +
-’  Standard 30-day processing timeline applies.\n’
+’  Standard 30-day processing applies.\n’
 ) +
 ‘\n’,
-h(‘button’, { className: ‘cars-btn’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (PROCEED TO ADDR)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (PROCEED TO ADDR)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavADDR(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - ADDR ADDRESS SCREEN’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘ADDR  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  ADDR - ADDRESS SCREEN\n’ +
@@ -1726,116 +2190,146 @@ sc.firstName.toUpperCase() + ‘\n\n’ +
 ’  COUNTY  : ’ + sc.county.toUpperCase() + ‘\n’ +
 ’  PHONE   : ’ + sc.phone + ‘\n\n’ +
 ’  ADDRESS VERIFIED: YES\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘PF2 (SAVE & CONTINUE TO CAP1)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘PF2 (SAVE & CONTINUE TO CAP1)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavCAP1(props) {
 var sc = props.scenario;
+var mavDt = getMavDate();
 var today = getTodayStr();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - CAP1 CASE ACTIVITY PROFILE’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘CAP1  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  CAP1 - CASE ACTIVITY PROFILE\n’ +
 ’  ============================\n’ +
 ’  CASE NUMBER : ’ + sc.caseNumber + ‘\n’ +
-’  CASE NAME   : ’ + sc.lastName.toUpperCase() + ‘, ’ +
+’  CASE NAME   : ’ +
+sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ‘\n’ +
 ’  FSO         : ’ + sc.fso + ‘\n’ +
 ’  WORKER      : ’ + sc.worker + ‘\n’ +
 ’  CASELOAD    : ’ + sc.pn + ‘\n\n’ +
-’  DATE        ACTION      PROGRAM  STATUS    WORKER\n’ +
-’  –––––  –––––  —––  ––––  ––––––––\n’ +
-’  ’ + today + ’  APPLICATION  ’ +
+’  DATE        ACTION      PROGRAM’ +
+’  STATUS    WORKER\n’ +
+’  –––––  –––––  —––’ +
+’  ––––  –––––––\n’ +
+’  ’ + mavDt + ’  APPLICATION  ’ +
 (sc.household === 3 ? ’FS/CC  ’ : ’FS     ‘) +
 ’  REC'D     ’ + sc.workerLast + ‘\n\n’ +
 ’  CASE STATUS : REC'D\n’ +
 ’  INTERVIEW   : ’ +
 (sc.isExpedited
-? ‘EXPEDITED - REQUIRED WITHIN 3 BUSINESS DAYS’
+? ‘EXPEDITED - WITHIN 3 BUSINESS DAYS’
 : ‘REGULAR - WITHIN 30 DAYS’
 ) + ‘\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (PROCEED TO NORE)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (PROCEED TO NORE)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavNORE(props) {
 var sc = props.scenario;
-var today = getTodayStr();
+var mavDt = getMavDate();
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - NORE NOTICE REQUEST’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘NORE  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  NORE - NOTICE REQUEST\n’ +
-’  CASE: ’ + sc.caseNumber + ’  WORKER: ’ + sc.worker + ‘\n\n’ +
+’  CASE: ’ + sc.caseNumber +
+’  WORKER: ’ + sc.worker + ‘\n\n’ +
 ’  NOTICE TYPE  : A925\n’ +
 ’  DESCRIPTION  : INTERVIEW APPOINTMENT NOTICE\n’ +
 ’  CASE NUMBER  : ’ + sc.caseNumber + ‘\n’ +
-’  CLIENT NAME  : ’ + sc.lastName.toUpperCase() + ’, ’ +
+’  CLIENT NAME  : ’ +
+sc.lastName.toUpperCase() + ’, ’ +
 sc.firstName.toUpperCase() + ‘\n’ +
-’  ADDRESS      : ’ + sc.address.toUpperCase() + ‘\n’ +
-’                 ’ + sc.city.toUpperCase() + ‘, ’ +
+’  ADDRESS      : ’ +
+sc.address.toUpperCase() + ‘\n’ +
+’                 ’ +
+sc.city.toUpperCase() + ‘, ’ +
 sc.state + ’  ’ + sc.zip + ‘\n’ +
-’  DATE QUEUED  : ’ + today + ‘\n’ +
-’  PROGRAM      : ’ + (sc.household === 3 ? ‘FS/CC’ : ‘FS’) + ‘\n’ +
-’  NOTICE DATE  : ’ + today + ‘\n\n’ +
+’  DATE QUEUED  : ’ + mavDt + ‘\n’ +
+’  PROGRAM      : ’ +
+(sc.household === 3 ? ‘FS/CC’ : ‘FS’) + ‘\n’ +
+’  NOTICE DATE  : ’ + mavDt + ‘\n\n’ +
 ’  STATUS: NOTICE QUEUED FOR MAILING\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘ENTER (PROCEED TO NOTI)’
-),
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘ENTER (PROCEED TO NOTI)’),
 ’ ’,
-h(‘button’, { className: ‘cars-btn secondary’,
+h(‘button’, {
+className: ‘cars-btn secondary’,
 onClick: props.onBack,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#330000’, border: ‘1px solid #ff4444’ } },
-‘PF3 (BACK)’
-)
-)
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#330000’,
+border: ‘1px solid #ff4444’
+}
+}, ‘PF3 (BACK)’)
+),
+h(MavFKeyBar, null)
 );
 }
 
 function MavNOTI(props) {
 var sc = props.scenario;
-var today = getTodayStr();
+var mavDt = getMavDate();
 var apptDate = addBusinessDays(sc.apptDays);
 return h(‘div’, null,
 h(‘div’, { className: ‘mav-titlebar’ },
-h(‘span’, null, ‘MAVERICS - NOTI NOTICE SCREEN’),
-h(‘span’, null, ‘FSO: ’ + sc.fso)
+h(‘span’, null, ‘NOTI  FSO: ’ + sc.fso),
+h(‘span’, null, mavDt + ’  ROW 1 OF 1’)
 ),
 h(‘div’, { className: ‘mav-screen’ },
 ’  NOTI - NOTICE SCREEN\n’ +
@@ -1844,61 +2338,275 @@ h(‘div’, { className: ‘mav-screen’ },
 ’  TO    : ’ + sc.lastName.toUpperCase() + ‘, ’ +
 sc.firstName.toUpperCase() + ‘\n’ +
 ’  ADDR  : ’ + sc.address.toUpperCase() + ‘\n’ +
-’          ’ + sc.city.toUpperCase() + ‘, ’ + sc.state +
-’  ’ + sc.zip + ‘\n\n’ +
-’  YOUR INTERVIEW APPOINTMENT IS SCHEDULED AS FOLLOWS:\n\n’ +
-’  DATE   : ’ + apptDate + ‘\n’ +
+’          ’ + sc.city.toUpperCase() + ‘, ’ +
+sc.state + ’  ’ + sc.zip + ‘\n\n’ +
+’  YOUR INTERVIEW APPOINTMENT:\n\n’ +
+’  DATE   : ’ + toMavDate(apptDate) + ‘\n’ +
 ’  TIME   : 10:00 AM\n’ +
-’  PLACE  : ’ + sc.county.toUpperCase() + ’ COUNTY MDHS OFFICE\n’ +
+’  PLACE  : ’ + sc.county.toUpperCase() +
+’ COUNTY MDHS OFFICE\n’ +
 ’  WORKER : ’ + sc.worker + ‘\n\n’ +
 ’  NOTICE STATUS  : MAILED\n’ +
-’  MAILED DATE    : ’ + today + ‘\n\n’,
-h(‘button’, { className: ‘cars-btn’,
+’  MAILED DATE    : ’ + mavDt + ‘\n\n’,
+h(‘button’, {
+className: ‘cars-btn’,
 onClick: props.onNext,
-style: { fontFamily: ‘monospace’, fontSize: ‘12px’,
-background: ‘#003300’, border: ‘1px solid #00ff00’ } },
-‘PF3 (RETURN TO CARS)’
+style: {
+fontFamily: ‘monospace’, fontSize: ‘12px’,
+background: ‘#003300’,
+border: ‘1px solid #00ff00’
+}
+}, ‘PF3 (RETURN TO CARS)’)
+),
+h(MavFKeyBar, null)
+);
+}
+
+// – CARS CASE NUMBER SCREEN –
+function CarsCaseNumber(props) {
+var sc = props.scenario;
+var caseInput = props.caseInput;
+var setCaseInput = props.setCaseInput;
+var caseErr = props.caseErr;
+var setCaseErr = props.setCaseErr;
+var idsRetrieved = props.idsRetrieved;
+var setIdsRetrieved = props.setIdsRetrieved;
+function handleGetIds() {
+if (caseInput.trim() === sc.caseNumber) {
+setIdsRetrieved(true);
+setCaseErr(’’);
+} else {
+setCaseErr(
+’Case number not found. ’ +
+‘Check MAVERICS REAP screen and try again.’
+);
+}
+}
+return h(‘div’, null,
+h(‘div’, { className: ‘cars-titlebar’ },
+h(‘span’, null, ‘CARS - Case Number Entry’),
+h(‘span’, null, ’Applicant: ’ + sc.applicant)
+),
+h(‘div’, { className: ‘cars-content’ },
+h(‘div’, { className: ‘cars-section-header’ },
+‘ENTER MAVERICS CASE NUMBER’
+),
+h(‘p’, {
+style: {
+fontSize: ‘12px’, color: ‘#555’,
+marginBottom: ‘14px’
+}
+},
+‘Enter the case number assigned in MAVERICS ’ +
+‘to link this application and retrieve worker ’ +
+‘and schedule IDs.’
+),
+caseErr
+? h(‘div’, { className: ‘error-msg’ }, caseErr)
+: null,
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘MAVERICS Case Number:’),
+h(‘input’, {
+className: ‘case-num-input’,
+type: ‘text’,
+value: caseInput,
+onChange: function(e) {
+setCaseInput(e.target.value);
+setCaseErr(’’);
+setIdsRetrieved(false);
+},
+placeholder: ‘000000000’,
+maxLength: 9
+}),
+h(‘button’, {
+className: ‘cars-btn’,
+onClick: handleGetIds,
+style: { marginLeft: ‘10px’ }
+}, ‘GET IDs’)
+),
+h(‘div’, {
+style: {
+fontSize: ‘11px’, color: ‘#888’,
+marginBottom: ‘12px’
+}
+}, ’Hint: ’ + sc.caseNumber),
+idsRetrieved
+? h(‘div’, null,
+h(‘div’, { className: ‘cars-section-header’ },
+‘LINKED CASE INFORMATION’
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Case Number:’),
+h(‘span’, {
+className: ‘cars-value’,
+style: { fontWeight: ‘bold’ }
+}, sc.caseNumber)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Assigned Worker:’),
+h(‘span’, { className: ‘cars-value’ },
+sc.worker)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ }, ‘FSO:’),
+h(‘span’, { className: ‘cars-value’ }, sc.fso)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Caseload (PN):’),
+h(‘span’, { className: ‘cars-value’ }, sc.pn)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Expedited:’),
+h(‘span’, { className: ‘cars-value’ },
+sc.isExpedited ? ‘YES’ : ‘NO’)
+)
+)
+: null,
+h(‘div’, { className: ‘nav-btn-row’ },
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’,
+onClick: props.onNext,
+disabled: !idsRetrieved,
+style: {
+opacity: idsRetrieved ? 1 : 0.4,
+cursor: idsRetrieved
+? ‘pointer’ : ‘not-allowed’
+}
+}, ‘NEXT: SCHEDULE APPOINTMENT >’)
 )
 )
 );
 }
 
-```
-          style: { padding: '12px 32px', fontSize: '14px' }
-        }, 'SUBMIT APPOINTMENT')
-      )
-    : h('div', { style: { marginTop: '16px', background: '#d4edda',
-        border: '1px solid #28a745', borderRadius: '3px',
-        padding: '12px', textAlign: 'center' } },
-        h('div', { style: { fontWeight: 'bold', color: '#155724',
-          fontSize: '14px' } },
-          'APPOINTMENT SUBMITTED SUCCESSFULLY'
-        ),
-        h('div', { style: { fontSize: '12px', color: '#155724',
-          marginTop: '4px' } },
-          'Case ' + sc.caseNumber + ' - ' + sc.applicant +
-          ' - ' + apptDate + ' at 10:00 AM'
-        )
-      ),
-  h('div', { className: 'nav-btn-row' },
-    h('button', { className: 'cars-btn secondary', onClick: props.onBack },
-      '< BACK'
-    ),
-    h('button', {
-      className: 'cars-btn',
-      onClick: props.onNext,
-      disabled: !submitted,
-      style: { opacity: submitted ? 1 : 0.4,
-        cursor: submitted ? 'pointer' : 'not-allowed' }
-    }, 'COMPLETE TRAINING >')
-  )
+// – CARS APPOINTMENT SCREEN –
+function CarsAppointment(props) {
+var sc = props.scenario;
+var apptDate = addBusinessDays(sc.apptDays);
+var submitted = props.apptSubmitted;
+var setSubmitted = props.setApptSubmitted;
+return h(‘div’, null,
+h(‘div’, { className: ‘cars-titlebar’ },
+h(‘span’, null, ‘CARS - Appointment Scheduling’),
+h(‘span’, null, ’Case: ’ + sc.caseNumber)
+),
+h(‘div’, { className: ‘cars-content’ },
+h(‘div’, { className: ‘cars-section-header’ },
+‘INTERVIEW APPOINTMENT DETAILS’
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Appointment Type:’),
+h(‘span’, { className: ‘cars-value’ },
+sc.isExpedited
+? ‘EXPEDITED INTERVIEW’
+: ‘REGULAR INTERVIEW’)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Assigned Worker:’),
+h(‘span’, { className: ‘cars-value’ }, sc.worker)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Appointment Date:’),
+h(‘span’, {
+className: ‘cars-value’,
+style: { fontWeight: ‘bold’ }
+}, apptDate)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Appointment Time:’),
+h(‘span’, { className: ‘cars-value’ }, ‘10:00 AM’)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Location:’),
+h(‘span’, { className: ‘cars-value wide’ },
+sc.county + ’ County MDHS Office, ’ +
+sc.city + ‘, MS’)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Scheduling Rule:’),
+h(‘span’, {
+className: ‘cars-value’,
+style: { color: ‘#7a5c00’, background: ‘#fffbe6’ }
+},
+sc.isExpedited
+? ’EXPEDITED: Within 3 business days ’ +
+‘(weekdays only)’
+: ‘STANDARD: Within 30 calendar days’)
+),
+h(‘div’, { className: ‘cars-field-row’ },
+h(‘span’, { className: ‘cars-label’ },
+‘Notice Sent:’),
+h(‘span’, { className: ‘cars-value’ },
+’A925 Mailed ’ + getTodayStr())
+),
+!submitted
+? h(‘div’, {
+style: { marginTop: ‘20px’, textAlign: ‘center’ }
+},
+h(‘button’, {
+className: ‘cars-btn’,
+onClick: function() { setSubmitted(true); },
+style: { padding: ‘12px 32px’, fontSize: ‘14px’ }
+}, ‘SUBMIT APPOINTMENT’)
 )
-```
-
+: h(‘div’, {
+style: {
+marginTop: ‘16px’, background: ‘#d4edda’,
+border: ‘1px solid #28a745’,
+borderRadius: ‘3px’,
+padding: ‘12px’, textAlign: ‘center’
+}
+},
+h(‘div’, {
+style: {
+fontWeight: ‘bold’, color: ‘#155724’,
+fontSize: ‘14px’
+}
+}, ‘APPOINTMENT SUBMITTED SUCCESSFULLY’),
+h(‘div’, {
+style: {
+fontSize: ‘12px’, color: ‘#155724’,
+marginTop: ‘4px’
+}
+},
+‘Case ’ + sc.caseNumber + ’ - ’ +
+sc.applicant + ’ - ’ + apptDate +
+’ at 10:00 AM’)
+),
+h(‘div’, { className: ‘nav-btn-row’ },
+h(‘button’, {
+className: ‘cars-btn secondary’,
+onClick: props.onBack
+}, ‘< BACK’),
+h(‘button’, {
+className: ‘cars-btn’,
+onClick: props.onNext,
+disabled: !submitted,
+style: {
+opacity: submitted ? 1 : 0.4,
+cursor: submitted ? ‘pointer’ : ‘not-allowed’
+}
+}, ‘COMPLETE TRAINING >’)
+)
+)
 );
 }
 
-// –– COMPLETION SCREEN ––
+// – COMPLETION SCREEN –
 function CompletionScreen(props) {
 var sc = props.scenario;
 var name = props.traineeName;
@@ -1910,141 +2618,192 @@ var apptDate = addBusinessDays(sc.apptDays);
 var html = ‘<!DOCTYPE html><html><head>’ +
 ‘<title>MDHS Training Certificate</title>’ +
 ‘<style>’ +
-‘body{font-family:Georgia,serif;background:#f4f0e8;’ +
-‘display:flex;justify-content:center;padding:40px;}’ +
-‘.cert{background:white;border:8px double #003087;’ +
-‘padding:48px;max-width:680px;width:100%;text-align:center;’ +
+‘body{font-family:Georgia,serif;’ +
+‘background:#f4f0e8;’ +
+‘display:flex;justify-content:center;’ +
+‘padding:40px;}’ +
+‘.cert{background:white;’ +
+‘border:8px double #003087;’ +
+‘padding:48px;max-width:680px;width:100%;’ +
+‘text-align:center;’ +
 ‘box-shadow:0 4px 24px rgba(0,0,0,0.2);}’ +
-‘.cert-header{color:#003087;font-size:13px;letter-spacing:3px;’ +
+‘.cert-header{color:#003087;font-size:13px;’ +
+‘letter-spacing:3px;’ +
 ‘text-transform:uppercase;margin-bottom:4px;}’ +
-‘.cert-org{color:#003087;font-size:22px;font-weight:bold;’ +
-‘margin-bottom:4px;}’ +
-‘.cert-title{font-size:28px;font-weight:bold;color:#1a1a1a;’ +
-‘margin:20px 0 8px;}’ +
-‘.cert-sub{font-size:14px;color:#555;margin-bottom:28px;}’ +
-‘.cert-name{font-size:36px;color:#003087;font-style:italic;’ +
-‘border-bottom:2px solid #c8a028;padding-bottom:8px;’ +
+‘.cert-org{color:#003087;font-size:22px;’ +
+‘font-weight:bold;margin-bottom:4px;}’ +
+‘.cert-title{font-size:28px;font-weight:bold;’ +
+‘color:#1a1a1a;margin:20px 0 8px;}’ +
+‘.cert-sub{font-size:14px;color:#555;’ +
+‘margin-bottom:28px;}’ +
+‘.cert-name{font-size:36px;color:#003087;’ +
+‘font-style:italic;’ +
+‘border-bottom:2px solid #c8a028;’ +
+‘padding-bottom:8px;’ +
 ‘margin:16px auto;max-width:480px;}’ +
-‘.cert-body{font-size:14px;color:#333;line-height:1.8;’ +
-‘margin:20px 0;}’ +
-‘.cert-detail{background:#f8f4ee;border:1px solid #c8a028;’ +
+‘.cert-body{font-size:14px;color:#333;’ +
+‘line-height:1.8;margin:20px 0;}’ +
+‘.cert-detail{background:#f8f4ee;’ +
+‘border:1px solid #c8a028;’ +
 ‘padding:16px;margin:20px 0;font-size:13px;}’ +
 ‘.cert-footer{margin-top:32px;display:flex;’ +
 ‘justify-content:space-around;}’ +
 ‘.cert-sig{text-align:center;}’ +
-‘.cert-sig-line{border-top:1px solid #333;width:200px;’ +
-‘margin:0 auto 4px;}’ +
+‘.cert-sig-line{border-top:1px solid #333;’ +
+‘width:200px;margin:0 auto 4px;}’ +
 ‘.cert-sig-label{font-size:11px;color:#666;}’ +
-‘.gold{color:#b8860b;}’ +
 ‘@media print{body{background:white;padding:0;}’ +
-‘.cert{box-shadow:none;border:8px double #003087;}}’ +
+‘.cert{box-shadow:none;}}’ +
 ‘</style></head><body>’ +
 ‘<div class="cert">’ +
-‘<div class="cert-header">Mississippi Department of Human Services</div>’ +
-‘<div class="cert-org">MDHS Training Division</div>’ +
-‘<div class="cert-title">Certificate of Completion</div>’ +
-‘<div class="cert-sub">This certifies that</div>’ +
+‘<div class="cert-header">’ +
+‘Mississippi Department of Human Services’ +
+‘</div>’ +
+‘<div class="cert-org">’ +
+‘MDHS Training Division</div>’ +
+‘<div class="cert-title">’ +
+‘Certificate of Completion</div>’ +
+‘<div class="cert-sub">’ +
+‘This certifies that</div>’ +
 ‘<div class="cert-name">’ + name + ‘</div>’ +
-‘<div class="cert-body">has successfully completed the<br>’ +
-‘<strong>MDHS County Training Simulator</strong><br>’ +
-‘SNAP / TANF Eligibility Clerk Workflow Training</div>’ +
+‘<div class="cert-body">’ +
+‘has successfully completed the<br>’ +
+‘<strong>MDHS County Training Simulator’ +
+‘</strong><br>’ +
+’SNAP / TANF Eligibility Clerk ’ +
+‘Workflow Training</div>’ +
 ‘<div class="cert-detail">’ +
 ‘<div><strong>Scenario Completed:</strong> ’ +
 sc.applicant + ’ (’ + sc.label + ‘)</div>’ +
-’<div><strong>Case Number:</strong> ’ + sc.caseNumber + ‘</div>’ +
+’<div><strong>Case Number:</strong> ’ +
+sc.caseNumber + ‘</div>’ +
 ’<div><strong>County / FSO:</strong> ’ +
 sc.county + ’ / ’ + sc.fso + ‘</div>’ +
-’<div><strong>Appointment Scheduled:</strong> ’ + apptDate + ‘</div>’ +
-‘<div><strong>Screens Completed:</strong> 26 of 26</div>’ +
-’<div><strong>Completion Date:</strong> ’ + today + ‘</div>’ +
+’<div><strong>Appointment Scheduled:</strong> ’ +
+apptDate + ‘</div>’ +
+’<div><strong>Screens Completed:</strong> ’ +
+‘26 of 26</div>’ +
+’<div><strong>Completion Date:</strong> ’ +
+today + ‘</div>’ +
 ‘</div>’ +
 ‘<div class="cert-footer">’ +
 ‘<div class="cert-sig">’ +
 ‘<div class="cert-sig-line"></div>’ +
-‘<div class="cert-sig-label">Training Supervisor</div>’ +
-‘</div>’ +
+‘<div class="cert-sig-label">’ +
+‘Training Supervisor</div></div>’ +
 ‘<div class="cert-sig">’ +
 ‘<div class="cert-sig-line"></div>’ +
-‘<div class="cert-sig-label">Trainee Signature</div>’ +
+‘<div class="cert-sig-label">’ +
+‘Trainee Signature</div></div>’ +
 ‘</div>’ +
-‘</div>’ +
-‘<div style="margin-top:20px;font-size:11px;color:#999;">’ +
-‘For training use only. Not an official MDHS employment record.’ +
-‘</div>’ +
-‘</div>’ +
-‘<script>window.print();</script>’ +
+‘<div style="margin-top:20px;' +
+'font-size:11px;color:#999;">’ +
+’For training use only. ’ +
+‘Not an official MDHS employment record.’ +
+‘</div></div>’ +
+‘<script>window.print();</’ + ‘script>’ +
 ‘</body></html>’;
 win.document.write(html);
 win.document.close();
 }
 return h(‘div’, { className: ‘completion-screen’ },
-h(‘div’, { style: { fontSize: ‘48px’, marginBottom: ‘8px’ } }, ‘MDHS’),
-h(‘div’, { style: { color: ‘#c8a028’, fontSize: ‘14px’,
-letterSpacing: ‘2px’, marginBottom: ‘24px’ } },
-‘TRAINING SIMULATION COMPLETE’
+h(‘div’, {
+style: { fontSize: ‘48px’, marginBottom: ‘8px’ }
+}, ‘MDHS’),
+h(‘div’, {
+style: {
+color: ‘#c8a028’, fontSize: ‘14px’,
+letterSpacing: ‘2px’, marginBottom: ‘24px’
+}
+}, ‘TRAINING SIMULATION COMPLETE’),
+h(‘div’, {
+style: {
+fontSize: ‘26px’, fontWeight: ‘bold’,
+marginBottom: ‘6px’
+}
+}, ’Well done, ’ + name + ‘!’),
+h(‘div’, {
+style: {
+fontSize: ‘14px’, color: ‘#aabbd0’,
+marginBottom: ‘28px’
+}
+},
+’You have completed the full MDHS eligibility ’ +
+‘clerk workflow.’
 ),
-h(‘div’, { style: { fontSize: ‘26px’, fontWeight: ‘bold’,
-marginBottom: ‘6px’ } },
-’Well done, ’ + name + ‘!’
-),
-h(‘div’, { style: { fontSize: ‘14px’, color: ‘#aabbd0’,
-marginBottom: ‘28px’ } },
-‘You have completed the full MDHS eligibility clerk workflow.’
-),
-h(‘div’, { style: { background: ‘rgba(255,255,255,0.1)’,
-borderRadius: ‘6px’, padding: ‘24px’, maxWidth: ‘560px’,
-margin: ‘0 auto 24px’, textAlign: ‘left’ } },
-h(‘div’, { style: { fontWeight: ‘bold’, fontSize: ‘13px’,
+h(‘div’, {
+style: {
+background: ‘rgba(255,255,255,0.1)’,
+borderRadius: ‘6px’, padding: ‘24px’,
+maxWidth: ‘560px’,
+margin: ‘0 auto 24px’, textAlign: ‘left’
+}
+},
+h(‘div’, {
+style: {
+fontWeight: ‘bold’, fontSize: ‘13px’,
 color: ‘#c8a028’, marginBottom: ‘14px’,
-letterSpacing: ‘1px’ } },
-‘COMPLETED WORKFLOW SUMMARY’
-),
-h(‘div’, { style: { fontSize: ‘13px’, lineHeight: ‘2’,
-color: ‘#ccd6f6’ } },
-h(‘div’, null, ‘Scenario: ’ + sc.applicant + ’ (’ + sc.label + ‘)’),
-h(‘div’, null, ’Case Number: ’ + sc.caseNumber),
-h(‘div’, null, ’County / FSO: ’ + sc.county + ’ / ’ + sc.fso),
+letterSpacing: ‘1px’
+}
+}, ‘COMPLETED WORKFLOW SUMMARY’),
+h(‘div’, {
+style: {
+fontSize: ‘13px’, lineHeight: ‘2’,
+color: ‘#ccd6f6’
+}
+},
+h(‘div’, null,
+‘Scenario: ’ + sc.applicant +
+’ (’ + sc.label + ‘)’),
+h(‘div’, null,
+’Case Number: ’ + sc.caseNumber),
+h(‘div’, null,
+’County / FSO: ’ + sc.county +
+’ / ’ + sc.fso),
 h(‘div’, null, ’Worker: ’ + sc.worker),
 h(‘div’, null,
-‘Appointment: ’ + addBusinessDays(sc.apptDays) + ’ at 10:00 AM’
-),
-h(‘div’, null, ‘Systems Used: CARS + MAVERICS (13 screens)’),
+‘Appointment: ’ +
+addBusinessDays(sc.apptDays) +
+’ at 10:00 AM’),
+h(‘div’, null,
+‘Systems Used: CARS + MAVERICS (13 screens)’),
 h(‘div’, null, ‘Total Screens: 26 of 26’)
 )
 ),
-h(‘button’, { className: ‘cert-btn’, onClick: openCert },
-‘DOWNLOAD COMPLETION CERTIFICATE (PDF)’
-),
+h(‘button’, {
+className: ‘cert-btn’, onClick: openCert
+}, ‘DOWNLOAD COMPLETION CERTIFICATE (PDF)’),
 h(‘div’, { style: { marginTop: ‘20px’ } },
 h(‘button’, {
 onClick: props.onRestart,
-style: { background: ‘none’, border: ‘1px solid #667799’,
-color: ‘#aabbd0’, padding: ‘8px 20px’, cursor: ‘pointer’,
-borderRadius: ‘3px’, fontSize: ‘12px’ }
+style: {
+background: ‘none’,
+border: ‘1px solid #667799’,
+color: ‘#aabbd0’, padding: ‘8px 20px’,
+cursor: ‘pointer’,
+borderRadius: ‘3px’, fontSize: ‘12px’
+}
 }, ‘RESTART SIMULATION’)
 )
 );
 }
 
-// –– SCREEN MAP ––
-// 0=Welcome, 1=Disclaimer, 2=Login, 3=Dashboard, 4=ApplicantInfo,
-// 5=Income, 6=Resources, 7=AddlQ, 8=Household, 9=AddlAppInfo,
-// 10=FUSC, 11=CLIR, 12=CLIS, 13=CLRE, 14=CLPR, 15=CLIR-DRS,
-// 16=DRPR, 17=REAP, 18=EXSW, 19=ADDR, 20=CAP1, 21=NORE, 22=NOTI,
-// 23=CaseNumber, 24=Appointment, 25=Completion
-
+// – SCREEN MAP –
 var SCREEN_LABELS = [
 ‘Welcome’, ‘Disclaimer’, ‘Login’, ‘Dashboard’,
-‘Applicant Info’, ‘Income’, ‘Resources’, ‘Addl Questions’,
+‘Applicant Info’, ‘Income’, ‘Resources’,
+‘Addl Questions’,
 ‘Household’, ‘Addl App Info’,
-‘FUSC’, ‘CLIR’, ‘CLIS’, ‘CLRE’, ‘CLPR’, ‘CLIR-DRS’,
-‘DRPR’, ‘REAP’, ‘EXSW’, ‘ADDR’, ‘CAP1’, ‘NORE’, ‘NOTI’,
+‘FUSC’, ‘CLIR’, ‘CLIS’, ‘CLRE’, ‘CLPR’,
+‘CLIR-DRS’,
+‘DRPR’, ‘REAP’, ‘EXSW’, ‘ADDR’, ‘CAP1’,
+‘NORE’, ‘NOTI’,
 ‘Case Number’, ‘Appointment’, ‘Completion’
 ];
 
 var TOTAL_SCREENS = 26;
 
-// –– MAIN APP ––
+// – MAIN APP –
 function App() {
 var screenState = useState(0);
 var screen = screenState[0];
@@ -2118,8 +2877,25 @@ var apptState = useState(false);
 var apptSubmitted = apptState[0];
 var setApptSubmitted = apptState[1];
 
-function goNext() { setScreen(function(s){ return s + 1; }); }
-function goBack() { setScreen(function(s){ return s - 1; }); }
+// P2: REAP interactive state
+var reapProgState = useState(’’);
+var reapProg = reapProgState[0];
+var setReapProg = reapProgState[1];
+
+var reapIntState = useState(’’);
+var reapInt = reapIntState[0];
+var setReapInt = reapIntState[1];
+
+var reapErrState = useState(’’);
+var reapError = reapErrState[0];
+var setReapError = reapErrState[1];
+
+function goNext() {
+setScreen(function(s){ return s + 1; });
+}
+function goBack() {
+setScreen(function(s){ return s - 1; });
+}
 
 function handleScenario(key) {
 setScenario(SCENARIOS[key]);
@@ -2145,9 +2921,14 @@ setCaseErr(’’);
 setIdsRetrieved(false);
 setApptSubmitted(false);
 setShowModal(false);
+setReapProg(’’);
+setReapInt(’’);
+setReapError(’’);
 }
 
-var progress = Math.round((screen / (TOTAL_SCREENS - 1)) * 100);
+var progress = Math.round(
+(screen / (TOTAL_SCREENS - 1)) * 100
+);
 var showHeader = screen > 0 && screen < 25;
 var isMaverics = screen >= 10 && screen <= 22;
 
@@ -2294,6 +3075,12 @@ onBack: goBack
 if (screen === 17) {
 return h(MavREAP, {
 scenario: scenario,
+reapProg: reapProg,
+setReapProg: setReapProg,
+reapInt: reapInt,
+setReapInt: setReapInt,
+reapError: reapError,
+setReapError: setReapError,
 onNext: goNext,
 onBack: goBack
 });
@@ -2374,7 +3161,8 @@ isMaverics
 ),
 h(‘div’, { className: ‘sim-header-right’ },
 h(‘div’, null,
-’Screen ’ + screen + ’ of ’ + (TOTAL_SCREENS - 1)
+’Screen ’ + screen + ’ of ’ +
+(TOTAL_SCREENS - 1)
 ),
 h(‘div’, null,
 SCREEN_LABELS[screen] || ‘’
@@ -2382,8 +3170,10 @@ SCREEN_LABELS[screen] || ‘’
 )
 ),
 h(‘div’, { className: ‘progress-bar-wrap’ },
-h(‘div’, { className: ‘progress-bar-fill’,
-style: { width: progress + ‘%’ } })
+h(‘div’, {
+className: ‘progress-bar-fill’,
+style: { width: progress + ‘%’ }
+})
 )
 )
 : null;
@@ -2393,14 +3183,19 @@ var bodyStyle = screen === 0
 ? { minHeight: ‘100vh’ }
 : {};
 
-return h(‘div’, { className: wrapClass, style: bodyStyle },
+return h(‘div’, {
+className: wrapClass, style: bodyStyle
+},
 headerEl,
 screen === 0
 ? h(‘div’, { style: { minHeight: ‘100vh’ } },
-h(‘div’, { className: ‘screen-card’,
-style: { maxWidth: ‘500px’, margin: ‘0 auto’, borderRadius: ‘0’ } },
-renderScreen()
-)
+h(‘div’, {
+className: ‘screen-card’,
+style: {
+maxWidth: ‘500px’, margin: ‘0 auto’,
+borderRadius: ‘0’
+}
+}, renderScreen())
 )
 : h(‘div’, { className: ‘sim-body’ },
 h(‘div’, { className: ‘screen-card’ },
@@ -2415,7 +3210,9 @@ onClose: function(){ setShowModal(false); }
 );
 }
 
-ReactDOM.createRoot(document.getElementById(‘root’)).render(h(App));
+ReactDOM.createRoot(
+document.getElementById(‘root’)
+).render(h(App));
 </script>
 
 </body>
