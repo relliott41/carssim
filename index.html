@@ -111,6 +111,30 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .toast.err{background:#d43b3b;color:#fff}
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-thumb{background:#aaa;border-radius:3px}
+.name-wrap{height:100%;display:flex;align-items:center;justify-content:center;background:#f0f4f6}
+.name-card{width:340px;background:#fff;border-radius:8px;padding:28px 24px;box-shadow:0 2px 12px rgba(0,0,0,.08);border:1px solid #d0dce0;text-align:center}
+.name-title{font-size:18px;font-weight:800;color:#2a6a78;margin-bottom:4px}
+.name-sub{font-size:11px;color:#7a9aa5;margin-bottom:20px}
+.name-field{margin-bottom:14px;text-align:left}
+.name-field label{font-size:10px;font-weight:700;color:#5a7a85;display:block;margin-bottom:3px;text-transform:uppercase}
+.name-field input{width:100%;padding:9px 10px;border:1px solid #bcc8cc;border-radius:2px;font-size:15px;font-family:inherit}
+.name-err{color:#d43b3b;font-size:11px;margin-bottom:8px;background:#fef2f2;padding:4px 8px;border-radius:3px;display:none}
+.cert-wrap{height:100%;overflow-y:auto;background:#e8edf0;display:flex;flex-direction:column;align-items:center;padding:20px 12px}
+.cert-card{width:100%;max-width:600px;background:#fff;border:8px solid #2a6a78;border-radius:4px;padding:32px 36px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.12);position:relative}
+.cert-inner{border:2px solid #3a8fa0;padding:24px;position:relative}
+.cert-seal{font-size:48px;margin-bottom:8px}
+.cert-issuer{font-size:10px;font-weight:700;color:#5a7a85;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.cert-org{font-size:16px;font-weight:800;color:#2a6a78;letter-spacing:1px;margin-bottom:16px}
+.cert-presents{font-size:11px;color:#7a9aa5;font-style:italic;margin-bottom:8px}
+.cert-name{font-size:28px;font-weight:800;color:#1a3a4a;border-bottom:2px solid #3a8fa0;display:inline-block;padding-bottom:4px;margin-bottom:16px;min-width:200px}
+.cert-body{font-size:12px;color:#3a4a55;line-height:1.8;margin-bottom:16px}
+.cert-program{font-size:15px;font-weight:700;color:#2a6a78;margin-bottom:4px}
+.cert-date{font-size:11px;color:#7a9aa5;margin-bottom:20px}
+.cert-sig-row{display:flex;justify-content:center;gap:40px;margin-top:16px;padding-top:16px;border-top:1px solid #d0dce0}
+.cert-sig{text-align:center}
+.cert-sig-line{width:120px;border-top:1px solid #333;margin:0 auto 4px}
+.cert-sig-lbl{font-size:9px;color:#7a9aa5;text-transform:uppercase;letter-spacing:1px}
+.cert-actions{margin-top:16px;display:flex;gap:8px;justify-content:center}
 </style>
 </head>
 <body>
@@ -122,7 +146,7 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     <div class="welcome-wrap">
       <div class="wcard">
         <div style="text-align:center;margin-bottom:12px">
-          <div style="font-size:24px;font-weight:800;color:#2a6a78;letter-spacing:3px">C.A.R.S.</div>
+          <div style="font-size:24px;font-weight:800;color:#2a6a78;letter-spacing:3px">MDHS County Training Simulator</div>
           <div style="font-size:11px;color:#5a7a85;font-style:italic">Interactive Training Simulator</div>
           <div style="font-size:10px;color:#999;margin-top:4px">Eligibility Clerk Training &mdash; Chapter 1</div>
         </div>
@@ -133,10 +157,25 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
           <span>I understand this is a training simulation and agree to the terms above.</span>
         </div>
         <div id="agree-content" style="display:none;margin-top:12px">
-          <div class="info-box"><strong>Workflow:</strong> Login &rarr; 6 CARS screens &rarr; MAVERICS (8 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session.</div>
+          <div class="info-box"><strong>Workflow:</strong> Login &rarr; 6 CARS screens &rarr; MAVERICS (8 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session. Expedited cases are always processed first.</div>
           <div class="cred-box"><strong>Login:</strong> <code>ETrainee</code> / <code>MDHS2026!</code></div>
           <button class="big-btn" onclick="startSession()">Begin Training</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINEE NAME -->
+
+  <div id="pg-name" class="pg">
+    <div class="name-wrap">
+      <div class="name-card">
+        <div class="name-title">Before We Begin</div>
+        <div class="name-sub">Enter your name for your completion certificate</div>
+        <div class="name-field"><label>First Name</label><input id="trainee-fn" type="text" autocomplete="off" onkeydown="if(event.key==='Enter')submitName()"></div>
+        <div class="name-field"><label>Last Name</label><input id="trainee-ln" type="text" autocomplete="off" onkeydown="if(event.key==='Enter')submitName()"></div>
+        <div class="name-err" id="name-err">Please enter both first and last name.</div>
+        <button class="big-btn" onclick="submitName()">Continue to Login</button>
       </div>
     </div>
   </div>
@@ -167,7 +206,7 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 
   <div id="pg-cars" class="pg">
     <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
-    <div class="hdr-banner"><span id="cars-bdate"></span><span class="exp">EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span></div>
+    <div class="hdr-banner"><span id="cars-bdate"></span><span id="cars-exp-flag" class="exp"></span><span>CLIENT DOCUMENT: YES</span></div>
     <div class="prg-wrap"><div class="prg-row" id="prg-cars"></div></div>
     <div class="scroll"><div class="pad" id="cars-body"></div></div>
   </div>
@@ -185,7 +224,7 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 
   <div id="pg-vfy" class="pg">
     <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
-    <div class="hdr-banner"><span id="vfy-bdate"></span><span class="exp">EXPEDITE: YES</span><span>CLIENT DOCUMENT: YES</span></div>
+    <div class="hdr-banner"><span id="vfy-bdate"></span><span id="vfy-exp-flag" class="exp"></span><span>CLIENT DOCUMENT: YES</span></div>
     <div class="prg-wrap"><div class="prg-row" id="prg-vfy"></div></div>
     <div class="scroll"><div class="pad" id="vfy-body"></div></div>
   </div>
@@ -206,6 +245,40 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
   </div>
 
+  <!-- CERTIFICATE -->
+
+  <div id="pg-cert" class="pg">
+    <div class="cert-wrap">
+      <div class="cert-card">
+        <div class="cert-inner">
+          <div class="cert-seal">&#127942;</div>
+          <div class="cert-issuer">Mississippi Department of Human Services</div>
+          <div class="cert-org">MDHS &mdash; Training &amp; Development</div>
+          <div class="cert-presents">This certifies that</div>
+          <div class="cert-name" id="cert-trainee-name"></div>
+          <div class="cert-body">has successfully completed all required training modules in the</div>
+          <div class="cert-program">MDHS County Training Simulator</div>
+          <div class="cert-body">Eligibility Clerk Training &mdash; CARS &amp; MAVERICS Application Processing</div>
+          <div class="cert-date" id="cert-date"></div>
+          <div class="cert-sig-row">
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-lbl">Training Coordinator</div>
+            </div>
+            <div class="cert-sig">
+              <div class="cert-sig-line"></div>
+              <div class="cert-sig-lbl">Division Director</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cert-actions">
+        <button style="padding:8px 20px;font-size:12px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#2a6a78;color:#fff" onclick="window.print()">Print / Save as PDF</button>
+        <button style="padding:8px 20px;font-size:12px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff" onclick="restartFromCert()">Start New Session</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TASKBAR -->
 
   <div id="taskbar">
@@ -221,38 +294,50 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 
 <script>
 var POOL = [
-  {fn:"Tameka",mn:"R",ln:"Holloway",ssn:"428-76-3391",dob:"06/14/1989",age:36,gender:"Female",addr:"1247 MAGNOLIA CREEK DR",city:"HATTIESBURG",zip:"39401",cty:"Forrest",p1:"(601) 482-7193",p1t:"Home",p2:"(601) 555-0214",p2t:"Cell",em:"tameka.holloway89@gmail.com",ei:"$620.00",rent:"$675.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$55.00",hfn:"Jaylen",hln:"Holloway",hrel:"Child",hssn:"428-91-5567",hdob:"03/22/2019",hage:"7 years",hgen:"Male",cn:"307224189",pid:"261003847",hid:"261003902",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
-  {fn:"Darnell",mn:"T",ln:"Washington",ssn:"512-44-8821",dob:"03/02/1985",age:41,gender:"Male",addr:"834 OAK GROVE RD",city:"JACKSON",zip:"39201",cty:"Hinds",p1:"(601) 334-7720",p1t:"Cell",p2:"",p2t:"N/A",em:"dwashington85@yahoo.com",ei:"$0.00",rent:"$550.00",elec:"$80.00",gas:"$0.00",wat:"$25.00",ph:"$45.00",hfn:"Mia",hln:"Washington",hrel:"Child",hssn:"512-91-3304",hdob:"07/11/2015",hage:"10 years",hgen:"Female",cn:"307224200",pid:"261003900",hid:"261003960",wk:"JAMES REED",fso:"HINDS COUNTY DHS"},
-  {fn:"Latoya",mn:"M",ln:"Jenkins",ssn:"601-33-9912",dob:"11/19/1992",age:33,gender:"Female",addr:"2201 PINE VALLEY LN",city:"MERIDIAN",zip:"39301",cty:"Lauderdale",p1:"(601) 693-4411",p1t:"Home",p2:"(601) 555-8823",p2t:"Cell",em:"latoya.jenkins@gmail.com",ei:"$480.00",rent:"$600.00",elec:"$110.00",gas:"$50.00",wat:"$35.00",ph:"$60.00",hfn:"Destiny",hln:"Jenkins",hrel:"Child",hssn:"601-82-7741",hdob:"04/05/2018",hage:"8 years",hgen:"Female",cn:"307224301",pid:"261004010",hid:"261004071",wk:"SHARON MOORE",fso:"LAUDERDALE COUNTY DHS"},
-  {fn:"Marcus",mn:"A",ln:"Brown",ssn:"389-55-1123",dob:"08/27/1979",age:46,gender:"Male",addr:"519 CEDAR BLUFF DR",city:"BILOXI",zip:"39530",cty:"Harrison",p1:"(228) 374-6602",p1t:"Cell",p2:"",p2t:"N/A",em:"marcusbrown79@hotmail.com",ei:"$740.00",rent:"$800.00",elec:"$125.00",gas:"$55.00",wat:"$40.00",ph:"$50.00",hfn:"Tyrone",hln:"Brown",hrel:"Child",hssn:"389-88-4450",hdob:"09/14/2012",hage:"13 years",hgen:"Male",cn:"307224412",pid:"261004200",hid:"261004261",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
-  {fn:"Shenika",mn:"L",ln:"Davis",ssn:"447-22-6634",dob:"01/30/1996",age:30,gender:"Female",addr:"78 WILLOW BEND RD",city:"TUPELO",zip:"38801",cty:"Lee",p1:"(662) 841-5530",p1t:"Home",p2:"(662) 555-2290",p2t:"Cell",em:"shenikadavis96@gmail.com",ei:"$310.00",rent:"$525.00",elec:"$70.00",gas:"$30.00",wat:"$20.00",ph:"$40.00",hfn:"Aaliyah",hln:"Davis",hrel:"Child",hssn:"447-90-1122",hdob:"02/28/2021",hage:"5 years",hgen:"Female",cn:"307224523",pid:"261004300",hid:"261004361",wk:"ANGELA PRICE",fso:"LEE COUNTY DHS"},
-  {fn:"Reginald",mn:"J",ln:"Thomas",ssn:"523-67-4490",dob:"05/15/1983",age:43,gender:"Male",addr:"3302 DOGWOOD CIRCLE",city:"GULFPORT",zip:"39501",cty:"Harrison",p1:"(228) 863-7741",p1t:"Cell",p2:"",p2t:"N/A",em:"rthomas83@gmail.com",ei:"$0.00",rent:"$700.00",elec:"$105.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Keisha",hln:"Thomas",hrel:"Spouse",hssn:"523-81-3345",hdob:"08/03/1985",hage:"41 years",hgen:"Female",cn:"307224634",pid:"261004400",hid:"261004461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
-  {fn:"Yolanda",mn:"B",ln:"Scott",ssn:"334-88-2256",dob:"07/04/1990",age:35,gender:"Female",addr:"990 RIVERDALE AVE",city:"VICKSBURG",zip:"39180",cty:"Warren",p1:"(601) 638-2200",p1t:"Home",p2:"(601) 555-4411",p2t:"Cell",em:"yolanda.scott90@yahoo.com",ei:"$550.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Caleb",hln:"Scott",hrel:"Child",hssn:"334-92-6678",hdob:"11/20/2017",hage:"8 years",hgen:"Male",cn:"307224745",pid:"261004500",hid:"261004561",wk:"DOROTHY BANKS",fso:"WARREN COUNTY DHS"},
-  {fn:"Terrence",mn:"K",ln:"Williams",ssn:"460-11-8834",dob:"12/09/1988",age:37,gender:"Male",addr:"145 PECAN GROVE DR",city:"NATCHEZ",zip:"39120",cty:"Adams",p1:"(601) 445-3390",p1t:"Cell",p2:"",p2t:"N/A",em:"twilli88@gmail.com",ei:"$680.00",rent:"$575.00",elec:"$85.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Jasmine",hln:"Williams",hrel:"Child",hssn:"460-83-9910",hdob:"06/17/2016",hage:"9 years",hgen:"Female",cn:"307224856",pid:"261004600",hid:"261004661",wk:"MARCUS BELL",fso:"ADAMS COUNTY DHS"},
-  {fn:"Keandra",mn:"N",ln:"Robinson",ssn:"578-44-1122",dob:"09/22/1994",age:31,gender:"Female",addr:"2889 SUNFLOWER ST",city:"GREENVILLE",zip:"38701",cty:"Washington",p1:"(662) 335-8820",p1t:"Home",p2:"(662) 555-7711",p2t:"Cell",em:"keandra.robinson94@gmail.com",ei:"$0.00",rent:"$490.00",elec:"$75.00",gas:"$25.00",wat:"$20.00",ph:"$40.00",hfn:"Noah",hln:"Robinson",hrel:"Child",hssn:"578-90-4456",hdob:"03/14/2020",hage:"6 years",hgen:"Male",cn:"307224967",pid:"261004700",hid:"261004761",wk:"TAMARA WEST",fso:"WASHINGTON COUNTY DHS"},
-  {fn:"Derrick",mn:"O",ln:"Jackson",ssn:"415-77-3345",dob:"04/18/1981",age:45,gender:"Male",addr:"707 MAGNOLIA BLVD",city:"COLUMBUS",zip:"39701",cty:"Lowndes",p1:"(662) 328-4411",p1t:"Cell",p2:"",p2t:"N/A",em:"djackson81@yahoo.com",ei:"$820.00",rent:"$750.00",elec:"$115.00",gas:"$60.00",wat:"$35.00",ph:"$60.00",hfn:"Brianna",hln:"Jackson",hrel:"Child",hssn:"415-82-6670",hdob:"08/29/2014",hage:"11 years",hgen:"Female",cn:"307225078",pid:"261004800",hid:"261004861",wk:"LARRY SIMMONS",fso:"LOWNDES COUNTY DHS"},
-  {fn:"Monique",mn:"C",ln:"Harris",ssn:"330-55-7789",dob:"02/14/1991",age:35,gender:"Female",addr:"1560 HOLLY SPRINGS RD",city:"OXFORD",zip:"38655",cty:"Lafayette",p1:"(662) 234-5520",p1t:"Home",p2:"(662) 555-9933",p2t:"Cell",em:"monique.harris91@gmail.com",ei:"$390.00",rent:"$700.00",elec:"$100.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Isaiah",hln:"Harris",hrel:"Child",hssn:"330-84-2211",hdob:"10/05/2019",hage:"6 years",hgen:"Male",cn:"307225189",pid:"261004900",hid:"261004961",wk:"DIANE TUCKER",fso:"LAFAYETTE COUNTY DHS"},
-  {fn:"Calvin",mn:"R",ln:"Moore",ssn:"498-22-6601",dob:"06/30/1977",age:48,gender:"Male",addr:"444 CYPRESS CREEK DR",city:"HATTIESBURG",zip:"39402",cty:"Forrest",p1:"(601) 268-7730",p1t:"Cell",p2:"",p2t:"N/A",em:"cmoore77@hotmail.com",ei:"$0.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Tyra",hln:"Moore",hrel:"Child",hssn:"498-91-4423",hdob:"05/22/2016",hage:"9 years",hgen:"Female",cn:"307225290",pid:"261005000",hid:"261005061",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
-  {fn:"Aaliyah",mn:"S",ln:"Turner",ssn:"561-33-8812",dob:"10/08/1999",age:26,gender:"Female",addr:"223 BIRCH LANE",city:"LAUREL",zip:"39440",cty:"Jones",p1:"(601) 425-6640",p1t:"Cell",p2:"(601) 555-3312",p2t:"Home",em:"aaliyah.turner99@gmail.com",ei:"$270.00",rent:"$450.00",elec:"$65.00",gas:"$20.00",wat:"$20.00",ph:"$35.00",hfn:"Ava",hln:"Turner",hrel:"Child",hssn:"561-88-7745",hdob:"12/01/2022",hage:"3 years",hgen:"Female",cn:"307225401",pid:"261005100",hid:"261005161",wk:"JAMES REED",fso:"JONES COUNTY DHS"},
-  {fn:"Broderick",mn:"D",ln:"Lewis",ssn:"479-66-2230",dob:"08/11/1986",age:39,gender:"Male",addr:"3811 SYCAMORE PARK DR",city:"STARKVILLE",zip:"39759",cty:"Oktibbeha",p1:"(662) 323-8801",p1t:"Home",p2:"",p2t:"N/A",em:"brodlewis86@yahoo.com",ei:"$910.00",rent:"$875.00",elec:"$130.00",gas:"$65.00",wat:"$40.00",ph:"$60.00",hfn:"Jordan",hln:"Lewis",hrel:"Child",hssn:"479-80-5567",hdob:"07/16/2013",hage:"12 years",hgen:"Male",cn:"307225512",pid:"261005200",hid:"261005261",wk:"LARRY SIMMONS",fso:"OKTIBBEHA COUNTY DHS"},
-  {fn:"Shaniqua",mn:"V",ln:"White",ssn:"344-99-5512",dob:"03/25/1993",age:33,gender:"Female",addr:"102 AZALEA DR",city:"BRANDON",zip:"39042",cty:"Rankin",p1:"(601) 824-3301",p1t:"Cell",p2:"(601) 555-6678",p2t:"Home",em:"shaniqua.white93@gmail.com",ei:"$430.00",rent:"$725.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Elijah",hln:"White",hrel:"Child",hssn:"344-87-9923",hdob:"01/08/2018",hage:"8 years",hgen:"Male",cn:"307225623",pid:"261005300",hid:"261005361",wk:"SHARON MOORE",fso:"RANKIN COUNTY DHS"},
-  {fn:"Jerome",mn:"L",ln:"Anderson",ssn:"532-11-4478",dob:"11/03/1980",age:45,gender:"Male",addr:"789 GULF WIND BLVD",city:"PASS CHRISTIAN",zip:"39571",cty:"Harrison",p1:"(228) 452-9900",p1t:"Home",p2:"",p2t:"N/A",em:"jerome.anderson80@gmail.com",ei:"$0.00",rent:"$580.00",elec:"$88.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Savannah",hln:"Anderson",hrel:"Child",hssn:"532-84-1123",hdob:"09/30/2017",hage:"8 years",hgen:"Female",cn:"307225734",pid:"261005400",hid:"261005461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
-  {fn:"Tiffany",mn:"A",ln:"Green",ssn:"418-77-3301",dob:"07/17/1995",age:30,gender:"Female",addr:"556 PEACHTREE RD",city:"FLOWOOD",zip:"39232",cty:"Rankin",p1:"(601) 939-4421",p1t:"Cell",p2:"(601) 555-1134",p2t:"Home",em:"tiffany.green95@yahoo.com",ei:"$500.00",rent:"$775.00",elec:"$105.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Jace",hln:"Green",hrel:"Child",hssn:"418-92-6645",hdob:"04/19/2020",hage:"6 years",hgen:"Male",cn:"307225845",pid:"261005500",hid:"261005561",wk:"DOROTHY BANKS",fso:"RANKIN COUNTY DHS"},
-  {fn:"Antwan",mn:"M",ln:"Taylor",ssn:"387-44-9923",dob:"02/06/1984",age:42,gender:"Male",addr:"1023 HICKORY HOLLOW LN",city:"PEARL",zip:"39208",cty:"Rankin",p1:"(601) 939-8820",p1t:"Home",p2:"",p2t:"N/A",em:"antwan.taylor84@gmail.com",ei:"$760.00",rent:"$850.00",elec:"$120.00",gas:"$55.00",wat:"$40.00",ph:"$60.00",hfn:"Malik",hln:"Taylor",hrel:"Child",hssn:"387-86-7712",hdob:"06/10/2015",hage:"10 years",hgen:"Male",cn:"307225956",pid:"261005600",hid:"261005661",wk:"ANGELA PRICE",fso:"RANKIN COUNTY DHS"},
-  {fn:"Lakisha",mn:"T",ln:"Mitchell",ssn:"463-22-7756",dob:"09/28/1997",age:28,gender:"Female",addr:"2200 CLOVER HILL DR",city:"RIDGELAND",zip:"39157",cty:"Madison",p1:"(601) 853-5510",p1t:"Cell",p2:"(601) 555-8890",p2t:"Home",em:"lakisha.mitchell97@gmail.com",ei:"$340.00",rent:"$825.00",elec:"$115.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Zoe",hln:"Mitchell",hrel:"Child",hssn:"463-85-4401",hdob:"11/14/2021",hage:"4 years",hgen:"Female",cn:"307226067",pid:"261005700",hid:"261005761",wk:"DIANE TUCKER",fso:"MADISON COUNTY DHS"},
-  {fn:"Quinton",mn:"B",ln:"Adams",ssn:"541-88-2234",dob:"05/22/1982",age:43,gender:"Male",addr:"371 IRONWOOD DR",city:"SOUTHAVEN",zip:"38671",cty:"DeSoto",p1:"(662) 349-7701",p1t:"Home",p2:"",p2t:"N/A",em:"qadams82@hotmail.com",ei:"$0.00",rent:"$950.00",elec:"$140.00",gas:"$70.00",wat:"$45.00",ph:"$65.00",hfn:"Dominic",hln:"Adams",hrel:"Child",hssn:"541-90-5578",hdob:"08/07/2016",hage:"9 years",hgen:"Male",cn:"307226178",pid:"261005800",hid:"261005861",wk:"TAMARA WEST",fso:"DESOTO COUNTY DHS"}
+  {exp:false,fn:"Tameka",mn:"R",ln:"Holloway",ssn:"428-76-3391",dob:"06/14/1989",age:36,gender:"Female",addr:"1247 MAGNOLIA CREEK DR",city:"HATTIESBURG",zip:"39401",cty:"Forrest",p1:"(601) 482-7193",p1t:"Home",p2:"(601) 555-0214",p2t:"Cell",em:"tameka.holloway89@gmail.com",ei:"$620.00",rent:"$675.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$55.00",hfn:"Jaylen",hln:"Holloway",hrel:"Child",hssn:"428-91-5567",hdob:"03/22/2019",hage:"7 years",hgen:"Male",cn:"307224189",pid:"261003847",hid:"261003902",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
+  {exp:true,fn:"Darnell",mn:"T",ln:"Washington",ssn:"512-44-8821",dob:"03/02/1985",age:41,gender:"Male",addr:"834 OAK GROVE RD",city:"JACKSON",zip:"39201",cty:"Hinds",p1:"(601) 334-7720",p1t:"Cell",p2:"",p2t:"N/A",em:"dwashington85@yahoo.com",ei:"$0.00",rent:"$550.00",elec:"$80.00",gas:"$0.00",wat:"$25.00",ph:"$45.00",hfn:"Mia",hln:"Washington",hrel:"Child",hssn:"512-91-3304",hdob:"07/11/2015",hage:"10 years",hgen:"Female",cn:"307224200",pid:"261003900",hid:"261003960",wk:"JAMES REED",fso:"HINDS COUNTY DHS"},
+  {exp:false,fn:"Latoya",mn:"M",ln:"Jenkins",ssn:"601-33-9912",dob:"11/19/1992",age:33,gender:"Female",addr:"2201 PINE VALLEY LN",city:"MERIDIAN",zip:"39301",cty:"Lauderdale",p1:"(601) 693-4411",p1t:"Home",p2:"(601) 555-8823",p2t:"Cell",em:"latoya.jenkins@gmail.com",ei:"$480.00",rent:"$600.00",elec:"$110.00",gas:"$50.00",wat:"$35.00",ph:"$60.00",hfn:"Destiny",hln:"Jenkins",hrel:"Child",hssn:"601-82-7741",hdob:"04/05/2018",hage:"8 years",hgen:"Female",cn:"307224301",pid:"261004010",hid:"261004071",wk:"SHARON MOORE",fso:"LAUDERDALE COUNTY DHS"},
+  {exp:false,fn:"Marcus",mn:"A",ln:"Brown",ssn:"389-55-1123",dob:"08/27/1979",age:46,gender:"Male",addr:"519 CEDAR BLUFF DR",city:"BILOXI",zip:"39530",cty:"Harrison",p1:"(228) 374-6602",p1t:"Cell",p2:"",p2t:"N/A",em:"marcusbrown79@hotmail.com",ei:"$740.00",rent:"$800.00",elec:"$125.00",gas:"$55.00",wat:"$40.00",ph:"$50.00",hfn:"Tyrone",hln:"Brown",hrel:"Child",hssn:"389-88-4450",hdob:"09/14/2012",hage:"13 years",hgen:"Male",cn:"307224412",pid:"261004200",hid:"261004261",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {exp:false,fn:"Shenika",mn:"L",ln:"Davis",ssn:"447-22-6634",dob:"01/30/1996",age:30,gender:"Female",addr:"78 WILLOW BEND RD",city:"TUPELO",zip:"38801",cty:"Lee",p1:"(662) 841-5530",p1t:"Home",p2:"(662) 555-2290",p2t:"Cell",em:"shenikadavis96@gmail.com",ei:"$310.00",rent:"$525.00",elec:"$70.00",gas:"$30.00",wat:"$20.00",ph:"$40.00",hfn:"Aaliyah",hln:"Davis",hrel:"Child",hssn:"447-90-1122",hdob:"02/28/2021",hage:"5 years",hgen:"Female",cn:"307224523",pid:"261004300",hid:"261004361",wk:"ANGELA PRICE",fso:"LEE COUNTY DHS"},
+  {exp:true,fn:"Reginald",mn:"J",ln:"Thomas",ssn:"523-67-4490",dob:"05/15/1983",age:43,gender:"Male",addr:"3302 DOGWOOD CIRCLE",city:"GULFPORT",zip:"39501",cty:"Harrison",p1:"(228) 863-7741",p1t:"Cell",p2:"",p2t:"N/A",em:"rthomas83@gmail.com",ei:"$85.00",rent:"$700.00",elec:"$105.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Keisha",hln:"Thomas",hrel:"Spouse",hssn:"523-81-3345",hdob:"08/03/1985",hage:"41 years",hgen:"Female",cn:"307224634",pid:"261004400",hid:"261004461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {exp:false,fn:"Yolanda",mn:"B",ln:"Scott",ssn:"334-88-2256",dob:"07/04/1990",age:35,gender:"Female",addr:"990 RIVERDALE AVE",city:"VICKSBURG",zip:"39180",cty:"Warren",p1:"(601) 638-2200",p1t:"Home",p2:"(601) 555-4411",p2t:"Cell",em:"yolanda.scott90@yahoo.com",ei:"$550.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Caleb",hln:"Scott",hrel:"Child",hssn:"334-92-6678",hdob:"11/20/2017",hage:"8 years",hgen:"Male",cn:"307224745",pid:"261004500",hid:"261004561",wk:"DOROTHY BANKS",fso:"WARREN COUNTY DHS"},
+  {exp:false,fn:"Terrence",mn:"K",ln:"Williams",ssn:"460-11-8834",dob:"12/09/1988",age:37,gender:"Male",addr:"145 PECAN GROVE DR",city:"NATCHEZ",zip:"39120",cty:"Adams",p1:"(601) 445-3390",p1t:"Cell",p2:"",p2t:"N/A",em:"twilli88@gmail.com",ei:"$680.00",rent:"$575.00",elec:"$85.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Jasmine",hln:"Williams",hrel:"Child",hssn:"460-83-9910",hdob:"06/17/2016",hage:"9 years",hgen:"Female",cn:"307224856",pid:"261004600",hid:"261004661",wk:"MARCUS BELL",fso:"ADAMS COUNTY DHS"},
+  {exp:true,fn:"Keandra",mn:"N",ln:"Robinson",ssn:"578-44-1122",dob:"09/22/1994",age:31,gender:"Female",addr:"2889 SUNFLOWER ST",city:"GREENVILLE",zip:"38701",cty:"Washington",p1:"(662) 335-8820",p1t:"Home",p2:"(662) 555-7711",p2t:"Cell",em:"keandra.robinson94@gmail.com",ei:"$0.00",rent:"$490.00",elec:"$75.00",gas:"$25.00",wat:"$20.00",ph:"$40.00",hfn:"Noah",hln:"Robinson",hrel:"Child",hssn:"578-90-4456",hdob:"03/14/2020",hage:"6 years",hgen:"Male",cn:"307224967",pid:"261004700",hid:"261004761",wk:"TAMARA WEST",fso:"WASHINGTON COUNTY DHS"},
+  {exp:false,fn:"Derrick",mn:"O",ln:"Jackson",ssn:"415-77-3345",dob:"04/18/1981",age:45,gender:"Male",addr:"707 MAGNOLIA BLVD",city:"COLUMBUS",zip:"39701",cty:"Lowndes",p1:"(662) 328-4411",p1t:"Cell",p2:"",p2t:"N/A",em:"djackson81@yahoo.com",ei:"$820.00",rent:"$750.00",elec:"$115.00",gas:"$60.00",wat:"$35.00",ph:"$60.00",hfn:"Brianna",hln:"Jackson",hrel:"Child",hssn:"415-82-6670",hdob:"08/29/2014",hage:"11 years",hgen:"Female",cn:"307225078",pid:"261004800",hid:"261004861",wk:"LARRY SIMMONS",fso:"LOWNDES COUNTY DHS"},
+  {exp:false,fn:"Monique",mn:"C",ln:"Harris",ssn:"330-55-7789",dob:"02/14/1991",age:35,gender:"Female",addr:"1560 HOLLY SPRINGS RD",city:"OXFORD",zip:"38655",cty:"Lafayette",p1:"(662) 234-5520",p1t:"Home",p2:"(662) 555-9933",p2t:"Cell",em:"monique.harris91@gmail.com",ei:"$390.00",rent:"$700.00",elec:"$100.00",gas:"$45.00",wat:"$30.00",ph:"$55.00",hfn:"Isaiah",hln:"Harris",hrel:"Child",hssn:"330-84-2211",hdob:"10/05/2019",hage:"6 years",hgen:"Male",cn:"307225189",pid:"261004900",hid:"261004961",wk:"DIANE TUCKER",fso:"LAFAYETTE COUNTY DHS"},
+  {exp:true,fn:"Calvin",mn:"R",ln:"Moore",ssn:"498-22-6601",dob:"06/30/1977",age:48,gender:"Male",addr:"444 CYPRESS CREEK DR",city:"HATTIESBURG",zip:"39402",cty:"Forrest",p1:"(601) 268-7730",p1t:"Cell",p2:"",p2t:"N/A",em:"cmoore77@hotmail.com",ei:"$120.00",rent:"$625.00",elec:"$90.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Tyra",hln:"Moore",hrel:"Child",hssn:"498-91-4423",hdob:"05/22/2016",hage:"9 years",hgen:"Female",cn:"307225290",pid:"261005000",hid:"261005061",wk:"PATRICIA WILLIAMS",fso:"FORREST COUNTY DHS"},
+  {exp:false,fn:"Aaliyah",mn:"S",ln:"Turner",ssn:"561-33-8812",dob:"10/08/1999",age:26,gender:"Female",addr:"223 BIRCH LANE",city:"LAUREL",zip:"39440",cty:"Jones",p1:"(601) 425-6640",p1t:"Cell",p2:"(601) 555-3312",p2t:"Home",em:"aaliyah.turner99@gmail.com",ei:"$270.00",rent:"$450.00",elec:"$65.00",gas:"$20.00",wat:"$20.00",ph:"$35.00",hfn:"Ava",hln:"Turner",hrel:"Child",hssn:"561-88-7745",hdob:"12/01/2022",hage:"3 years",hgen:"Female",cn:"307225401",pid:"261005100",hid:"261005161",wk:"JAMES REED",fso:"JONES COUNTY DHS"},
+  {exp:false,fn:"Broderick",mn:"D",ln:"Lewis",ssn:"479-66-2230",dob:"08/11/1986",age:39,gender:"Male",addr:"3811 SYCAMORE PARK DR",city:"STARKVILLE",zip:"39759",cty:"Oktibbeha",p1:"(662) 323-8801",p1t:"Home",p2:"",p2t:"N/A",em:"brodlewis86@yahoo.com",ei:"$910.00",rent:"$875.00",elec:"$130.00",gas:"$65.00",wat:"$40.00",ph:"$60.00",hfn:"Jordan",hln:"Lewis",hrel:"Child",hssn:"479-80-5567",hdob:"07/16/2013",hage:"12 years",hgen:"Male",cn:"307225512",pid:"261005200",hid:"261005261",wk:"LARRY SIMMONS",fso:"OKTIBBEHA COUNTY DHS"},
+  {exp:false,fn:"Shaniqua",mn:"V",ln:"White",ssn:"344-99-5512",dob:"03/25/1993",age:33,gender:"Female",addr:"102 AZALEA DR",city:"BRANDON",zip:"39042",cty:"Rankin",p1:"(601) 824-3301",p1t:"Cell",p2:"(601) 555-6678",p2t:"Home",em:"shaniqua.white93@gmail.com",ei:"$430.00",rent:"$725.00",elec:"$95.00",gas:"$40.00",wat:"$30.00",ph:"$50.00",hfn:"Elijah",hln:"White",hrel:"Child",hssn:"344-87-9923",hdob:"01/08/2018",hage:"8 years",hgen:"Male",cn:"307225623",pid:"261005300",hid:"261005361",wk:"SHARON MOORE",fso:"RANKIN COUNTY DHS"},
+  {exp:true,fn:"Jerome",mn:"L",ln:"Anderson",ssn:"532-11-4478",dob:"11/03/1980",age:45,gender:"Male",addr:"789 GULF WIND BLVD",city:"PASS CHRISTIAN",zip:"39571",cty:"Harrison",p1:"(228) 452-9900",p1t:"Home",p2:"",p2t:"N/A",em:"jerome.anderson80@gmail.com",ei:"$0.00",rent:"$580.00",elec:"$88.00",gas:"$35.00",wat:"$25.00",ph:"$45.00",hfn:"Savannah",hln:"Anderson",hrel:"Child",hssn:"532-84-1123",hdob:"09/30/2017",hage:"8 years",hgen:"Female",cn:"307225734",pid:"261005400",hid:"261005461",wk:"KEVIN HARRIS",fso:"HARRISON COUNTY DHS"},
+  {exp:false,fn:"Tiffany",mn:"A",ln:"Green",ssn:"418-77-3301",dob:"07/17/1995",age:30,gender:"Female",addr:"556 PEACHTREE RD",city:"FLOWOOD",zip:"39232",cty:"Rankin",p1:"(601) 939-4421",p1t:"Cell",p2:"(601) 555-1134",p2t:"Home",em:"tiffany.green95@yahoo.com",ei:"$500.00",rent:"$775.00",elec:"$105.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Jace",hln:"Green",hrel:"Child",hssn:"418-92-6645",hdob:"04/19/2020",hage:"6 years",hgen:"Male",cn:"307225845",pid:"261005500",hid:"261005561",wk:"DOROTHY BANKS",fso:"RANKIN COUNTY DHS"},
+  {exp:false,fn:"Antwan",mn:"M",ln:"Taylor",ssn:"387-44-9923",dob:"02/06/1984",age:42,gender:"Male",addr:"1023 HICKORY HOLLOW LN",city:"PEARL",zip:"39208",cty:"Rankin",p1:"(601) 939-8820",p1t:"Home",p2:"",p2t:"N/A",em:"antwan.taylor84@gmail.com",ei:"$760.00",rent:"$850.00",elec:"$120.00",gas:"$55.00",wat:"$40.00",ph:"$60.00",hfn:"Malik",hln:"Taylor",hrel:"Child",hssn:"387-86-7712",hdob:"06/10/2015",hage:"10 years",hgen:"Male",cn:"307225956",pid:"261005600",hid:"261005661",wk:"ANGELA PRICE",fso:"RANKIN COUNTY DHS"},
+  {exp:false,fn:"Lakisha",mn:"T",ln:"Mitchell",ssn:"463-22-7756",dob:"09/28/1997",age:28,gender:"Female",addr:"2200 CLOVER HILL DR",city:"RIDGELAND",zip:"39157",cty:"Madison",p1:"(601) 853-5510",p1t:"Cell",p2:"(601) 555-8890",p2t:"Home",em:"lakisha.mitchell97@gmail.com",ei:"$340.00",rent:"$825.00",elec:"$115.00",gas:"$50.00",wat:"$35.00",ph:"$55.00",hfn:"Zoe",hln:"Mitchell",hrel:"Child",hssn:"463-85-4401",hdob:"11/14/2021",hage:"4 years",hgen:"Female",cn:"307226067",pid:"261005700",hid:"261005761",wk:"DIANE TUCKER",fso:"MADISON COUNTY DHS"},
+  {exp:true,fn:"Quinton",mn:"B",ln:"Adams",ssn:"541-88-2234",dob:"05/22/1982",age:43,gender:"Male",addr:"371 IRONWOOD DR",city:"SOUTHAVEN",zip:"38671",cty:"DeSoto",p1:"(662) 349-7701",p1t:"Home",p2:"",p2t:"N/A",em:"qadams82@hotmail.com",ei:"$95.00",rent:"$950.00",elec:"$140.00",gas:"$70.00",wat:"$45.00",ph:"$65.00",hfn:"Dominic",hln:"Adams",hrel:"Child",hssn:"541-90-5578",hdob:"08/07/2016",hage:"9 years",hgen:"Male",cn:"307226178",pid:"261005800",hid:"261005861",wk:"TAMARA WEST",fso:"DESOTO COUNTY DHS"}
 ];
 
-var state = { agreed:false, queue:[], qIdx:0, carsStep:0, mavsStep:0, vfyStep:0 };
+var state = { agreed:false, queue:[], qIdx:0, carsStep:0, mavsStep:0, vfyStep:0, trainee:'' };
 
 function D() { return state.queue[state.qIdx] || POOL[0]; }
 
 function buildQueue() {
-  var s = POOL.slice().sort(function(){ return Math.random()-0.5; });
+  var shuffled = POOL.slice().sort(function(){ return Math.random()-0.5; });
   var n = Math.floor(Math.random()*2)+3;
+  var picked = shuffled.slice(0,n);
+  var exp = [];
+  var reg = [];
+  for (var i=0; i<picked.length; i++) {
+    if (picked[i].exp) { exp.push(picked[i]); } else { reg.push(picked[i]); }
+  }
+  if (exp.length === 0) {
+    var allExp = POOL.filter(function(p){ return p.exp; });
+    var bonus = allExp[Math.floor(Math.random()*allExp.length)];
+    exp.push(bonus);
+  }
+  var sorted = exp.concat(reg);
   var now = new Date();
   var bd = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'})+' 09:22 AM';
-  return s.slice(0,n).map(function(a){ return Object.assign({},a,{bd:bd}); });
+  return sorted.map(function(a){ return Object.assign({},a,{bd:bd}); });
 }
 
 function show(id) {
@@ -287,6 +372,13 @@ function renderPrg(elId, cur) {
   }).join('');
 }
 
+function setBanner(carsEl, vfyEl) {
+  var d = D();
+  var txt = d.exp ? 'EXPEDITE: YES' : 'EXPEDITE: NO';
+  if (carsEl) { document.getElementById(carsEl).textContent = txt; }
+  if (vfyEl)  { document.getElementById(vfyEl).textContent = txt; }
+}
+
 function fi(lbl,val,flex) {
   return '<div class="f" style="flex:'+(flex||1)+';min-width:80px"><label>'+lbl+'</label><input readonly value="'+(val||'')+'"></div>';
 }
@@ -317,6 +409,20 @@ function toggleAgree() {
 function startSession() {
   state.queue = buildQueue();
   state.qIdx = 0;
+  show('pg-name');
+}
+
+// TRAINEE NAME
+function submitName() {
+  var fn = document.getElementById('trainee-fn').value.trim();
+  var ln = document.getElementById('trainee-ln').value.trim();
+  var err = document.getElementById('name-err');
+  if (!fn || !ln) {
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+  state.trainee = fn + ' ' + ln;
   show('pg-login');
 }
 
@@ -332,6 +438,7 @@ function doLogin() {
     state.carsStep = 0;
     renderCars();
     document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
+    setBanner('cars-exp-flag', null);
     show('pg-cars');
     toast(D().fn+' '+D().ln+' \u2014 Application loaded','ok');
   } else {
@@ -466,11 +573,13 @@ function renderMavs() {
       '<div class="mavs-ok">REGISTERED</div>'+
       '<button class="mavs-btn" onclick="mavsNext()">EXSW</button>';
   } else if (s===5) {
+    var expTxt = d.exp ? 'EXPEDITED: YES' : 'EXPEDITED: NO';
+    var expCls = d.exp ? 'mavs-warn' : 'mavs-ok';
     html = sep+'<div class="mavs-head">&nbsp;&nbsp;EXPEDITED SCREENING (EXSW)</div>'+sep+'<br>'+
       '<div class="mavs-head">CASE: '+d.cn+'</div><br>'+
       '<div>INCOME: '+d.ei+'&nbsp;&nbsp;RESOURCES: $0</div>'+
       '<div>RENT: '+d.rent+'&nbsp;&nbsp;UTILITIES: '+d.elec+'</div><br>'+
-      '<div class="mavs-warn">EXPEDITED: YES</div>'+
+      '<div class="'+expCls+'">'+expTxt+'</div>'+
       '<button class="mavs-btn" onclick="mavsNext()">ADDR</button>';
   } else if (s===6) {
     html = sep+'<div class="mavs-head">&nbsp;&nbsp;ADDRESS (ADDR)</div>'+sep+'<br>'+
@@ -497,6 +606,7 @@ function goVerify() {
   state.vfyStep = 0;
   renderVfy();
   document.getElementById('vfy-bdate').textContent = 'BUSINESS DATE: '+D().bd;
+  setBanner(null, 'vfy-exp-flag');
   show('pg-vfy');
   toast('Enter case # in CARS to verify','ok');
 }
@@ -522,7 +632,6 @@ function renderVfy() {
         '<button id="vfy-next-btn" disabled style="padding:7px 16px;border:none;border-radius:3px;font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit;cursor:not-allowed" onclick="vfyNext()">Next</button>'+
       '</div>';
   } else {
-    // Build next 7 business days
     var opts = '<option value="">-- Select Date --</option>';
     var cnt = 0;
     var chk = new Date();
@@ -539,11 +648,28 @@ function renderVfy() {
       chk.setDate(chk.getDate()+1);
     }
 
+    var ruleNote = d.exp
+      ? '&#8226; Expedited cases must be scheduled within <strong>7 calendar days</strong>'
+      : '&#8226; Regular applications must be processed within <strong>30 days</strong>';
+
+    var fsoPool = [d.fso];
+    var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS','LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
+    for (var i=0; i<decoys.length; i++) {
+      if (decoys[i] !== d.fso) { fsoPool.push(decoys[i]); }
+      if (fsoPool.length >= 4) { break; }
+    }
+    fsoPool.sort(function(){ return Math.random()-0.5; });
+    var fsoOpts = '<option value="">-- Select FSO --</option>';
+    for (var j=0; j<fsoPool.length; j++) {
+      var v = fsoPool[j]===d.fso ? 'CORRECT' : 'WRONG';
+      fsoOpts += '<option value="'+v+'">'+fsoPool[j]+'</option>';
+    }
+
     b.innerHTML =
       '<h2 class="sec-title">Schedule Appointment</h2>'+
       '<div class="appt-rules">'+
         '<strong>MDHS Scheduling Rules:</strong><br>'+
-        '&#8226; Expedited cases must be scheduled within <strong>7 business days</strong><br>'+
+        ruleNote+'<br>'+
         '&#8226; Appointments must be on a <strong>weekday (Mon&ndash;Fri)</strong><br>'+
         '&#8226; Hours: <strong>8:00 AM &ndash; 4:00 PM</strong> &mdash; lunch break unavailable 12:00&ndash;12:59 PM<br>'+
         '&#8226; Select the correct FSO and assigned case worker for this county'+
@@ -570,14 +696,7 @@ function renderVfy() {
       '</div>'+
       '<div class="row">'+
         '<div class="f"><label>FSO / Office *</label>'+
-          '<select id="appt-fso" onchange="clearApptErr()">'+
-            '<option value="">-- Select FSO --</option>'+
-            '<option value="CORRECT">'+d.fso+'</option>'+
-            '<option value="WRONG">HINDS COUNTY DHS</option>'+
-            '<option value="WRONG">HARRISON COUNTY DHS</option>'+
-            '<option value="WRONG">RANKIN COUNTY DHS</option>'+
-            '<option value="WRONG">LAUDERDALE COUNTY DHS</option>'+
-          '</select>'+
+          '<select id="appt-fso" onchange="clearApptErr()">'+fsoOpts+'</select>'+
         '</div>'+
         '<div class="f"><label>Case Worker *</label>'+
           '<select id="appt-wk" onchange="clearApptErr()">'+
@@ -620,7 +739,7 @@ function checkCase() {
     btn.disabled = false;
     btn.style.background = '#3a8fa0';
     btn.style.cursor = 'pointer';
-    toast('IDs verified — schedule appointment','ok');
+    toast('IDs verified \u2014 schedule appointment','ok');
   } else {
     inp.className = 'verify-input err';
     err.textContent = val.length<9 ? 'Case number must be 9 digits.' : 'NO MATCH FOUND. Check the case number from MAVERICS and try again.';
@@ -674,20 +793,34 @@ function submitCase() {
 function doneAction() {
   var isLast = state.qIdx >= state.queue.length-1;
   if (isLast) {
-    state.agreed = false;
-    var c = document.getElementById('agree-chk');
-    c.className = 'agree-chk';
-    c.textContent = '';
-    document.getElementById('agree-content').style.display = 'none';
-    show('pg-welcome');
+    var now = new Date();
+    var mo = now.toLocaleDateString('en-US',{month:'long'});
+    var dy = now.getDate();
+    var yr = now.getFullYear();
+    document.getElementById('cert-trainee-name').textContent = state.trainee;
+    document.getElementById('cert-date').textContent = 'Issued ' + mo + ' ' + dy + ', ' + yr;
+    show('pg-cert');
   } else {
     state.qIdx++;
     state.carsStep = 0;
     renderCars();
     document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
+    setBanner('cars-exp-flag', null);
     show('pg-cars');
     toast('Next applicant: '+D().fn+' '+D().ln,'ok');
   }
+}
+
+function restartFromCert() {
+  state.agreed = false;
+  state.trainee = '';
+  var c = document.getElementById('agree-chk');
+  c.className = 'agree-chk';
+  c.textContent = '';
+  document.getElementById('agree-content').style.display = 'none';
+  document.getElementById('trainee-fn').value = '';
+  document.getElementById('trainee-ln').value = '';
+  show('pg-welcome');
 }
 </script>
 
