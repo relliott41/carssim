@@ -230,7 +230,20 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
           <span class="mavs-title">MAVERICS TERMINAL</span>
           <span class="mavs-screen-code" id="mavs-screen-code">FUSC</span>
         </div>
-        <span class="mavs-step" id="mavs-step">STEP 1/9</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+          <span class="mavs-step" id="mavs-step">STEP 1/9</span>
+          <div style="display:flex;gap:2px" id="mavs-prg-row">
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+            <div style="width:14px;height:3px;border-radius:1px;background:#003300"></div>
+          </div>
+        </div>
       </div>
       <div class="mavs-body" id="mavs-body"></div>
       <div class="mavs-fkbar">
@@ -589,6 +602,13 @@ function renderMavs() {
   var totalSteps = 9;
   document.getElementById('mavs-step').textContent = 'STEP '+(s+1)+'/'+totalSteps;
   document.getElementById('mavs-screen-code').textContent = MAVS_SCREENS[s] || '';
+  var prgRow = document.getElementById('mavs-prg-row');
+  if (prgRow) {
+    var dots = prgRow.children;
+    for (var di=0; di<dots.length; di++) {
+      dots[di].style.background = di < s ? '#28a060' : (di === s ? '#00ff41' : '#003300');
+    }
+  }
   var sep = '<div class="mavs-sep">============================================</div>';
   var cur = '<span class="mavs-cursor"></span>';
   var html = '';
