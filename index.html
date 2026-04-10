@@ -145,6 +145,20 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .cert-sig-line{width:120px;border-top:1px solid #333;margin:0 auto 4px}
 .cert-sig-lbl{font-size:9px;color:#7a9aa5;text-transform:uppercase;letter-spacing:1px}
 .cert-actions{margin-top:16px;display:flex;gap:8px;justify-content:center}
+.app-modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:8000;display:none;align-items:center;justify-content:center}
+.app-modal-overlay.on{display:flex}
+.app-modal{background:#fff;width:92%;max-width:520px;max-height:88vh;border-radius:6px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.4)}
+.app-modal-hdr{background:#2a6a78;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.app-modal-title{font-size:13px;font-weight:800;letter-spacing:1px}
+.app-modal-close{background:rgba(255,255,255,.2);border:none;color:#fff;font-size:16px;font-weight:700;width:28px;height:28px;border-radius:3px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
+.app-modal-body{overflow-y:auto;padding:14px}
+.app-section{margin-bottom:14px;border:1px solid #e0e8ec;border-radius:4px;overflow:hidden}
+.app-section-title{background:#f0f4f6;padding:6px 10px;font-size:10px;font-weight:800;color:#2a6a78;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #e0e8ec}
+.app-fields{padding:8px 10px;display:flex;flex-wrap:wrap;gap:6px}
+.app-field{flex:1;min-width:120px}
+.app-field-lbl{font-size:9px;font-weight:700;color:#8a9aa5;text-transform:uppercase;margin-bottom:1px}
+.app-field-val{font-size:12px;color:#1a2a33;font-weight:600}
+.app-stamp{background:#e6f7ff;border:1px solid #90d0f0;border-radius:4px;padding:8px 12px;font-size:11px;color:#1a5070;margin-bottom:14px;text-align:center}
 </style>
 </head>
 <body>
@@ -247,14 +261,8 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
       </div>
       <div class="mavs-body" id="mavs-body"></div>
       <div class="mavs-fkbar">
-        <span>F1=Help</span>
-        <span>F3=Exit</span>
-        <span>F5=Refresh</span>
-        <span>F6=Menu</span>
-        <span>F7=Back</span>
-        <span>F8=Forward</span>
-        <span>F9=Inquiry</span>
-        <span>F12=Cancel</span>
+        <span>F1=Help</span><span>F3=Exit</span><span>F5=Refresh</span><span>F6=Menu</span>
+        <span>F7=Back</span><span>F8=Forward</span><span>F9=Inquiry</span><span>F12=Cancel</span>
       </div>
     </div>
   </div>
@@ -300,14 +308,8 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
           <div class="cert-body">Eligibility Clerk Training &mdash; CARS &amp; MAVERICS Application Processing</div>
           <div class="cert-date" id="cert-date"></div>
           <div class="cert-sig-row">
-            <div class="cert-sig">
-              <div class="cert-sig-line"></div>
-              <div class="cert-sig-lbl">Training Coordinator</div>
-            </div>
-            <div class="cert-sig">
-              <div class="cert-sig-line"></div>
-              <div class="cert-sig-lbl">Division Director</div>
-            </div>
+            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Training Coordinator</div></div>
+            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Division Director</div></div>
           </div>
         </div>
       </div>
@@ -315,6 +317,18 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
         <button style="padding:8px 20px;font-size:12px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#2a6a78;color:#fff" onclick="window.print()">Print / Save as PDF</button>
         <button style="padding:8px 20px;font-size:12px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff" onclick="restartFromCert()">Start New Session</button>
       </div>
+    </div>
+  </div>
+
+  <!-- APPLICATION MODAL -->
+
+  <div id="app-modal" class="app-modal-overlay">
+    <div class="app-modal">
+      <div class="app-modal-hdr">
+        <span class="app-modal-title">ONLINE APPLICATION &mdash; MDHS BETTER ME</span>
+        <button class="app-modal-close" onclick="closeApp()">&#10005;</button>
+      </div>
+      <div class="app-modal-body" id="app-modal-body"></div>
     </div>
   </div>
 
@@ -425,6 +439,54 @@ function setBanner(carsEl, vfyEl) {
   if (vfyEl)  { document.getElementById(vfyEl).textContent = txt; }
 }
 
+function af(lbl, val) {
+  return '<div class="app-field"><div class="app-field-lbl">'+lbl+'</div>'+
+    '<div class="app-field-val">'+(val||'&mdash;')+'</div></div>';
+}
+function asec(title, fields) {
+  return '<div class="app-section"><div class="app-section-title">'+title+'</div>'+
+    '<div class="app-fields">'+fields+'</div></div>';
+}
+
+function showApp() {
+  var d = D();
+  var now = new Date();
+  var subDate = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+  var expLabel = d.exp ? 'EXPEDITED SERVICE' : 'REGULAR APPLICATION';
+  var body = document.getElementById('app-modal-body');
+  body.innerHTML =
+    '<div class="app-stamp">Submitted Online &mdash; '+subDate+
+      ' &nbsp;|&nbsp; Programs: SNAP, TANF &nbsp;|&nbsp; '+expLabel+'</div>'+
+    asec('Applicant Information',
+      af('First Name',d.fn)+af('Middle Initial',d.mn)+af('Last Name',d.ln)+
+      af('SSN',d.ssn)+af('Date of Birth',d.dob)+af('Age',d.age+' yrs')+af('Gender',d.gender)+
+      af('Language','English'))+
+    asec('Contact Information',
+      af('Address',d.addr)+af('City',d.city)+af('State','Mississippi')+
+      af('Zip',d.zip)+af('County',d.cty)+
+      af('Phone 1',d.p1+' ('+d.p1t+')')+
+      (d.p2 ? af('Phone 2',d.p2+' ('+d.p2t+')') : '')+
+      af('Email',d.em)+af('E-Notices','Yes'))+
+    asec('Income',
+      af('Earned Income',d.ei)+
+      af('Unearned Income','$0.00')+
+      af('Seasonal Farm Work','No'))+
+    asec('Expenses',
+      af('Rent / Mortgage',d.rent)+af('Electricity',d.elec)+
+      af('Gas',d.gas)+af('Water',d.wat)+af('Phone',d.ph))+
+    asec('Resources',
+      af('Cash / Bank Accounts','$0.00')+af('Other Resources','None'))+
+    asec('Household Members',
+      af('Member 1',d.fn+' '+d.ln+' (Primary Individual)')+
+      af('Member 2',d.hfn+' '+d.hln+' ('+d.hrel+')')+
+      af('DOB',d.hdob)+af('Age',d.hage)+af('Gender',d.hgen));
+  document.getElementById('app-modal').classList.add('on');
+}
+
+function closeApp() {
+  document.getElementById('app-modal').classList.remove('on');
+}
+
 function fi(lbl,val,flex) {
   return '<div class="f" style="flex:'+(flex||1)+';min-width:80px"><label>'+lbl+'</label>'+
     '<input readonly value="'+(val||'')+'"></div>';
@@ -500,7 +562,12 @@ function renderCars() {
   var s = state.carsStep;
   if (s===0) {
     b.innerHTML =
-      '<h2 class="sec-title">DIGITAL APPLICANT INFORMATION</h2>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+        '<h2 class="sec-title" style="margin-bottom:0">DIGITAL APPLICANT INFORMATION</h2>'+
+        '<button onclick="showApp()" style="padding:5px 12px;font-size:11px;border:none;'+
+          'border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;'+
+          'background:#2a6a78;color:#fff;white-space:nowrap">View Application</button>'+
+      '</div>'+
       '<div class="sub">Demographics</div>'+
       '<div class="row">'+fi('First Name',d.fn)+fi('Middle Name',d.mn)+fi('Last Name',d.ln)+fd('Suffix','Select Suffix')+'</div>'+
       '<div class="row">'+fi('SSN',d.ssn)+fi('Date of Birth',d.dob)+
@@ -638,22 +705,19 @@ function renderMavs() {
         'placeholder="MM/DD/YYYY" maxlength="10" oninput="formatClirDob()" '+
         'onkeydown="if(event.key===\'Enter\')checkClirDob()">'+cur+'</div>'+
       '<div class="mavs-err" id="clir-err" style="display:none"></div><br>'+
-      '<div class="mavs-prompt" onclick="checkClirDob()">'+
-        '[ENTER] Inquire on Person (1)</div>';
+      '<div class="mavs-prompt" onclick="checkClirDob()">[ENTER] Inquire on Person (1)</div>';
   } else if (s===2) {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;CLIS - SHORT LIST</div>'+sep+'<br>'+
       '<div class="mavs-warn">NO CLIENTS FOUND</div><br>'+
       '<div class="mavs-dim">SSN: '+d.ssn+'&nbsp;&nbsp;DOB: '+toMavDate(d.dob)+'</div><br>'+
-      '<div class="mavs-prompt" onclick="mavsNext()">'+
-        '[ENTER] Save New Client (2)</div>';
+      '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Save New Client (2)</div>';
   } else if (s===3) {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;DRS INQUIRY</div>'+sep+'<br>'+
       '<div>'+d.ln.toUpperCase()+', '+d.fn.toUpperCase()+'</div><br>'+
       '<div class="mavs-ok">NO DISQUALIFICATIONS FOUND</div><br>'+
-      '<div class="mavs-prompt" onclick="mavsNext()">'+
-        '[ENTER] Register New Case (4)</div>';
+      '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Register New Case (4)</div>';
   } else if (s===4) {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;REGISTRATION (REG)</div>'+sep+'<br>'+
@@ -705,8 +769,7 @@ function renderMavs() {
       '<div class="mavs-warn" style="font-size:13px;font-weight:bold">'+
         '*** WRITE DOWN CASE #: '+d.cn+' ***</div><br>'+
       '<div style="color:#aaa;font-size:11px">You will need this number in the next step.</div><br>'+
-      '<div class="mavs-prompt" style="color:#ffcc00" onclick="goVerify()">'+
-        '[F3] Return to C.A.R.S.</div>';
+      '<div class="mavs-prompt" style="color:#ffcc00" onclick="goVerify()">[F3] Return to C.A.R.S.</div>';
   }
   document.getElementById('mavs-body').innerHTML = html;
   var firstInput = document.querySelector('#mavs-body .mavs-input');
@@ -751,12 +814,8 @@ function checkReap() {
   var dv = dateInp.value.trim();
   var wv = widInp.value.trim();
   var msgs = [];
-  if (dv.length !== 6 || isNaN(dv)) {
-    msgs.push('DATE ERROR: Enter 6-digit date as MMDDYY');
-  }
-  if (!wv) {
-    msgs.push('WORKER ID required');
-  }
+  if (dv.length !== 6 || isNaN(dv)) { msgs.push('DATE ERROR: Enter 6-digit date as MMDDYY'); }
+  if (!wv) { msgs.push('WORKER ID required'); }
   if (msgs.length > 0) {
     err.innerHTML = msgs.join('<br>');
     err.style.display = 'block';
@@ -819,11 +878,9 @@ function renderVfy() {
       }
       chk.setDate(chk.getDate()+1);
     }
-
     var ruleNote = d.exp
       ? '&#8226; Expedited cases must be scheduled within <strong>7 calendar days</strong>'
       : '&#8226; Regular applications must be processed within <strong>30 days</strong>';
-
     var fsoPool = [d.fso];
     var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS',
       'LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
@@ -837,12 +894,10 @@ function renderVfy() {
       var v = fsoPool[j]===d.fso ? 'CORRECT' : 'WRONG';
       fsoOpts += '<option value="'+v+'">'+fsoPool[j]+'</option>';
     }
-
     b.innerHTML =
       '<h2 class="sec-title">Schedule Appointment</h2>'+
       '<div class="appt-rules">'+
-        '<strong>MDHS Scheduling Rules:</strong><br>'+
-        ruleNote+'<br>'+
+        '<strong>MDHS Scheduling Rules:</strong><br>'+ruleNote+'<br>'+
         '&#8226; Appointments must be on a <strong>weekday (Mon&ndash;Fri)</strong><br>'+
         '&#8226; Hours: <strong>8:00 AM &ndash; 4:00 PM</strong> &mdash; lunch break 12:00&ndash;12:59 PM<br>'+
         '&#8226; Select the correct FSO and assigned case worker for this county'+
