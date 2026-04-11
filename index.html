@@ -92,8 +92,12 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .mavs-dim{color:#aaa}
 .mavs-ok{color:#28a060}
 .mavs-warn{color:#ffcc00}
-.mavs-prompt{color:#00ff41;font-family:monospace;font-size:12px;margin:8px 0 4px;cursor:pointer;display:inline-block}
-.mavs-prompt:hover{color:#fff;background:rgba(0,255,65,.15);padding:1px 4px}
+.mavs-prompt{color:#00ff41;font-family:monospace;font-size:12px;margin:10px 0 4px;cursor:pointer;display:block;border-top:1px solid #002200;padding-top:8px;letter-spacing:.5px}
+.mavs-prompt::before{content:'> ';color:#007722}
+.mavs-prompt:hover{color:#fff;background:rgba(0,255,65,.1);padding-top:8px;padding-left:4px}
+.mavs-prompt-warn{color:#ffcc00;font-family:monospace;font-size:12px;margin:10px 0 4px;cursor:pointer;display:block;border-top:1px solid #332200;padding-top:8px;letter-spacing:.5px}
+.mavs-prompt-warn::before{content:'> ';color:#996600}
+.mavs-prompt-warn:hover{color:#fff;background:rgba(255,204,0,.1);padding-top:8px;padding-left:4px}
 .mavs-input{background:#000;border:1px solid #00ff41;color:#00ff41;font-family:monospace;font-size:13px;padding:4px 6px;width:180px;outline:none;caret-color:#00ff41}
 .mavs-input:focus{border-color:#fff}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
@@ -159,6 +163,20 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .app-field-lbl{font-size:9px;font-weight:700;color:#8a9aa5;text-transform:uppercase;margin-bottom:1px}
 .app-field-val{font-size:12px;color:#1a2a33;font-weight:600}
 .app-stamp{background:#e6f7ff;border:1px solid #90d0f0;border-radius:4px;padding:8px 12px;font-size:11px;color:#1a5070;margin-bottom:14px;text-align:center}
+.ref-btn{position:fixed;bottom:42px;right:10px;background:#ffcc00;color:#1a1a00;font-family:monospace;font-size:11px;font-weight:700;padding:5px 10px;border:none;border-radius:3px;cursor:pointer;z-index:7000;display:none;box-shadow:0 2px 8px rgba(0,0,0,.4);letter-spacing:.5px}
+.ref-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:7500;display:none;align-items:center;justify-content:center}
+.ref-overlay.on{display:flex}
+.ref-modal{background:#0d0d1a;border:1px solid #00ff41;width:90%;max-width:360px;border-radius:4px;overflow:hidden;font-family:monospace;box-shadow:0 8px 32px rgba(0,0,0,.6)}
+.ref-hdr{background:#001a00;padding:7px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #003300}
+.ref-hdr-title{color:#00ff41;font-size:11px;font-weight:700;letter-spacing:1px}
+.ref-hdr-close{background:rgba(0,255,65,.15);border:1px solid #00ff41;color:#00ff41;font-size:12px;font-weight:700;width:22px;height:22px;border-radius:2px;cursor:pointer;font-family:monospace}
+.ref-body{padding:10px 12px;color:#00ff41;font-size:11px;line-height:1.9}
+.ref-sec{color:#005500;font-size:9px;letter-spacing:2px;margin:8px 0 2px;text-transform:uppercase;border-top:1px solid #002200;padding-top:6px}
+.ref-sec:first-child{border-top:none;padding-top:0;margin-top:0}
+.ref-row{display:flex;justify-content:space-between;gap:8px}
+.ref-lbl{color:#007722;font-size:10px;white-space:nowrap}
+.ref-val{color:#fff;font-weight:700;font-size:11px;text-align:right}
+.ref-val-pending{color:#334433;font-weight:700;font-size:11px;text-align:right;font-style:italic}
 </style>
 </head>
 <body>
@@ -332,6 +350,20 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
   </div>
 
+  <!-- REF CARD BUTTON + MODAL -->
+
+<button id="ref-btn" class="ref-btn" onclick="showRef()">📋 REF CARD</button>
+
+  <div id="ref-overlay" class="ref-overlay">
+    <div class="ref-modal">
+      <div class="ref-hdr">
+        <span class="ref-hdr-title">CASE REFERENCE CARD</span>
+        <button class="ref-hdr-close" onclick="closeRef()">X</button>
+      </div>
+      <div class="ref-body" id="ref-body"></div>
+    </div>
+  </div>
+
   <!-- TASKBAR -->
 
   <div id="taskbar">
@@ -377,15 +409,13 @@ function buildQueue() {
   var shuffled = POOL.slice().sort(function(){ return Math.random()-0.5; });
   var n = Math.floor(Math.random()*2)+3;
   var picked = shuffled.slice(0,n);
-  var exp = [];
-  var reg = [];
+  var exp = []; var reg = [];
   for (var i=0; i<picked.length; i++) {
     if (picked[i].exp) { exp.push(picked[i]); } else { reg.push(picked[i]); }
   }
   if (exp.length === 0) {
     var allExp = POOL.filter(function(p){ return p.exp; });
-    var bonus = allExp[Math.floor(Math.random()*allExp.length)];
-    exp.push(bonus);
+    exp.push(allExp[Math.floor(Math.random()*allExp.length)]);
   }
   var sorted = exp.concat(reg);
   var now = new Date();
@@ -439,6 +469,44 @@ function setBanner(carsEl, vfyEl) {
   if (vfyEl)  { document.getElementById(vfyEl).textContent = txt; }
 }
 
+function setRefBtn(visible) {
+  document.getElementById('ref-btn').style.display = visible ? 'block' : 'none';
+}
+
+function showRef() {
+  var d = D();
+  var s = state.mavsStep;
+  var hasIds = (s >= 4);
+  function rRow(lbl, val, pending) {
+    var cls = pending ? 'ref-val-pending' : 'ref-val';
+    var txt = pending ? '--PENDING--' : val;
+    return '<div class="ref-row"><span class="ref-lbl">'+lbl+'</span><span class="'+cls+'">'+txt+'</span></div>';
+  }
+  document.getElementById('ref-body').innerHTML =
+    '<div class="ref-sec">Applicant</div>'+
+    rRow('NAME', d.fn+' '+d.mn+'. '+d.ln, false)+
+    rRow('DOB', d.dob, false)+
+    '<div class="ref-sec">Case IDs</div>'+
+    rRow('CASE #', d.cn, !hasIds)+
+    rRow('PI ID', d.pid, !hasIds)+
+    rRow('HH ID', d.hid, !hasIds)+
+    '<div class="ref-sec">Assignment</div>'+
+    rRow('FSO', d.fso, false)+
+    rRow('WORKER', d.wk, false)+
+    '<div class="ref-sec">Financials</div>'+
+    rRow('INCOME', d.ei, false)+
+    rRow('RENT', d.rent, false)+
+    rRow('ELECTRIC', d.elec, false)+
+    rRow('GAS', d.gas, false)+
+    rRow('WATER', d.wat, false)+
+    rRow('PHONE', d.ph, false);
+  document.getElementById('ref-overlay').classList.add('on');
+}
+
+function closeRef() {
+  document.getElementById('ref-overlay').classList.remove('on');
+}
+
 function af(lbl, val) {
   return '<div class="app-field"><div class="app-field-lbl">'+lbl+'</div>'+
     '<div class="app-field-val">'+(val||'&mdash;')+'</div></div>';
@@ -468,9 +536,7 @@ function showApp() {
       (d.p2 ? af('Phone 2',d.p2+' ('+d.p2t+')') : '')+
       af('Email',d.em)+af('E-Notices','Yes'))+
     asec('Income',
-      af('Earned Income',d.ei)+
-      af('Unearned Income','$0.00')+
-      af('Seasonal Farm Work','No'))+
+      af('Earned Income',d.ei)+af('Unearned Income','$0.00')+af('Seasonal Farm Work','No'))+
     asec('Expenses',
       af('Rent / Mortgage',d.rent)+af('Electricity',d.elec)+
       af('Gas',d.gas)+af('Water',d.wat)+af('Phone',d.ph))+
@@ -508,7 +574,6 @@ function btnRow(html) {
   return '<div class="btn-row">'+html+'</div>';
 }
 
-// WELCOME
 function toggleAgree() {
   state.agreed = !state.agreed;
   var c = document.getElementById('agree-chk');
@@ -522,7 +587,6 @@ function startSession() {
   show('pg-name');
 }
 
-// TRAINEE NAME
 function submitName() {
   var fn = document.getElementById('trainee-fn').value.trim();
   var ln = document.getElementById('trainee-ln').value.trim();
@@ -533,7 +597,6 @@ function submitName() {
   show('pg-login');
 }
 
-// LOGIN
 function doLogin() {
   var u = document.getElementById('login-u').value.trim().toLowerCase();
   var p = document.getElementById('login-p').value;
@@ -554,7 +617,6 @@ function doLogin() {
   }
 }
 
-// CARS
 function renderCars() {
   renderPrg('prg-cars', state.carsStep);
   var d = D();
@@ -564,9 +626,9 @@ function renderCars() {
     b.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
         '<h2 class="sec-title" style="margin-bottom:0">DIGITAL APPLICANT INFORMATION</h2>'+
-        '<button onclick="showApp()" style="padding:5px 12px;font-size:11px;border:none;'+
-          'border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;'+
-          'background:#2a6a78;color:#fff;white-space:nowrap">View Application</button>'+
+        '<button onclick="showApp()" style="padding:5px 12px;font-size:11px;border:none;border-radius:3px;'+
+          'cursor:pointer;font-weight:700;font-family:inherit;background:#2a6a78;color:#fff;white-space:nowrap">'+
+          'View Application</button>'+
       '</div>'+
       '<div class="sub">Demographics</div>'+
       '<div class="row">'+fi('First Name',d.fn)+fi('Middle Name',d.mn)+fi('Last Name',d.ln)+fd('Suffix','Select Suffix')+'</div>'+
@@ -634,17 +696,13 @@ function renderCars() {
   } else if (s===5) {
     b.innerHTML =
       '<h2 class="sec-title">ADDITIONAL APPLICATION INFORMATION</h2>'+
-      '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">'+
-        'Household members not included on application</p>'+
+      '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">Household members not included on application</p>'+
       '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">'+
-        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">'+
-          'SNAP Authorized Rep</div>'+
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Authorized Rep</div>'+
           '<div class="row">'+fi('First','')+fi('Last','')+fi('Phone','')+'</div></div>'+
-        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">'+
-          'SNAP Benefit Rep</div>'+
+        '<div><div style="font-size:10px;font-weight:700;margin-bottom:4px;text-decoration:underline">SNAP Benefit Rep</div>'+
           '<div class="row">'+fi('First','')+fi('Last','')+fi('Phone','')+'</div></div></div>'+
-      '<div style="font-size:12px;margin-bottom:10px">Copy preference: '+
-        radio('Electronic',['Paper','Electronic','Refuse'])+'</div>'+
+      '<div style="font-size:12px;margin-bottom:10px">Copy preference: '+radio('Electronic',['Paper','Electronic','Refuse'])+'</div>'+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
         '<button class="bn" onclick="goMavs()">Next</button>');
   }
@@ -655,12 +713,12 @@ function carsNext() { state.carsStep++; renderCars(); }
 function carsPrev() { state.carsStep--; renderCars(); }
 function goMavs() {
   state.mavsStep = 0;
+  setRefBtn(false);
   renderMavs();
   show('pg-mavs');
   toast('Switch to MAVERICS terminal','warn');
 }
 
-// MAVERICS
 var MAVS_SCREENS = ['FUSC','CLIR','CLIS','DRS','REG','EXSW','REAP','ADDR','CAP1'];
 
 function renderMavs() {
@@ -676,6 +734,7 @@ function renderMavs() {
       dots[di].style.background = di < s ? '#28a060' : (di === s ? '#00ff41' : '#003300');
     }
   }
+  setRefBtn(s >= 1);
   var sep = '<div class="mavs-sep">============================================</div>';
   var cur = '<span class="mavs-cursor"></span>';
   var html = '';
@@ -684,26 +743,18 @@ function renderMavs() {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;FULL SERVICE CLERICAL MENU (FUSC)</div>'+sep+'<br>'+
       '<div>&nbsp;&nbsp;1. GENERAL INQUIRIES</div>'+
-      '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">'+
-        '-&gt; 2. APPLICATION REGISTRATION</div>'+
-      '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div>'+
-      '<div>&nbsp;&nbsp;4. ADD PROGRAM</div>'+
-      '<div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>'+
+      '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">-&gt; 2. APPLICATION REGISTRATION</div>'+
+      '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div><div>&nbsp;&nbsp;4. ADD PROGRAM</div><div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>'+
       '<div class="mavs-dim">SELECTION: <span id="fusc-val"></span>'+cur+'</div><br>'+
       '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Select 2 &rarr; APPLICATION REGISTRATION</div>';
   } else if (s===1) {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;CLIENT INQUIRY (CLIR)</div>'+sep+'<br>'+
-      '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div>'+
-      '<div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div>'+
-      '<div>&nbsp;&nbsp;3. EXISTING CASE #</div>'+
-      '<div>&nbsp;&nbsp;4. NEW CASE #</div>'+
-      '<div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>'+
-      '<div class="mavs-dim">LAST NAME: '+d.ln.toUpperCase()+
-        '&nbsp;&nbsp;FIRST: '+d.fn.toUpperCase()+'</div>'+
-      '<div class="mavs-dim">DOB: <input id="clir-dob" class="mavs-input" '+
-        'placeholder="MM/DD/YYYY" maxlength="10" oninput="formatClirDob()" '+
-        'onkeydown="if(event.key===\'Enter\')checkClirDob()">'+cur+'</div>'+
+      '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div><div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div>'+
+      '<div>&nbsp;&nbsp;3. EXISTING CASE #</div><div>&nbsp;&nbsp;4. NEW CASE #</div><div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>'+
+      '<div class="mavs-dim">LAST NAME: '+d.ln.toUpperCase()+'&nbsp;&nbsp;FIRST: '+d.fn.toUpperCase()+'</div>'+
+      '<div class="mavs-dim">DOB: <input id="clir-dob" class="mavs-input" placeholder="MM/DD/YYYY" maxlength="10" '+
+        'oninput="formatClirDob()" onkeydown="if(event.key===\'Enter\')checkClirDob()">'+cur+'</div>'+
       '<div class="mavs-err" id="clir-err" style="display:none"></div><br>'+
       '<div class="mavs-prompt" onclick="checkClirDob()">[ENTER] Inquire on Person (1)</div>';
   } else if (s===2) {
@@ -734,8 +785,7 @@ function renderMavs() {
       '<div class="mavs-head">&nbsp;&nbsp;EXPEDITED SCREENING (EXSW)</div>'+sep+'<br>'+
       '<div class="mavs-head">CASE: '+d.cn+'</div><br>'+
       '<div>INCOME: '+d.ei+'&nbsp;&nbsp;RESOURCES: $0.00</div>'+
-      '<div>RENT/MORTGAGE: '+d.rent+'</div>'+
-      '<div>UTILITIES: '+d.elec+'</div><br>'+
+      '<div>RENT/MORTGAGE: '+d.rent+'</div><div>UTILITIES: '+d.elec+'</div><br>'+
       '<div class="'+expCls+'">'+expTxt+'</div><br>'+
       '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Continue to REAP</div>';
   } else if (s===6) {
@@ -766,10 +816,9 @@ function renderMavs() {
       '<div class="mavs-head">CASE: '+d.cn+'</div>'+
       '<div class="mavs-head">FS RCVD: '+bdDate+'</div>'+
       '<div class="mavs-head">AF RCVD: '+bdDate+'</div><br>'+
-      '<div class="mavs-warn" style="font-size:13px;font-weight:bold">'+
-        '*** WRITE DOWN CASE #: '+d.cn+' ***</div><br>'+
+      '<div class="mavs-warn" style="font-size:13px;font-weight:bold">*** WRITE DOWN CASE #: '+d.cn+' ***</div><br>'+
       '<div style="color:#aaa;font-size:11px">You will need this number in the next step.</div><br>'+
-      '<div class="mavs-prompt" style="color:#ffcc00" onclick="goVerify()">[F3] Return to C.A.R.S.</div>';
+      '<div class="mavs-prompt-warn" onclick="goVerify()">[F3] Return to C.A.R.S.</div>';
   }
   document.getElementById('mavs-body').innerHTML = html;
   var firstInput = document.querySelector('#mavs-body .mavs-input');
@@ -792,16 +841,8 @@ function checkClirDob() {
   var val = inp.value.trim();
   var d = D();
   var re = /^\d{2}\/\d{2}\/\d{4}$/;
-  if (!re.test(val)) {
-    err.textContent = 'FORMAT ERROR: Enter DOB as MM/DD/YYYY';
-    err.style.display = 'block';
-    return;
-  }
-  if (val !== d.dob) {
-    err.textContent = 'NO MATCH: DOB does not match client record.';
-    err.style.display = 'block';
-    return;
-  }
+  if (!re.test(val)) { err.textContent='FORMAT ERROR: Enter DOB as MM/DD/YYYY'; err.style.display='block'; return; }
+  if (val !== d.dob) { err.textContent='NO MATCH: DOB does not match client record.'; err.style.display='block'; return; }
   err.style.display = 'none';
   mavsNext();
 }
@@ -816,11 +857,7 @@ function checkReap() {
   var msgs = [];
   if (dv.length !== 6 || isNaN(dv)) { msgs.push('DATE ERROR: Enter 6-digit date as MMDDYY'); }
   if (!wv) { msgs.push('WORKER ID required'); }
-  if (msgs.length > 0) {
-    err.innerHTML = msgs.join('<br>');
-    err.style.display = 'block';
-    return;
-  }
+  if (msgs.length > 0) { err.innerHTML=msgs.join('<br>'); err.style.display='block'; return; }
   err.style.display = 'none';
   mavsNext();
 }
@@ -832,11 +869,11 @@ function goVerify() {
   renderVfy();
   document.getElementById('vfy-bdate').textContent = 'BUSINESS DATE: '+D().bd;
   setBanner(null, 'vfy-exp-flag');
+  setRefBtn(true);
   show('pg-vfy');
   toast('Enter case # in CARS to verify','ok');
 }
 
-// VERIFY + APPT
 function renderVfy() {
   renderPrg('prg-vfy', 7+state.vfyStep);
   var d = D();
@@ -846,21 +883,18 @@ function renderVfy() {
     b.innerHTML =
       '<h2 class="sec-title">CASE VERIFICATION</h2>'+
       '<div class="verify-center">'+
-        '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">'+
-          'MAVERICS CASE #</label>'+
+        '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">MAVERICS CASE #</label>'+
         '<input id="verify-cn" class="verify-input" placeholder="9-digit case #" maxlength="9" '+
           'oninput="clearVerifyErr()" onkeydown="if(event.key===\'Enter\')checkCase()">'+
         '<div id="verify-err" class="verify-err" style="display:none"></div>'+
         '<button style="margin-top:8px;padding:6px 24px;border:none;border-radius:3px;cursor:pointer;'+
-          'font-size:12px;font-weight:700;background:#2a6a78;color:#fff;font-family:inherit" '+
-          'onclick="checkCase()">Get IDs</button>'+
+          'font-size:12px;font-weight:700;background:#2a6a78;color:#fff;font-family:inherit" onclick="checkCase()">Get IDs</button>'+
       '</div>'+
       '<div id="verify-result" style="display:none" class="verify-result"></div>'+
       '<div class="btn-row">'+
         '<button class="bc">Cancel</button>'+
         '<button id="vfy-next-btn" disabled style="padding:7px 16px;border:none;border-radius:3px;'+
-          'font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit;'+
-          'cursor:not-allowed" onclick="vfyNext()">Next</button>'+
+          'font-size:12px;font-weight:700;background:#ccc;color:#fff;font-family:inherit;cursor:not-allowed" onclick="vfyNext()">Next</button>'+
       '</div>';
   } else {
     var opts = '<option value="">-- Select Date --</option>';
@@ -882,8 +916,7 @@ function renderVfy() {
       ? '&#8226; Expedited cases must be scheduled within <strong>7 calendar days</strong>'
       : '&#8226; Regular applications must be processed within <strong>30 days</strong>';
     var fsoPool = [d.fso];
-    var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS',
-      'LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
+    var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS','LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
     for (var i=0; i<decoys.length; i++) {
       if (decoys[i] !== d.fso) { fsoPool.push(decoys[i]); }
       if (fsoPool.length >= 4) { break; }
@@ -896,45 +929,39 @@ function renderVfy() {
     }
     b.innerHTML =
       '<h2 class="sec-title">Schedule Appointment</h2>'+
-      '<div class="appt-rules">'+
-        '<strong>MDHS Scheduling Rules:</strong><br>'+ruleNote+'<br>'+
+      '<div class="appt-rules"><strong>MDHS Scheduling Rules:</strong><br>'+ruleNote+'<br>'+
         '&#8226; Appointments must be on a <strong>weekday (Mon&ndash;Fri)</strong><br>'+
         '&#8226; Hours: <strong>8:00 AM &ndash; 4:00 PM</strong> &mdash; lunch break 12:00&ndash;12:59 PM<br>'+
         '&#8226; Select the correct FSO and assigned case worker for this county'+
       '</div>'+
       '<div class="row">'+
-        '<div class="f"><label>Appointment Date *</label>'+
-          '<select id="appt-date" onchange="clearApptErr()">'+opts+'</select></div>'+
-        '<div class="f"><label>Appointment Time *</label>'+
-          '<select id="appt-time" onchange="clearApptErr()">'+
-            '<option value="">-- Select Time --</option>'+
-            '<option>8:00 AM</option><option>8:30 AM</option><option>9:00 AM</option>'+
-            '<option>9:30 AM</option><option>10:00 AM</option><option>10:30 AM</option>'+
-            '<option>11:00 AM</option><option>11:30 AM</option>'+
-            '<option value="LUNCH">12:00 PM (Lunch Break)</option>'+
-            '<option value="LUNCH">12:30 PM (Lunch Break)</option>'+
-            '<option>1:00 PM</option><option>1:30 PM</option><option>2:00 PM</option>'+
-            '<option>2:30 PM</option><option>3:00 PM</option><option>3:30 PM</option>'+
-            '<option>4:00 PM</option>'+
-            '<option value="AFTER">4:30 PM (After Hours)</option>'+
-            '<option value="AFTER">5:00 PM (After Hours)</option>'+
-          '</select></div>'+
+        '<div class="f"><label>Appointment Date *</label><select id="appt-date" onchange="clearApptErr()">'+opts+'</select></div>'+
+        '<div class="f"><label>Appointment Time *</label><select id="appt-time" onchange="clearApptErr()">'+
+          '<option value="">-- Select Time --</option>'+
+          '<option>8:00 AM</option><option>8:30 AM</option><option>9:00 AM</option>'+
+          '<option>9:30 AM</option><option>10:00 AM</option><option>10:30 AM</option>'+
+          '<option>11:00 AM</option><option>11:30 AM</option>'+
+          '<option value="LUNCH">12:00 PM (Lunch Break)</option>'+
+          '<option value="LUNCH">12:30 PM (Lunch Break)</option>'+
+          '<option>1:00 PM</option><option>1:30 PM</option><option>2:00 PM</option>'+
+          '<option>2:30 PM</option><option>3:00 PM</option><option>3:30 PM</option>'+
+          '<option>4:00 PM</option>'+
+          '<option value="AFTER">4:30 PM (After Hours)</option>'+
+          '<option value="AFTER">5:00 PM (After Hours)</option>'+
+        '</select></div>'+
       '</div>'+
       '<div class="row">'+
-        '<div class="f"><label>FSO / Office *</label>'+
-          '<select id="appt-fso" onchange="clearApptErr()">'+fsoOpts+'</select></div>'+
-        '<div class="f"><label>Case Worker *</label>'+
-          '<select id="appt-wk" onchange="clearApptErr()">'+
-            '<option value="">-- Select Worker --</option>'+
-            '<option value="CORRECT">'+d.wk+'</option>'+
-            '<option value="WRONG">MICHAEL JOHNSON</option>'+
-            '<option value="WRONG">SARAH DAVIS</option>'+
-            '<option value="WRONG">ROBERT CLARK</option>'+
-          '</select></div>'+
+        '<div class="f"><label>FSO / Office *</label><select id="appt-fso" onchange="clearApptErr()">'+fsoOpts+'</select></div>'+
+        '<div class="f"><label>Case Worker *</label><select id="appt-wk" onchange="clearApptErr()">'+
+          '<option value="">-- Select Worker --</option>'+
+          '<option value="CORRECT">'+d.wk+'</option>'+
+          '<option value="WRONG">MICHAEL JOHNSON</option>'+
+          '<option value="WRONG">SARAH DAVIS</option>'+
+          '<option value="WRONG">ROBERT CLARK</option>'+
+        '</select></div>'+
       '</div>'+
       '<div id="appt-err" class="appt-err"></div>'+
-      btnRow('<button class="bc">Cancel</button>'+
-        '<button class="bp" onclick="vfyPrev()">Previous</button>'+
+      btnRow('<button class="bc">Cancel</button><button class="bp" onclick="vfyPrev()">Previous</button>'+
         '<button class="bs" onclick="validateAppt()">Submit</button>');
   }
   document.querySelector('#pg-vfy .scroll').scrollTop = 0;
@@ -991,21 +1018,12 @@ function validateAppt() {
   var msgs = [];
   if (!date) { msgs.push('&#8226; <strong>Appointment Date</strong> is required.'); }
   if (!time) { msgs.push('&#8226; <strong>Appointment Time</strong> is required.'); }
-  if (time==='LUNCH') {
-    msgs.push('&#8226; <strong>Invalid time:</strong> 12:00&ndash;12:59 PM is lunch. '+
-      'Select 8:00 AM&ndash;11:30 AM or 1:00 PM&ndash;4:00 PM.');
-  }
-  if (time==='AFTER') {
-    msgs.push('&#8226; <strong>Invalid time:</strong> After-hours not permitted. Office closes at 4:00 PM.');
-  }
+  if (time==='LUNCH') { msgs.push('&#8226; <strong>Invalid time:</strong> 12:00&ndash;12:59 PM is lunch. Select 8:00 AM&ndash;11:30 AM or 1:00 PM&ndash;4:00 PM.'); }
+  if (time==='AFTER') { msgs.push('&#8226; <strong>Invalid time:</strong> After-hours not permitted. Office closes at 4:00 PM.'); }
   if (!fso) { msgs.push('&#8226; <strong>FSO / Office</strong> is required.'); }
-  if (fso==='WRONG') {
-    msgs.push('&#8226; <strong>Incorrect FSO:</strong> Client is in '+d.cty+' County. Select matching DHS office.');
-  }
+  if (fso==='WRONG') { msgs.push('&#8226; <strong>Incorrect FSO:</strong> Client is in '+d.cty+' County. Select matching DHS office.'); }
   if (!wk) { msgs.push('&#8226; <strong>Case Worker</strong> is required.'); }
-  if (wk==='WRONG') {
-    msgs.push('&#8226; <strong>Incorrect case worker:</strong> Verify worker assigned to this FSO and client.');
-  }
+  if (wk==='WRONG') { msgs.push('&#8226; <strong>Incorrect case worker:</strong> Verify worker assigned to this FSO and client.'); }
   if (msgs.length>0) {
     var e = document.getElementById('appt-err');
     e.innerHTML = '<strong>&#9888;&nbsp;Please correct the following:</strong><br><br>'+msgs.join('<br>');
@@ -1016,9 +1034,9 @@ function validateAppt() {
 }
 
 function submitCase() {
+  setRefBtn(false);
   var d = D();
-  document.getElementById('done-msg').textContent =
-    'Case '+d.cn+' for '+d.fn+' '+d.ln+' registered and routed to WorkSite.';
+  document.getElementById('done-msg').textContent = 'Case '+d.cn+' for '+d.fn+' '+d.ln+' registered and routed to WorkSite.';
   var isLast = state.qIdx >= state.queue.length-1;
   document.getElementById('done-session').style.display = isLast ? 'block' : 'none';
   document.getElementById('done-btn').textContent = isLast ? 'View Certificate' : 'Next Applicant \u2192';
