@@ -139,7 +139,11 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .cert-card{width:100%;max-width:600px;background:#fff;border:8px solid #2a6a78;border-radius:4px;padding:32px 36px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.12)}
 .cert-inner{border:2px solid #3a8fa0;padding:24px}
 .cert-seal{font-size:48px;margin-bottom:8px}
-.cert-issuer{font-size:10px;font-weight:700;color:#5a7a85;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+.cert-divider{display:flex;height:4px;margin:8px auto 12px;width:160px}
+.cert-div-green{flex:1;background:#5a8a60}
+.cert-div-gray{flex:1;background:#9a9a9a}
+.cert-div-blue{flex:1;background:#5a8aaa}
+.cert-issuer{font-size:10px;font-weight:700;color:#5a7a85;letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}
 .cert-org{font-size:16px;font-weight:800;color:#2a6a78;letter-spacing:1px;margin-bottom:16px}
 .cert-presents{font-size:11px;color:#7a9aa5;font-style:italic;margin-bottom:8px}
 .cert-name{font-size:28px;font-weight:800;color:#1a3a4a;border-bottom:2px solid #3a8fa0;display:inline-block;padding-bottom:4px;margin-bottom:16px;min-width:200px}
@@ -190,6 +194,8 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     <div class="welcome-wrap">
       <div class="wcard">
         <div style="text-align:center;margin-bottom:12px">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADRcrwWAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA" alt="" style="height:0;width:0;display:none">
+          <div id="mdhs-logo-welcome" style="margin-bottom:10px"></div>
           <div style="font-size:24px;font-weight:800;color:#2a6a78;letter-spacing:3px">MDHS County Training Simulator</div>
           <div style="font-size:11px;color:#5a7a85;font-style:italic">Interactive Training Simulator</div>
           <div style="font-size:10px;color:#999;margin-top:4px">Eligibility Clerk Training &mdash; Chapter 1</div>
@@ -319,9 +325,10 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     <div class="cert-wrap">
       <div class="cert-card">
         <div class="cert-inner">
-          <div class="cert-seal">&#127942;</div>
-          <div class="cert-issuer">Mississippi Department of Human Services</div>
-          <div class="cert-org">MDHS &mdash; Training &amp; Development</div>
+          <div id="mdhs-logo-cert" style="margin-bottom:6px"></div>
+          <div class="cert-divider"><div class="cert-div-green"></div><div class="cert-div-gray"></div><div class="cert-div-blue"></div></div>
+          <div class="cert-issuer">Economic Programs Training Team</div>
+          <div class="cert-org">Mississippi Department of Human Services</div>
           <div class="cert-presents">This certifies that</div>
           <div class="cert-name" id="cert-trainee-name"></div>
           <div class="cert-body">has successfully completed all required training modules in the</div>
@@ -329,8 +336,8 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
           <div class="cert-body">Eligibility Clerk Training &mdash; CARS &amp; MAVERICS Application Processing</div>
           <div class="cert-date" id="cert-date"></div>
           <div class="cert-sig-row">
-            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Training Coordinator</div></div>
-            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Division Director</div></div>
+            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Training Coordinator<br>Economic Programs</div></div>
+            <div class="cert-sig"><div class="cert-sig-line"></div><div class="cert-sig-lbl">Division Director<br>Economic Programs</div></div>
           </div>
         </div>
       </div>
@@ -802,7 +809,9 @@ function renderMavs() {
       '<div class="mavs-err" id="reap-err" style="display:none"></div><br>'+
       '<div class="mavs-dim">Enter worker ID:</div>'+
       '<div><input id="reap-wid" class="mavs-input" placeholder="Worker ID" maxlength="8" '+
-        'onkeydown="if(event.key===\'Enter\')checkReap()">'+cur+'</div><br>'+
+        'onkeydown="if(event.key===\'Enter\')checkReap()">'+cur+'</div>'+
+      '<div style="color:#556655;font-size:10px;font-family:monospace;margin-top:4px">'+
+        '* For training, enter any value. In the live system, use your official worker PIN.</div><br>'+
       '<div class="mavs-prompt" onclick="checkReap()">[ENTER] Save REAP</div>';
   } else if (s===7) {
     html = sep+
@@ -915,9 +924,9 @@ function renderVfy() {
       }
       chk.setDate(chk.getDate()+1);
     }
-    var ruleNote = d.exp
-      ? '&#8226; Expedited cases must be scheduled within <strong>7 calendar days</strong>'
-      : '&#8226; Regular applications must be processed within <strong>30 days</strong>';
+    var ruleNote =
+      '&#8226; <strong>Expedited cases:</strong> appointment must be within <strong>3 business days</strong> of application date<br>'+
+      '&#8226; <strong>Regular applications:</strong> appointment must be within <strong>30 calendar days</strong> of application date';
     var fsoPool = [d.fso];
     var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS','LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
     for (var i=0; i<decoys.length; i++) {
@@ -1021,6 +1030,28 @@ function validateAppt() {
   var msgs = [];
   if (!date) { msgs.push('&#8226; <strong>Appointment Date</strong> is required.'); }
   if (!time) { msgs.push('&#8226; <strong>Appointment Time</strong> is required.'); }
+  if (date) {
+    var sel = new Date(date);
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    if (d.exp) {
+      var biz = 0; var cur2 = new Date(today);
+      while (biz < 3) {
+        cur2.setDate(cur2.getDate()+1);
+        if (cur2.getDay()!==0 && cur2.getDay()!==6) { biz++; }
+      }
+      if (sel > cur2) {
+        msgs.push('&#8226; <strong>Date out of range:</strong> Expedited cases must be scheduled within 3 business days. Select '+
+          (cur2.getMonth()+1)+'/'+cur2.getDate()+'/'+cur2.getFullYear()+' or earlier.');
+      }
+    } else {
+      var limit = new Date(today);
+      limit.setDate(limit.getDate()+30);
+      if (sel > limit) {
+        msgs.push('&#8226; <strong>Date out of range:</strong> Regular applications must be scheduled within 30 calendar days.');
+      }
+    }
+  }
   if (time==='LUNCH') { msgs.push('&#8226; <strong>Invalid time:</strong> 12:00&ndash;12:59 PM is lunch. Select 8:00 AM&ndash;11:30 AM or 1:00 PM&ndash;4:00 PM.'); }
   if (time==='AFTER') { msgs.push('&#8226; <strong>Invalid time:</strong> After-hours not permitted. Office closes at 4:00 PM.'); }
   if (!fso) { msgs.push('&#8226; <strong>FSO / Office</strong> is required.'); }
@@ -1079,6 +1110,15 @@ function restartFromCert() {
   document.getElementById('trainee-ln').value = '';
   show('pg-welcome');
 }
+
+// Inject MDHS logos
+(function() {
+  var wEl = document.getElementById('mdhs-logo-welcome');
+  if (wEl) { wEl.innerHTML = "<img src='data:image/png;base64,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' alt='MDHS Logo' style='height:52px;object-fit:contain;display:block;margin:0 auto'>"; }
+  var cEl = document.getElementById('mdhs-logo-cert');
+  if (cEl) { cEl.innerHTML = "<img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAekAAADpCAMAAAA3Zz8RAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAD9QTFRFOD0/qqurdI9cZJit////nJ6fzc/Pam5v5ufng4aHRElLXWFj2tvbj5KTUVVX8/PzwcLDqKqrdnp7tLa3AAAAlmfziwAAABV0Uk5T//////////////////////////8AK9l96gAACiZJREFUeNrs3euaozYMBmC1ZSaZzHF3df/X2m77dBdsGSwjGRk+/coc4tNrjG1CIEZcIwhNAGkEpBGQRkAaAWkEpBGQRkAaAWlIIyCNgDQC0ghIIyCNgDRCMksD0uc3VnBD+hTMFdqkSql+rGgoppA4aaNLu/Y8EtUtUSHt2pxtiVN7uB5AvZMyqTu1pOYIvUic9obXSGmYlrlzKdEmaRpF2utk0zEps1p3kaYjpT0GoW5JGVb5GtK259Z+0pY1bpMmP2gv6a5Drk1StjW+kLSm2BGkjet7LenqggeQtq5uozS5QTtL0yjS5vW9nHRd0Q+Xtq/uBaUNdivcpSmONHlB95Cm6NIE6V7Wx0q7VPSq0hRY2qeazdLkBN1Lmi4hzZDeqMCR0gTpcjxu/8T7UzHejTciPaW9OnO7NPlAN0l/mzbixXYnchBpPp30bdqMm+lWpKO02+lphzRFkX7cW6XpzNLcVZp6SH/bhp5sNyP9pP0mnCeQfp12SNNZpdlSmjyg9dJvu6QplLTjEnJ86fca6Gfb/cjw0nxC6ccnpOuqtCsPj0+wKt//Y9orTXGkm9bJtSekwaWrpmPT9GS7I3mk9HYWfErp56tJV2TiIe3xaWVVAt8nC2kaRromGz6l9L1S+nYO6Zp8+JTSL5ONNMWQtmhudpJ2uAVBk0LtIT29nkK6Iic+p3T1IT2pLweMKM3rHCNL3yGtKMfe3Rnzu03qk6g/pD+19YB0KOm3aulnSO+XNr/dpDqN1wnS15D+Vi/9ZbCZDOnDpOvnY1tbZKNI07HS1ncW1SaiGLxPI02XlH5RSL9r6xFVmq4orThNb26GOp4xyVa63dpA2vjWotpUno+Utou9H0S4gPSbQvrVNGc3adevbu0vzUbtrYCe6GTSLdi10rovtCVIe0ursS8hfT+ntA67uzQfIP08irTX3XEqaQ01QbqfdK32JaR/qBtsMOka7N7SfIT00zDSbJhUs3Q9NXWRvkNaZT2utGKP7GUcaSYvayNpqoc+QPo2kDSTk7VCmmNJP0FaRT2u9Hu99MdI0kw+1lbSVA1tJX2z3gyNIu1ErZHmUNKP00qzz1AxrDR9Gm97x5F2oTaTplpoM+ln483QQNIe1CppDiX9dGJpB+qBpWvvkp++DSjNgaXJoi9opD+sN0NDSZsvrHXSHEmaTi590DPwIkrXTsm+DyptuzNqKF17FcRM+s14MzSetOW1LW37B5L+mC4gbfe8Wlvp3VsrLqusx9DSZh+eN5SmrtKPT+vN0KjSNneuqsfU/XkaST9NF5I2+M6vbtJsLF19lp7eWoY6Kx/Tu9/3HWCjSv+YHDdDYzxT3gS7XZpjSL9O15Ruv6WnlzQbSz9fV7rxTr1BpW/TpaU1DO3SHEH6zUGah5JW31ffSZptpTXfcXJaaeW3ZYwpfddI308rrfoOnAZpPlxadUhX75yMKM3RpNlW+u4hzUNK12/NjCitPKQh3SzNB0srD+nKa1mjSnMkaTaVvimh9d9GBukY0l+XkTZ5xPcuaT5S+jF5SHNA6dqc4kizqfTLVaSrszqrtHrwrvkUMMeTrs7LdfTmA6U/ryFdn1kcabaVnhykOZy0IrezSr8+/4oTSyuyI19pPu6YXo33puetcHDpXXdv9ZPmntJvLZctOZx0y+l8K/1zST+mU0jv+0djaQ4p/b1FmqNJmy51+0lzT+mnho8icDRpMo1LSU9DSTtBt0vzSaQ5mDSNKs1dpW9qaQ4mTZCui7vy2yQ5mLQf9A5pjij9rruYxcGkaVxp7iwt31R9U4MdI+0JfTbp33Oyr5d/x+zH7XZ7+lB7QTq89H8H9dfLo61sh0q7Qu+Rbn1csm/VX6a394/WTnioNEFaF68NrRBB2hnaVzrccFZt1V/avYp7pHlY6Z4f0ob0gdIcUJq9K+kpzUGlOaQ0O1dylzSPKN37FptjqsuXl+5/M9UhOyfcVTr6VkI8abMas7k0jyXN4aXZr57XkWY/nmCfOeHO0rGmKMyjSHs9rXanNA8hzeo4UtrpcePnl+aWOFba4nt4+0mHWGByaxwtzfbVrdyN01ekteruo5gBT5e0zC/a7JtHF9/WWvX9PZtNwjKH9sPQ9KINIyKHXe+G9Oja1amgIcfl1iWANrxKV0ETQBoBaQSkEZBGQBoBaQSkEZBGQBrSiGtJ/xk3fhbvj7jxs3h/xQ1IQxrSkIY0pCENaUhDGtKQhjSkIQ1pSEMa0pCGNKQhDWlIQxrSkIY0pCENaUhDGtKQhjSkIQ1pSEMa0pCGNKQhDWlIQxrSbtIcW5pjS/NI0gjcVYuANALSCEgjII2ANALSCEgjIA3plf+aPfRBetSR9H8Dt8khtWjOtPx02uUj64uc9Cv3+QM+fr/MfjH/v8X7hNeLTGdPD5k/TSR9sMjiVfZPP3+iJOUkwWUKLD+7ZKVA//8myWD+eyp0e/FAEbIVSjyr6TyJtIBcemujdJZzQSYrM4llzlqy9JZl8RLc5Q9ZDZalXzRWLk2lAvEe6dJLqX/J0lSQppXDaVWali/nMDQrHKUVnR/k82r/qpH0el7b370yG85mHXb5pllxsxqwMH7wAlAcM4myAuVj4oY0bUqTIJ02Y17TNKe8CZK6Ln3rpUUIsbPn0iS+FtutJE1CE61IU7M0y5Bq6ewUsCItVTurYdoeUunl16L0ryOvtzRvSq8Jr9dglgVlxwIVZkXt0ssS5GWfj29N0rxfejYmLKRppc+XZyDzVt0avcWek9YsaSJp9OYN6bTYZWlulE7bsNwAMm9x9GZJmsvS6R9l6YVVNkEpDqq0sKibkaXSxakJ59MQlqQp6avZPHFNOmVfnbOVpJMxKJu0sCRNW3MsTtY8+cKM8on4ijTNz//5SoqzJYvYDxSrrG1pTicgpYXPvOBclqYjpAV24anq60ul9MhelU6pKauZ2PWF2aM4nWQqzBfKrzdH73xqvjqBn3VYeSxcTBUcRm9eHi1C2dPJdKFds5pmZ7CV0Ts/oeZ9mDet1lB2SK+/hfIRY0Way9LsL03JSigbnFiQFtpVONUUl1WFwhalmSqOykKJ0iKopGkjw3zELEiXa8DCsFaevVKzNBf2j5KpRiFtcRSaLx4KB4ZYWN6QTgs+402lSbZTS6/snHA6gKW7BoI0r0nzmjSxdueEsp+SEog9QzqJUlG6tBintUNcLU3CS1r5hVKaSju30o53uhO41l0KMzJxKyw7s1GtdDojXplPpDtdwoqV5BKLO8J5caXFSlk6nyOuzaBL80S9tHiFw1KaqqTz3fYK6XQh1CItzL3FmpI0PgnT9nzNIM1X8hn96vhRWk8X92xyabGdpUsByX4TpY2/GAvzlsg6mzjgyVchcmlx7bEy7Vr+LFxCE3p7oaZJ7sWlOD6JgE8iICCNgDQC0ghIIyCNgDQC0ghIIyANaQSkEZBGQBoBaQSkEZBGQBoBaQSkIY04Y/wtwAAL2QeekoCk7wAAAABJRU5ErkJggg==' alt='MDHS Logo' style='height:48px;object-fit:contain;display:block;margin:0 auto'>"; }
+})();
+
 </script>
 
 </body>
