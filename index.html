@@ -183,6 +183,13 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .ref-lbl{color:#007722;font-size:10px;white-space:nowrap}
 .ref-val{color:#fff;font-weight:700;font-size:11px;text-align:right}
 .ref-val-pending{color:#334433;font-weight:700;font-size:11px;text-align:right;font-style:italic}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 6px 2px rgba(255,204,0,.6)}50%{box-shadow:0 0 18px 6px rgba(255,204,0,1)}}
+@keyframes pulse-glow-blue{0%,100%{box-shadow:0 0 6px 2px rgba(58,143,160,.6)}50%{box-shadow:0 0 18px 6px rgba(58,143,160,1)}}
+.pulse{animation:pulse-glow-blue 1.4s ease-in-out infinite}
+.ref-btn-pulse{animation:pulse-glow 1.4s ease-in-out infinite}
+.tip-box{background:#fff8e6;border-left:3px solid #e8a820;border-radius:3px;padding:6px 10px;font-size:11px;color:#5a4010;margin-bottom:10px;line-height:1.5}
+.tip-box strong{color:#b86800}
+.mavs-tip{background:#002a00;border-left:3px solid #00aa44;padding:5px 9px;font-size:10px;color:#00cc55;margin:6px 0;line-height:1.5;font-family:monospace}
 </style>
 </head>
 <body>
@@ -207,7 +214,7 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
           <span>I understand this is a training simulation and agree to the terms above.</span>
         </div>
         <div id="agree-content" style="display:none;margin-top:12px">
-          <div class="info-box"><strong>Workflow:</strong> Login &rarr; 6 CARS screens &rarr; MAVERICS (9 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process 3&ndash;4 randomly assigned applicants per session. Expedited cases are always processed first.</div>
+          <div class="info-box"><strong>Workflow:</strong> Login &rarr; 6 CARS screens &rarr; MAVERICS (9 steps) &rarr; Case Verification &rarr; Appointment &rarr; Submit<br><strong>Queue:</strong> You will process <strong>2 applicants</strong> per session &mdash; one expedited case (processed first) and one regular application.</div>
           <div class="cred-box"><strong>Login:</strong> <code>ETrainee</code> / <code>MDHS2026!</code></div>
           <button class="big-btn" onclick="startSession()">Begin Training</button>
         </div>
@@ -362,12 +369,12 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 
   <!-- REF CARD BUTTON + MODAL -->
 
-<button id="ref-btn" class="ref-btn" onclick="showRef()">📋 REF CARD</button>
+<button id="ref-btn" class="ref-btn" onclick="showRef()">📄 App Window View</button>
 
   <div id="ref-overlay" class="ref-overlay">
     <div class="ref-modal">
       <div class="ref-hdr">
-        <span class="ref-hdr-title">CASE REFERENCE CARD</span>
+        <span class="ref-hdr-title">APPLICATION WINDOW VIEW</span>
         <button class="ref-hdr-close" onclick="closeRef()">X</button>
       </div>
       <div class="ref-body" id="ref-body"></div>
@@ -416,21 +423,13 @@ var state = { agreed:false, queue:[], qIdx:0, carsStep:0, mavsStep:0, vfyStep:0,
 function D() { return state.queue[state.qIdx] || POOL[0]; }
 
 function buildQueue() {
-  var shuffled = POOL.slice().sort(function(){ return Math.random()-0.5; });
-  var n = Math.floor(Math.random()*2)+3;
-  var picked = shuffled.slice(0,n);
-  var exp = []; var reg = [];
-  for (var i=0; i<picked.length; i++) {
-    if (picked[i].exp) { exp.push(picked[i]); } else { reg.push(picked[i]); }
-  }
-  if (exp.length === 0) {
-    var allExp = POOL.filter(function(p){ return p.exp; });
-    exp.push(allExp[Math.floor(Math.random()*allExp.length)]);
-  }
-  var sorted = exp.concat(reg);
+  var allExp = POOL.filter(function(p){ return p.exp; });
+  var allReg = POOL.filter(function(p){ return !p.exp; });
+  var exp = allExp[Math.floor(Math.random()*allExp.length)];
+  var reg = allReg[Math.floor(Math.random()*allReg.length)];
   var now = new Date();
   var bd = now.toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'})+' 09:22 AM';
-  return sorted.map(function(a){ return Object.assign({},a,{bd:bd}); });
+  return [exp, reg].map(function(a){ return Object.assign({},a,{bd:bd}); });
 }
 
 function toMavDate(mmddyyyy) {
@@ -480,7 +479,10 @@ function setBanner(carsEl, vfyEl) {
 }
 
 function setRefBtn(visible) {
-  document.getElementById('ref-btn').style.display = visible ? 'block' : 'none';
+  var btn = document.getElementById('ref-btn');
+  btn.style.display = visible ? 'block' : 'none';
+  if (visible) { btn.className = 'ref-btn ref-btn-pulse'; }
+  else { btn.className = 'ref-btn'; }
 }
 
 function showRef() {
@@ -493,6 +495,10 @@ function showRef() {
     return '<div class="ref-row"><span class="ref-lbl">'+lbl+'</span><span class="'+cls+'">'+txt+'</span></div>';
   }
   document.getElementById('ref-body').innerHTML =
+    '<div style="background:#002200;border:1px solid #005500;padding:5px 8px;font-size:9px;'+
+      'color:#00aa44;margin-bottom:8px;line-height:1.5">'+
+      '&#9432; In the live system, reference the client application directly in SAATS. '+
+      'This view simulates the key details you would look up there.</div>'+
     '<div class="ref-sec">Applicant</div>'+
     rRow('NAME', d.fn+' '+d.mn+'. '+d.ln, false)+
     rRow('DOB', d.dob, false)+
@@ -534,7 +540,7 @@ function showApp() {
   var body = document.getElementById('app-modal-body');
   body.innerHTML =
     '<div class="app-stamp">Submitted Online &mdash; '+subDate+
-      ' &nbsp;|&nbsp; Programs: SNAP, TANF &nbsp;|&nbsp; '+expLabel+'</div>'+
+      ' &nbsp;|&nbsp; Program: SNAP &nbsp;|&nbsp; '+expLabel+'</div>'+
     asec('Applicant Information',
       af('First Name',d.fn)+af('Middle Initial',d.mn)+af('Last Name',d.ln)+
       af('SSN',d.ssn)+af('Date of Birth',d.dob)+af('Age',d.age+' yrs')+af('Gender',d.gender)+
@@ -634,9 +640,11 @@ function renderCars() {
   var s = state.carsStep;
   if (s===0) {
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Tutorial:</strong> Review the client application first using the <strong>View Application</strong> button above. '+
+        'You will need this information throughout the process. When ready, press <strong>Next</strong> to continue.</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
         '<h2 class="sec-title" style="margin-bottom:0">DIGITAL APPLICANT INFORMATION</h2>'+
-        '<button onclick="showApp()" style="padding:5px 12px;font-size:11px;border:none;border-radius:3px;'+
+        '<button onclick="showApp()" class="pulse" style="padding:5px 12px;font-size:11px;border:none;border-radius:3px;'+
           'cursor:pointer;font-weight:700;font-family:inherit;background:#2a6a78;color:#fff;white-space:nowrap">'+
           'View Application</button>'+
       '</div>'+
@@ -646,7 +654,7 @@ function renderCars() {
         '<div class="f" style="flex:1;min-width:120px"><label>Applying For</label>'+
         '<div style="display:flex;gap:10px;padding:4px 0">'+
         '<span class="chk"><span class="chk-box">&#10003;</span> SNAP</span>'+
-        '<span class="chk"><span class="chk-box">&#10003;</span> TANF</span></div></div>'+
+        '<span class="chk"><span class="chk-box" style="background:#fff;border-color:#bcc8cc"></span> TANF</span></div></div>'+
         fd('Language','English')+'</div>'+
       '<div class="sub">Contact Information</div>'+
       '<div class="row">'+fi('Home Address 1',d.addr)+fi('Home Address 2','')+fi('Home City',d.city)+fd('Home State','Mississippi')+'</div>'+
@@ -658,7 +666,7 @@ function renderCars() {
       '<div class="row"><div class="f" style="flex:1;min-width:100px"><label>E-Notices?</label>'+
         radio('Yes',['Yes','No'])+'</div>'+fi('Email',d.em)+'</div>'+
       btnRow('<button class="bc">Cancel</button><button class="bd">Move to ESAP</button>'+
-        '<button class="bp">Pre-Register</button><button class="bn" onclick="carsNext()">Next</button>');
+        '<button class="bp">Pre-Register</button><button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===1) {
     var hi = d.ei!=='$0.00';
     b.innerHTML =
@@ -755,6 +763,7 @@ function renderMavs() {
       '<div>&nbsp;&nbsp;1. GENERAL INQUIRIES</div>'+
       '<div style="color:#00ff88;background:rgba(0,255,65,.08);padding:1px 3px">-&gt; 2. APPLICATION REGISTRATION</div>'+
       '<div>&nbsp;&nbsp;3. NOTICE REQUESTS</div><div>&nbsp;&nbsp;4. ADD PROGRAM</div><div>&nbsp;&nbsp;5. CASE DESTRUCTION</div><br>'+
+      '<div class="mavs-tip">&#9432; MAVERICS NAVIGATION: Type the menu number and press [ENTER] to select. In the live system you would type "2" and press Enter.</div>'+
       '<div class="mavs-dim">SELECTION: <span id="fusc-val"></span>'+cur+'</div><br>'+
       '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Select 2 &rarr; APPLICATION REGISTRATION</div>';
   } else if (s===1) {
@@ -763,6 +772,7 @@ function renderMavs() {
       '<div>&nbsp;&nbsp;1. INQUIRE ON PERSON</div><div>&nbsp;&nbsp;2. SAVE NEW CLIENT</div>'+
       '<div>&nbsp;&nbsp;3. EXISTING CASE #</div><div>&nbsp;&nbsp;4. NEW CASE #</div><div>&nbsp;&nbsp;6. DRS INQUIRY</div><br>'+
       '<div class="mavs-dim">LAST NAME: '+d.ln.toUpperCase()+'&nbsp;&nbsp;FIRST: '+d.fn.toUpperCase()+'</div>'+
+      '<div class="mavs-tip">&#9432; Enter the client\'s Date of Birth exactly as shown in the application you reviewed in C.A.R.S. Use the Application Window View button for reference.</div>'+
       '<div class="mavs-dim">DOB: <input id="clir-dob" class="mavs-input" placeholder="MM/DD/YYYY" maxlength="10" '+
         'oninput="formatClirDob()" onkeydown="if(event.key===\'Enter\')checkClirDob()">'+cur+'</div>'+
       '<div class="mavs-err" id="clir-err" style="display:none"></div><br>'+
@@ -770,7 +780,8 @@ function renderMavs() {
   } else if (s===2) {
     html = sep+
       '<div class="mavs-head">&nbsp;&nbsp;CLIS - SHORT LIST</div>'+sep+'<br>'+
-      '<div class="mavs-warn">NO CLIENTS FOUND</div><br>'+
+      '<div class="mavs-warn">NO CLIENTS FOUND</div>'+
+      '<div class="mavs-tip">&#9432; This is expected for a new applicant. "No Clients Found" means they have no prior record in MAVERICS. Proceed to save them as a new client.</div><br>'+
       '<div class="mavs-dim">SSN: '+d.ssn+'&nbsp;&nbsp;DOB: '+toMavDate(d.dob)+'</div><br>'+
       '<div class="mavs-prompt" onclick="mavsNext()">[ENTER] Save New Client (2)</div>';
   } else if (s===3) {
@@ -807,11 +818,12 @@ function renderMavs() {
         'oninput="this.value=this.value.replace(/[^0-9]/g,\'\')" '+
         'onkeydown="if(event.key===\'Enter\')checkReap()">'+cur+'</div>'+
       '<div class="mavs-err" id="reap-err" style="display:none"></div><br>'+
-      '<div class="mavs-dim">Enter worker ID:</div>'+
-      '<div><input id="reap-wid" class="mavs-input" placeholder="Worker ID" maxlength="8" '+
+      '<div class="mavs-dim">Enter worker PIN (4 digits):</div>'+
+      '<div><input id="reap-wid" class="mavs-input" placeholder="4-digit PIN" maxlength="4" '+
+        'oninput="this.value=this.value.replace(/[^0-9]/g,\'\')" '+
         'onkeydown="if(event.key===\'Enter\')checkReap()">'+cur+'</div>'+
-      '<div style="color:#556655;font-size:10px;font-family:monospace;margin-top:4px">'+
-        '* For training, enter any value. In the live system, use your official worker PIN.</div><br>'+
+      '<div style="color:#ff4444;font-size:11px;font-family:monospace;margin-top:5px;font-weight:700">'+
+        '&#9888; TRAINING NOTE: Enter any 4-digit number. In the live MAVERICS system, you would use your official 4-digit worker PIN.</div><br>'+
       '<div class="mavs-prompt" onclick="checkReap()">[ENTER] Save REAP</div>';
   } else if (s===7) {
     html = sep+
@@ -868,7 +880,7 @@ function checkReap() {
   var wv = widInp.value.trim();
   var msgs = [];
   if (dv.length !== 6 || isNaN(dv)) { msgs.push('DATE ERROR: Enter 6-digit date as MMDDYY'); }
-  if (!wv) { msgs.push('WORKER ID required'); }
+  if (!wv || wv.length !== 4 || isNaN(wv)) { msgs.push('WORKER PIN must be 4 digits'); }
   if (msgs.length > 0) { err.innerHTML=msgs.join('<br>'); err.style.display='block'; return; }
   err.style.display = 'none';
   mavsNext();
@@ -894,6 +906,9 @@ function renderVfy() {
   if (state.vfyStep===0) {
     b.innerHTML =
       '<h2 class="sec-title">CASE VERIFICATION</h2>'+
+      '<div class="tip-box"><strong>&#128218; Tip:</strong> Enter the 9-digit case number from the MAVERICS CAP1 screen. '+
+        'You should have written it down when MAVERICS displayed <strong>*** WRITE DOWN CASE # ***</strong>. '+
+        'You can also open the <strong>Application Window View</strong> button for reference.</div>'+
       '<div class="verify-center">'+
         '<label style="font-size:10px;font-weight:700;color:#5a7a85;text-transform:uppercase">MAVERICS CASE #</label>'+
         '<input id="verify-cn" class="verify-input" placeholder="9-digit case #" maxlength="9" '+
@@ -925,8 +940,7 @@ function renderVfy() {
       chk.setDate(chk.getDate()+1);
     }
     var ruleNote =
-      '&#8226; <strong>Expedited cases:</strong> appointment must be within <strong>3 business days</strong> of application date<br>'+
-      '&#8226; <strong>Regular applications:</strong> appointment must be within <strong>30 calendar days</strong> of application date';
+      '&#8226; <strong>Expedited cases:</strong> appointment must be within <strong>3 business days</strong> of application date';
     var fsoPool = [d.fso];
     var decoys = ['HINDS COUNTY DHS','HARRISON COUNTY DHS','RANKIN COUNTY DHS','LAUDERDALE COUNTY DHS','FORREST COUNTY DHS'];
     for (var i=0; i<decoys.length; i++) {
@@ -941,9 +955,10 @@ function renderVfy() {
     }
     b.innerHTML =
       '<h2 class="sec-title">Schedule Appointment</h2>'+
+      '<div class="tip-box"><strong>&#128218; Tip:</strong> To find the correct FSO, match it to the client\'s <strong>county of residence</strong>. '+
+        'The assigned case worker is also tied to that county office. Check the Application Window View if you need a reminder.</div>'+
       '<div class="appt-rules"><strong>MDHS Scheduling Rules:</strong><br>'+ruleNote+'<br>'+
         '&#8226; Appointments must be on a <strong>weekday (Mon&ndash;Fri)</strong><br>'+
-        '&#8226; Hours: <strong>8:00 AM &ndash; 4:00 PM</strong> &mdash; lunch break 12:00&ndash;12:59 PM<br>'+
         '&#8226; Select the correct FSO and assigned case worker for this county'+
       '</div>'+
       '<div class="row">'+
