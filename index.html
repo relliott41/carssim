@@ -190,6 +190,25 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 .tip-box{background:#fff8e6;border-left:3px solid #e8a820;border-radius:3px;padding:6px 10px;font-size:11px;color:#5a4010;margin-bottom:10px;line-height:1.5}
 .tip-box strong{color:#b86800}
 .mavs-tip{background:#002a00;border-left:3px solid #00aa44;padding:5px 9px;font-size:10px;color:#00cc55;margin:6px 0;line-height:1.5;font-family:monospace}
+@keyframes saving-flash{0%{opacity:0;transform:translateY(-4px)}20%{opacity:1;transform:translateY(0)}80%{opacity:1}100%{opacity:0}}
+.saving-toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#2a6a78;color:#fff;padding:10px 24px;border-radius:20px;font-size:13px;font-weight:700;z-index:9000;display:none;animation:saving-flash 1s ease forwards}
+.mavs-loading{position:fixed;top:0;left:0;width:100%;height:100%;background:#0d0d1a;z-index:9500;display:none;flex-direction:column;align-items:center;justify-content:center}
+.mavs-loading.on{display:flex}
+.mavs-loading-title{color:#00ff41;font-family:monospace;font-size:14px;font-weight:700;margin-bottom:16px;letter-spacing:2px}
+.mavs-loading-bar-wrap{width:240px;height:6px;background:#002200;border-radius:3px;overflow:hidden}
+.mavs-loading-bar{height:100%;width:0%;background:#00ff41;border-radius:3px;transition:width 0.1s linear}
+.mavs-loading-sub{color:#007722;font-family:monospace;font-size:10px;margin-top:8px}
+.confetti-piece{position:fixed;top:-10px;width:10px;height:10px;z-index:9800;pointer-events:none;border-radius:2px}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(720deg);opacity:0}}
+.record-confirmed{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#28a060;color:#fff;padding:14px 32px;border-radius:6px;font-size:16px;font-weight:800;z-index:9000;display:none;letter-spacing:2px;box-shadow:0 4px 24px rgba(0,0,0,.4)}
+@keyframes rec-conf{0%{opacity:0;transform:translate(-50%,-50%) scale(.8)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
+.done-summary{margin:12px auto;padding:12px 14px;background:#f0faf4;border:1px solid #28a060;border-radius:6px;font-size:12px;max-width:340px;text-align:left;line-height:1.7;color:#1a3a2a}
+.tooltip-btn{position:relative;cursor:pointer}
+.tooltip-btn:hover::after{content:attr(data-tip);position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:#1a2a33;color:#fff;font-size:10px;padding:4px 8px;border-radius:3px;white-space:nowrap;z-index:100;font-weight:400;font-family:inherit}
+#hdr-status{font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;background:rgba(255,255,255,.2);color:#fff;letter-spacing:1px}
+#hdr-appid{font-size:9px;color:rgba(255,255,255,.7);letter-spacing:.5px}
+#tb-case-of{font-size:10px;color:#8899aa;margin-left:6px}
+#tb-timer{font-size:10px;color:#8899aa}
 </style>
 </head>
 <body>
@@ -264,8 +283,19 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
 
   <div id="pg-cars" class="pg">
     <div class="hdr"><span style="font-size:18px;color:#2a6a78">&#9776;</span><span class="hdr-logo">C.A.R.S.</span><span class="hdr-user">E. Trainee</span></div>
-    <div class="hdr-banner"><span id="cars-bdate"></span><span id="cars-exp-flag" class="exp"></span><span>CLIENT DOCUMENT: YES</span></div>
-    <div class="prg-wrap"><div class="prg-row" id="prg-cars"></div></div>
+    <div class="hdr-banner" style="flex-wrap:wrap;gap:2px">
+      <span id="cars-bdate"></span>
+      <span id="hdr-appid"></span>
+      <span id="hdr-status">RECORD OPEN</span>
+      <span id="cars-exp-flag" class="exp"></span>
+      <span id="hdr-last-action" style="font-size:9px;color:rgba(255,255,255,.7)"></span>
+    </div>
+    <div class="prg-wrap">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+        <span style="font-size:9px;color:#7a9aa5" id="cars-screen-counter"></span>
+      </div>
+      <div class="prg-row" id="prg-cars"></div>
+    </div>
     <div class="scroll"><div class="pad" id="cars-body"></div></div>
   </div>
 
@@ -320,6 +350,7 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
         <div class="done-title">Application Complete!</div>
         <div class="done-msg" id="done-msg"></div>
         <div class="done-warn">Do NOT print EA-900 from CARS &mdash; creates duplicates.</div>
+        <div id="done-summary-box" class="done-summary" style="display:none"></div>
         <div id="done-session" style="display:none" class="done-session">&#127881; <strong>Session Complete!</strong> You have processed all applicants in your queue.</div>
         <button id="done-btn" style="margin-top:16px;padding:8px 24px;font-size:13px;border:none;border-radius:3px;cursor:pointer;font-weight:700;font-family:inherit;background:#3a8fa0;color:#fff" onclick="doneAction()"></button>
       </div>
@@ -381,15 +412,35 @@ code{background:#d0eef4;padding:1px 4px;border-radius:2px;font-size:12px}
     </div>
   </div>
 
+  <!-- MAVERICS LOADING OVERLAY -->
+
+  <div id="mavs-loading" class="mavs-loading">
+    <div class="mavs-loading-title">CONNECTING TO MAVERICS...</div>
+    <div class="mavs-loading-bar-wrap"><div class="mavs-loading-bar" id="mavs-loading-bar"></div></div>
+    <div class="mavs-loading-sub" id="mavs-loading-sub">Initializing terminal session...</div>
+  </div>
+
+  <!-- SAVING TOAST -->
+
+  <div class="saving-toast" id="saving-toast">&#10003; Saving...</div>
+
+  <!-- RECORD CONFIRMED -->
+
+  <div class="record-confirmed" id="record-confirmed">&#10003; RECORD CONFIRMED</div>
+
   <!-- TASKBAR -->
 
   <div id="taskbar">
-    <div style="display:flex;gap:3px">
+    <div style="display:flex;gap:3px;align-items:center">
       <span class="tb-btn">Start</span>
       <span class="tb-btn tb-cars" id="tb-cars" style="display:none">C.A.R.S.</span>
       <span class="tb-btn tb-mavs" id="tb-mavs" style="display:none">MAVERICS</span>
+      <span id="tb-case-of" style="display:none"></span>
     </div>
-    <span id="tb-time"></span>
+    <div style="display:flex;gap:10px;align-items:center">
+      <span id="tb-timer" style="display:none">00:00</span>
+      <span id="tb-time"></span>
+    </div>
   </div>
   <div class="toast" id="toast"></div>
 </div>
@@ -626,6 +677,7 @@ function doLogin() {
     document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
     setBanner('cars-exp-flag', null);
     show('pg-cars');
+    startSessionTimer();
     toast(D().fn+' '+D().ln+' \u2014 Application loaded','ok');
   } else {
     err.textContent = 'Invalid credentials. Please try again.';
@@ -633,11 +685,116 @@ function doLogin() {
   }
 }
 
+var sessionStart = null;
+var timerInterval = null;
+
+function startSessionTimer() {
+  sessionStart = Date.now();
+  var el = document.getElementById('tb-timer');
+  if (el) { el.style.display = 'inline'; }
+  timerInterval = setInterval(function() {
+    var el2 = document.getElementById('tb-timer');
+    if (!el2) { return; }
+    var elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    var mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+    var ss = String(elapsed % 60).padStart(2,'0');
+    el2.textContent = mm+':'+ss;
+  }, 1000);
+}
+
+function showSaving() {
+  var t = document.getElementById('saving-toast');
+  if (!t) { return; }
+  t.style.display = 'block';
+  t.style.animation = 'none';
+  setTimeout(function() {
+    t.style.animation = 'saving-flash 1s ease forwards';
+    setTimeout(function() { t.style.display = 'none'; }, 1000);
+  }, 10);
+}
+
+function fireConfetti() {
+  var colors = ['#3a8fa0','#28a060','#2a6a78','#ffcc00','#e8a820','#5a8aaa'];
+  for (var i = 0; i < 80; i++) {
+    (function(i) {
+      setTimeout(function() {
+        var el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random()*100 + 'vw';
+        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+        el.style.width = (8 + Math.random()*8) + 'px';
+        el.style.height = (8 + Math.random()*8) + 'px';
+        el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        var dur = 2.5 + Math.random()*2;
+        el.style.animation = 'confetti-fall ' + dur + 's ease-in forwards';
+        document.body.appendChild(el);
+        setTimeout(function() { el.parentNode && el.parentNode.removeChild(el); }, dur*1000+100);
+      }, i*30);
+    })(i);
+  }
+}
+
+function playDing() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var o = ctx.createOscillator();
+    var g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.setValueAtTime(880, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(660, ctx.currentTime+0.3);
+    g.gain.setValueAtTime(0.4, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.5);
+    o.start(ctx.currentTime); o.stop(ctx.currentTime+0.5);
+  } catch(e) {}
+}
+
+function playChime() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var notes = [523, 659, 784, 1047];
+    notes.forEach(function(freq, i) {
+      var o = ctx.createOscillator();
+      var g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.type = 'sine';
+      o.frequency.setValueAtTime(freq, ctx.currentTime + i*0.18);
+      g.gain.setValueAtTime(0, ctx.currentTime + i*0.18);
+      g.gain.linearRampToValueAtTime(0.35, ctx.currentTime + i*0.18 + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i*0.18 + 0.6);
+      o.start(ctx.currentTime + i*0.18);
+      o.stop(ctx.currentTime + i*0.18 + 0.6);
+    });
+  } catch(e) {}
+}
+
+function showRecordConfirmed() {
+  var el = document.getElementById('record-confirmed');
+  if (!el) { return; }
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  setTimeout(function() {
+    el.style.animation = 'rec-conf 1.8s ease forwards';
+    setTimeout(function() { el.style.display = 'none'; }, 1800);
+  }, 10);
+}
+
 function renderCars() {
   renderPrg('prg-cars', state.carsStep);
   var d = D();
   var b = document.getElementById('cars-body');
   var s = state.carsStep;
+  var scr = document.getElementById('cars-screen-counter');
+  if (scr) { scr.textContent = 'SCREEN ' + (s+1) + ' OF 6'; }
+  var appId = document.getElementById('hdr-appid');
+  if (appId) { appId.textContent = 'APP REF: ' + d.bd.split(' ')[0].replace(/\//g,'') + '-' + d.cn.slice(-4); }
+  var lastAct = document.getElementById('hdr-last-action');
+  if (lastAct) {
+    var now = new Date();
+    lastAct.textContent = 'LAST ACTION: ' + now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+  var caseOf = document.getElementById('tb-case-of');
+  if (caseOf) { caseOf.style.display = 'inline'; caseOf.textContent = 'Case '+(state.qIdx+1)+' of '+state.queue.length; }
+  if (s > 0) { showSaving(); }
   if (s===0) {
     b.innerHTML =
       '<div class="tip-box"><strong>&#128218; Tutorial:</strong> Review the client application first using the <strong>View Application</strong> button above. '+
@@ -665,11 +822,16 @@ function renderCars() {
       '<div class="row">'+fi('Phone',d.p1)+fd('Type',d.p1t)+fi('Phone 2',d.p2)+fd('Type',d.p2t)+'</div>'+
       '<div class="row"><div class="f" style="flex:1;min-width:100px"><label>E-Notices?</label>'+
         radio('Yes',['Yes','No'])+'</div>'+fi('Email',d.em)+'</div>'+
-      btnRow('<button class="bc">Cancel</button><button class="bd">Move to ESAP</button>'+
-        '<button class="bp">Pre-Register</button><button class="bn pulse" onclick="carsNext()">Next</button>');
+      btnRow('<button class="bc">Cancel</button>'+
+        '<button class="bd tooltip-btn" data-tip="In live CARS: moves case to ESAP queue for expedited processing">Move to ESAP</button>'+
+        '<button class="bp tooltip-btn" data-tip="In live CARS: pre-registers client before full application is complete">Pre-Register</button>'+
+        '<button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===1) {
     var hi = d.ei!=='$0.00';
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Income Screen:</strong> Review each question carefully. '+
+        'Earned income includes wages, tips, and self-employment. Unearned includes Social Security, disability, '+
+        'child support, etc. Answer YES or NO based on what the client reported on their application.</div>'+
       '<h2 class="sec-title">INCOME</h2>'+
       qrow('Earned income (wages, tips, bonuses, self-employment)?',hi?'YES':'NO')+
       (hi?'<div style="padding:2px 0 6px 16px;font-size:12px">Amount: <strong>'+d.ei+'</strong></div>':'')+
@@ -677,9 +839,12 @@ function renderCars() {
       qrow('Expect income later this month?','NO')+
       qrow('Only income from migrant/seasonal farm work?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
-        '<button class="bn" onclick="carsNext()">Next</button>');
+        '<button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===2) {
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Resources &amp; Expenses:</strong> Resources include cash, bank accounts, stocks, or property. '+
+        'Most SNAP applicants will answer NO. Expenses below are pre-filled from the client\'s application — '+
+        'verify they match what was reported before continuing.</div>'+
       '<h2 class="sec-title">RESOURCES</h2>'+
       qrow('Cash, checking/savings, IRA, stocks, vehicles, property, land?','NO')+
       '<h2 class="sec-title" style="margin-top:14px">EXPENSES</h2>'+
@@ -688,9 +853,11 @@ function renderCars() {
       qrow('Pay for dependent child/disabled member care?','NO')+
       qrow('Anyone 60+ or disabled with medical expenses over $35?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
-        '<button class="bn" onclick="carsNext()">Next</button>');
+        '<button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===3) {
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Additional Questions:</strong> These are federal eligibility screening questions required for all SNAP applications. '+
+        'For this training scenario, all answers are NO. In a real case, answers must reflect what the client reported.</div>'+
       '<h2 class="sec-title">ADDITIONAL QUESTIONS</h2>'+
       qrow('Deaf, hearing impaired, or need interpreter?','NO')+
       qrow('SNAP disqualification for fraud?','NO')+
@@ -698,9 +865,11 @@ function renderCars() {
       qrow('Commercial boarding home resident?','NO')+
       qrow('On strike?','NO')+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
-        '<button class="bn" onclick="carsNext()">Next</button>');
+        '<button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===4) {
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Household Information:</strong> The <strong>Primary Individual (PI)</strong> is the main applicant — the person who submitted the application. '+
+        'All other people in the home who share meals and expenses are household members. Verify names, SSNs, and DOBs match the application exactly.</div>'+
       '<h2 class="sec-title">HOUSEHOLD INFORMATION</h2>'+
       '<div class="sub">Head Of Household (PI)</div>'+
       '<div class="row">'+fi('First Name',d.fn)+fi('Last Name',d.ln)+fd('Relationship','Primary Individual')+'</div>'+
@@ -710,9 +879,11 @@ function renderCars() {
       '<div class="row">'+fi('First Name',d.hfn)+fi('Last Name',d.hln)+fd('Relationship',d.hrel)+'</div>'+
       '<div class="row">'+fi('SSN',d.hssn)+fi('DOB',d.hdob)+fi('Age',d.hage,0.4)+fd('Gender',d.hgen)+'</div></div>'+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
-        '<button class="bn" onclick="carsNext()">Next</button>');
+        '<button class="bn pulse" onclick="carsNext()">Next</button>');
   } else if (s===5) {
     b.innerHTML =
+      '<div class="tip-box"><strong>&#128218; Additional Application Info:</strong> This screen captures authorized representatives and copy preferences. '+
+        'For standard training cases, no authorized reps are listed and copy preference is Electronic. Simply click <strong>Next</strong> to proceed to MAVERICS.</div>'+
       '<h2 class="sec-title">ADDITIONAL APPLICATION INFORMATION</h2>'+
       '<p style="font-size:10px;color:#7a9aa5;font-style:italic;margin-bottom:10px">Household members not included on application</p>'+
       '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px">'+
@@ -722,7 +893,7 @@ function renderCars() {
           '<div class="row">'+fi('First','')+fi('Last','')+fi('Phone','')+'</div></div></div>'+
       '<div style="font-size:12px;margin-bottom:10px">Copy preference: '+radio('Electronic',['Paper','Electronic','Refuse'])+'</div>'+
       btnRow('<button class="bc">Cancel</button><button class="bp" onclick="carsPrev()">Previous</button>'+
-        '<button class="bn" onclick="goMavs()">Next</button>');
+        '<button class="bn pulse" onclick="goMavs()">Next</button>');
   }
   document.querySelector('#pg-cars .scroll').scrollTop = 0;
 }
@@ -730,11 +901,29 @@ function renderCars() {
 function carsNext() { state.carsStep++; renderCars(); }
 function carsPrev() { state.carsStep--; renderCars(); }
 function goMavs() {
-  state.mavsStep = 0;
-  setRefBtn(false);
-  renderMavs();
-  show('pg-mavs');
-  toast('Switch to MAVERICS terminal','warn');
+  var loading = document.getElementById('mavs-loading');
+  var bar = document.getElementById('mavs-loading-bar');
+  var sub = document.getElementById('mavs-loading-sub');
+  loading.classList.add('on');
+  bar.style.width = '0%';
+  var msgs = ['Initializing terminal session...','Authenticating worker credentials...','Loading client record...','Establishing MAVERICS connection...'];
+  var pct = 0; var mIdx = 0;
+  var iv = setInterval(function() {
+    pct += 4;
+    bar.style.width = pct + '%';
+    if (pct % 25 === 0 && mIdx < msgs.length) { sub.textContent = msgs[mIdx++]; }
+    if (pct >= 100) {
+      clearInterval(iv);
+      setTimeout(function() {
+        loading.classList.remove('on');
+        state.mavsStep = 0;
+        setRefBtn(false);
+        renderMavs();
+        show('pg-mavs');
+        toast('Switch to MAVERICS terminal','warn');
+      }, 300);
+    }
+  }, 40);
 }
 
 var MAVS_SCREENS = ['FUSC','CLIR','CLIS','DRS','REG','EXSW','REAP','ADDR','CAP1'];
@@ -798,6 +987,8 @@ function renderMavs() {
       '<div class="mavs-head">ID: '+d.pid+'</div><br>'+
       '<div>FS, AF&nbsp;&nbsp;INITIAL&nbsp;&nbsp;ONLINE&nbsp;&nbsp;'+d.cty.toUpperCase()+'</div><br>'+
       '<div class="mavs-ok">REGISTERED</div><br>'+
+      '<div class="mavs-tip">&#9432; CASE # is the unique case identifier you will need in C.A.R.S. verification. '+
+        'PI ID is the Primary Individual\'s system ID. These are now saved &mdash; the Application Window View button will show them.</div><br>'+
       '<div class="mavs-prompt" onclick="mavsNext()">[F5] Go to EXSW</div>';
   } else if (s===5) {
     var expTxt = d.exp ? 'EXPEDITED: YES' : 'EXPEDITED: NO';
@@ -841,7 +1032,8 @@ function renderMavs() {
       '<div class="mavs-head">FS RCVD: '+bdDate+'</div>'+
       '<div class="mavs-head">AF RCVD: '+bdDate+'</div><br>'+
       '<div class="mavs-warn" style="font-size:13px;font-weight:bold">*** WRITE DOWN CASE #: '+d.cn+' ***</div><br>'+
-      '<div style="color:#aaa;font-size:11px">You will need this number in the next step.</div><br>'+
+      '<div class="mavs-tip">&#9888; IMPORTANT: You MUST have this case number to complete verification in C.A.R.S. '+
+        'Write it down now or use the Application Window View button to reference it on the next screen.</div><br>'+
       '<div class="mavs-prompt-warn" onclick="goVerify()">[F3] Return to C.A.R.S.</div>';
   }
   document.getElementById('mavs-body').innerHTML = html;
@@ -887,6 +1079,19 @@ function checkReap() {
 }
 
 function mavsNext() { state.mavsStep++; renderMavs(); }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter') { return; }
+  var active = document.activeElement;
+  var inInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+  if (inInput) { return; }
+  var mavsPg = document.getElementById('pg-mavs');
+  if (!mavsPg || !mavsPg.classList.contains('on')) { return; }
+  var s = state.mavsStep;
+  if (s === 1) { checkClirDob(); }
+  else if (s === 6) { checkReap(); }
+  else { mavsNext(); }
+});
 
 function goVerify() {
   state.vfyStep = 0;
@@ -1019,6 +1224,7 @@ function checkCase() {
     btn.disabled = false;
     btn.style.background = '#3a8fa0';
     btn.style.cursor = 'pointer';
+    showRecordConfirmed();
     toast('IDs verified \u2014 schedule appointment','ok');
   } else {
     inp.className = 'verify-input err';
@@ -1085,10 +1291,28 @@ function validateAppt() {
 function submitCase() {
   setRefBtn(false);
   var d = D();
-  document.getElementById('done-msg').textContent = 'Case '+d.cn+' for '+d.fn+' '+d.ln+' registered and routed to WorkSite.';
   var isLast = state.qIdx >= state.queue.length-1;
+  if (isLast) {
+    playChime();
+    setTimeout(fireConfetti, 300);
+  } else {
+    playDing();
+  }
+  var caseType = d.exp ? 'Expedited SNAP case' : 'Regular SNAP application';
+  var summaryLines =
+    '<strong>What you just completed:</strong><br>'+
+    '&#10003; Reviewed the online application in C.A.R.S.<br>'+
+    '&#10003; Verified income, resources, and household data<br>'+
+    '&#10003; Registered the client in MAVERICS (Case #'+d.cn+')<br>'+
+    '&#10003; Completed expedited screening ('+d.cn+')<br>'+
+    '&#10003; Verified case IDs and scheduled appointment<br><br>'+
+    '<strong>Why it matters:</strong> This is the full intake workflow for a '+caseType+'. '+
+    'Each step ensures the client\'s record is accurate and their case is properly routed in the system.';
+  document.getElementById('done-msg').textContent = 'Case '+d.cn+' for '+d.fn+' '+d.ln+' registered and routed to WorkSite.';
   document.getElementById('done-session').style.display = isLast ? 'block' : 'none';
   document.getElementById('done-btn').textContent = isLast ? 'View Certificate' : 'Next Applicant \u2192';
+  var summaryEl = document.getElementById('done-summary-box');
+  if (summaryEl) { summaryEl.innerHTML = summaryLines; summaryEl.style.display = 'block'; }
   show('pg-done');
   toast('Submitted!','ok');
 }
@@ -1107,6 +1331,8 @@ function doneAction() {
     state.qIdx++;
     state.carsStep = 0;
     renderCars();
+    var sb = document.getElementById('done-summary-box');
+    if (sb) { sb.style.display = 'none'; sb.innerHTML = ''; }
     document.getElementById('cars-bdate').textContent = 'BUSINESS DATE: '+D().bd;
     setBanner('cars-exp-flag', null);
     show('pg-cars');
